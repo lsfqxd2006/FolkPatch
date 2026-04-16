@@ -151,7 +151,7 @@ jobs:
             exit 1
           fi
           
-          CAPTION="${{ needs.prepare.outputs.commit_msg }}\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.sha }}\nAuthor: ${{ needs.prepare.outputs.commit_author }}"
+          CAPTION="${{ needs.prepare.outputs.commit_msg }}\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.sha }}\nAuthor: ${{ needs.prepare.outputs.commit_author }}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           
           if [ "$FILE_COUNT" -eq 1 ]; then
             curl -sf -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument" \
