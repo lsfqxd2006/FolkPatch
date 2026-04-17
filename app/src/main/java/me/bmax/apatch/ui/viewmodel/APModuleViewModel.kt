@@ -102,6 +102,7 @@ class APModuleViewModel : ViewModel() {
                     .thenByDescending { it.isLSPosed }
                     .thenByDescending { it.hasWebUi }
                     .thenByDescending { it.hasActionScript }
+                    .thenByDescending { it.name.contains("vector", ignoreCase = true) }
                     .thenBy(collator) { it.id }
             )
         } else {
