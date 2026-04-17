@@ -868,6 +868,8 @@ Upewnij się, że aplikacja jest całkowicie zamknięta i ponownie otwarta, aby 
     <string name="patch_mode_restore">Tryb: Przywracanie</string>
     <string name="ink_wash_theme">Malarstwo tuszowe</string>
     <string name="theme_color">Kolor motywu</string>
+    <string name="theme_light">Jasny</string>
+    <string name="theme_dark">Ciemny</string>
     <string name="theme_system">System</string>
     <string name="app_title_fpatch">FPatch</string>
     <string name="app_title_folkpatch">FolkPatch</string>

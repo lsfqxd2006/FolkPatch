@@ -410,6 +410,8 @@
     <string name="teal_theme">أزرق مخضر</string>
     <string name="yellow_theme">أصفر</string>
     <string name="theme_color">لون السمة</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
     <string name="theme_system">النظام</string>
 
     <string name="about_app_desc">تطبيق Root مبني على KernelPatch، يسمح بخطاف وظائف النواة دون إعادة تجميع النواة.</string>

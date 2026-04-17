@@ -403,6 +403,8 @@
     <string name="yellow_theme">옐로</string>
     <string name="ink_wash_theme">잉크 워시</string>
     <string name="theme_color">테마 색상</string>
+    <string name="theme_light">라이트</string>
+    <string name="theme_dark">다크</string>
     <string name="theme_system">시스템</string>
 
     <string name="about_app_desc">KernelPatch를 기반으로 한 Root 구현체로, 커널을 다시 컴파일할 필요 없이 커널 함수 후킹을 허용합니다.</string>

@@ -358,6 +358,8 @@
     <string name="yellow_theme">イエロー</string>
     <string name="ink_wash_theme">インクウォッシュ</string>
     <string name="theme_color">テーマカラー</string>
+    <string name="theme_light">ライト</string>
+    <string name="theme_dark">ダーク</string>
     <string name="theme_system">システム</string>
     <string name="about_app_desc">KernelPatch ベースの root 実装、カーネルをリコンパイルせずにカーネル関数フックを可能にします。</string>
     <string name="about_powered_by">Powered by %1$s</string>

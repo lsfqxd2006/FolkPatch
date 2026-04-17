@@ -402,6 +402,8 @@
     <string name="teal_theme">藍綠色主題</string>
     <string name="yellow_theme">黃色主題</string>
     <string name="theme_color">主題顏色</string>
+    <string name="theme_light">淺色</string>
+    <string name="theme_dark">深色</string>
     <string name="theme_system">系統</string>
 
     <string name="about_app_desc">基於 KernelPatch 的 Root 實現，無需重新編譯內核的同時，允許 Hook 內核函數。</string>

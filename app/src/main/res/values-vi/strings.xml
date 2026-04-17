@@ -403,6 +403,8 @@ Dưới đây là một số nguyên nhân có thể gây ra thất bại xác t
     <string name="teal_theme">Màu xanh ngọc</string>
     <string name="yellow_theme">Màu vàng</string>
     <string name="theme_color">Màu chủ đề</string>
+    <string name="theme_light">Sáng</string>
+    <string name="theme_dark">Tối</string>
     <string name="theme_system">Hệ thống</string>
 
     <string name="about_app_desc">Cài đặt Root dựa trên KernelPatch, cho phép hook hàm nhân mà không cần biên dịch lại nhân.</string>

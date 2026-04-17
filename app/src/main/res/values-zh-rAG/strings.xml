@@ -410,6 +410,8 @@
     <string name="teal_theme">蓝绿色喵</string>
     <string name="yellow_theme">黄色喵</string>
     <string name="theme_color">主题颜色喵</string>
+    <string name="theme_light">浅色喵</string>
+    <string name="theme_dark">深色喵</string>
     <string name="theme_system">系统喵</string>
 
     <string name="about_app_desc">基于内核的Root方案哒喵，支持内核模块和hook，不用重编内核哦喵！</string>

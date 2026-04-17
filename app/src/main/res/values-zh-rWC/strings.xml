@@ -397,6 +397,8 @@
     <string name="teal_theme">苍绿仙光</string>
     <string name="yellow_theme">金阳仙光</string>
     <string name="theme_color">主题颜色</string>
+    <string name="theme_light">浅色</string>
+    <string name="theme_dark">深色</string>
     <string name="theme_system">系统</string>
 
     <string name="about_app_desc">基于 KernelPatch 仙法之 Root 实现，毋需重编道核的同时，允许钩道核仙函。</string>

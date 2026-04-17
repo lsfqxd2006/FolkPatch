@@ -407,6 +407,8 @@ Aqui estão algumas possíveis razões para a falha de autenticação—verifiqu
     <string name="teal_theme">Verde-azulado (Teal)</string>
     <string name="yellow_theme">Amarelo</string>
     <string name="theme_color">Cor do tema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Escuro</string>
     <string name="theme_system">Sistema</string>
 
     <string name="about_app_desc">Uma implementação Root baseada em KernelPatch, permitindo hooks de função do kernel sem recompilar o kernel.</string>

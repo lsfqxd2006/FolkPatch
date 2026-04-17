@@ -406,6 +406,8 @@ Berikut adalah beberapa kemungkinan penyebab kegagalan autentikasi—silakan cek
     <string name="teal_theme">Hijau Kebiru-biruan</string>
     <string name="yellow_theme">Kuning</string>
     <string name="theme_color">Warna Tema</string>
+    <string name="theme_light">Terang</string>
+    <string name="theme_dark">Gelap</string>
     <string name="theme_system">Sistem</string>
 
     <string name="about_app_desc">Implementasi Root berbasis KernelPatch, memungkinkan *hook* fungsi kernel tanpa kompilasi ulang kernel.</string>

@@ -407,6 +407,8 @@
     <string name="teal_theme">Бирюзовая</string>
     <string name="yellow_theme">Жёлтая</string>
     <string name="theme_color">Цвет темы</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
     <string name="theme_system">Система</string>
 
     <string name="about_app_desc">Реализация Root на основе KernelPatch, позволяющая перехватывать функции ядра без перекомпиляции ядра.</string>

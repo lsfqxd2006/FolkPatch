@@ -394,6 +394,8 @@ Bol şans! Ayrıca, aşağıdaki belge butonuna tıklamak kesinlikle doğru!</st
     <string name="teal_theme">Teal</string>
     <string name="yellow_theme">Sarı</string>
     <string name="theme_color">Tema rengi</string>
+    <string name="theme_light">Açık</string>
+    <string name="theme_dark">Koyu</string>
     <string name="theme_system">Sistem</string>
 
     <string name="about_app_desc">Çekirdeği yeniden derlemeden kernel modüllerini ve kernel fonksiyon hook’larını destekleyen, kernel tabanlı bir root çözümü.</string>

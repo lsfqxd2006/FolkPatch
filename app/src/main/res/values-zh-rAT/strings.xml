@@ -397,6 +397,8 @@
     <string name="teal_theme">青蓝之韵</string>
     <string name="yellow_theme">阳光黄</string>
     <string name="theme_color">主题颜色</string>
+    <string name="theme_light">浅色</string>
+    <string name="theme_dark">深色</string>
     <string name="theme_system">系统</string>
 
     <string name="about_app_desc">一个基于灵魂核心的圣光化身解决方案，支持灵魂晶石和灵魂函数hook，无需重新锻造灵魂核心。</string>

@@ -404,6 +404,8 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="ink_wash_theme">Ink Wash</string>
 
     <string name="theme_color">Theme Color</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
     <string name="theme_system">System</string>
 
     <string name="about_app_desc">A Root implementation based on KernelPatch, allowing kernel function hooks without recompiling the kernel.</string>

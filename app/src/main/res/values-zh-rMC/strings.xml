@@ -398,6 +398,8 @@
     <string name="yellow_theme">蒲公英黄</string>
     <string name="ink_wash_theme">墨囊水墨</string>
     <string name="theme_color">主题颜色</string>
+    <string name="theme_light">浅色</string>
+    <string name="theme_dark">深色</string>
     <string name="theme_system">系统</string>
 
     <string name="about_app_desc">基于 KernelPatch 的 Root 实现，不用重编基岩核心就能Hook内核函数，挺好用的。</string>

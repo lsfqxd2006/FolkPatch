@@ -400,6 +400,8 @@
     <string name="ink_wash_theme">水墨风</string>
 
     <string name="theme_color">主题颜色</string>
+    <string name="theme_light">浅色</string>
+    <string name="theme_dark">深色</string>
     <string name="theme_system">系统</string>
 
     <string name="about_app_desc">基于 KernelPatch 的 Root 实现，无需重新编译内核的同时，允许 Hook 内核函数。</string>

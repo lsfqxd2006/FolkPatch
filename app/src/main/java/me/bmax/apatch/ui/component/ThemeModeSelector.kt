@@ -26,7 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import me.bmax.apatch.R
 
 enum class ThemeMode {
     LIGHT, DARK, SYSTEM
@@ -49,7 +51,7 @@ fun ThemeModeSelector(
         ) {
             ThemeModeOption(
                 icon = Icons.Default.LightMode,
-                label = "Light",
+                label = stringResource(R.string.theme_light),
                 isSelected = selectedMode == ThemeMode.LIGHT,
                 onClick = { onModeSelected(ThemeMode.LIGHT) },
                 flat = flat,
@@ -58,7 +60,7 @@ fun ThemeModeSelector(
 
             ThemeModeOption(
                 icon = Icons.Default.DarkMode,
-                label = "Dark",
+                label = stringResource(R.string.theme_dark),
                 isSelected = selectedMode == ThemeMode.DARK,
                 onClick = { onModeSelected(ThemeMode.DARK) },
                 flat = flat,
@@ -67,7 +69,7 @@ fun ThemeModeSelector(
 
             ThemeModeOption(
                 icon = Icons.Default.AutoAwesome,
-                label = "System",
+                label = stringResource(R.string.theme_system),
                 isSelected = selectedMode == ThemeMode.SYSTEM,
                 onClick = { onModeSelected(ThemeMode.SYSTEM) },
                 flat = flat,

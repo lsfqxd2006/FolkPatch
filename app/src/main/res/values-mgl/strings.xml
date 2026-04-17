@@ -405,6 +405,8 @@
     <string name="teal_theme">蓝绿之韵</string>
     <string name="yellow_theme">阳光之黄</string>
     <string name="theme_color">Ариун цагаан сүнс</string>
+    <string name="theme_light">Гэгээлэг</string>
+    <string name="theme_dark">Харанхуй</string>
     <string name="theme_system">Систем</string>
 
     <string name="about_app_desc">一个基于心之核心的魔法变身解决方案，支持心之结晶和心之函数hook，无需重新锻造心之核心。</string>
