@@ -409,6 +409,8 @@
     <string name="sakura_theme">ساكورا</string>
     <string name="teal_theme">أزرق مخضر</string>
     <string name="yellow_theme">أصفر</string>
+    <string name="theme_color">لون السمة</string>
+    <string name="theme_system">النظام</string>
 
     <string name="about_app_desc">تطبيق Root مبني على KernelPatch، يسمح بخطاف وظائف النواة دون إعادة تجميع النواة.</string>
     <string name="about_powered_by">مدعوم من %1$s</string>
@@ -462,6 +464,7 @@
     <string name="settings_custom_background_blur">تمويه الخلفية</string>
     <string name="settings_custom_background_dim">تعتيم الخلفية</string>
     <string name="settings_custom_background_dual_dim">تمكين تعتيم مزدوج لليوم/الليل</string>
+    <string name="settings_custom_background_dual_dim_desc">ضبط تعتيم الخلفية تلقائيًا للسمات الفاتحة والداكنة</string>
     <string name="settings_custom_background_day_dim">تعتيم الخلفية في وضع النهار</string>
     <string name="settings_custom_background_night_dim">تعتيم الخلفية في وضع الليل</string>
     <string name="settings_multi_background_mode">وضع الخلفيات المتعددة</string>
@@ -744,6 +747,14 @@
     <string name="settings_music_save_error">فشل حفظ ملف الموسيقى</string>
     <string name="settings_music_cleared">تم مسح الموسيقى</string>
     <string name="settings_category_multimedia">الوسائط المتعددة</string>
+    <string name="settings_category_general_summary">اللغة، التحديثات، SELinux، تعديلات النظام</string>
+    <string name="settings_category_appearance_summary">السمة، الألوان، التخطيط، الخلفية، الخطوط</string>
+    <string name="settings_category_behavior_summary">تصحيح أخطاء الويب، سلوك التثبيت، عرض الشاشة الرئيسية</string>
+    <string name="settings_category_security_summary">القياسات الحيوية، إدارة المفاتيح الفائقة</string>
+    <string name="settings_category_backup_summary">نسخ احتياطي محلي، سحابي، WebDAV</string>
+    <string name="settings_category_module_summary">معلومات الوحدات، الفرز، التثبيت الدفعي</string>
+    <string name="settings_category_function_summary">إخفاء FolkPatch، خدمة Umount</string>
+    <string name="settings_category_multimedia_summary">موسيقى الخلفية، الأصوات، الاهتزاز</string>
     <string name="settings_music_playback_control">التحكم في التشغيل</string>
 
     <!-- Theme Store Filter -->

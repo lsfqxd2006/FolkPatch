@@ -409,6 +409,8 @@
     <string name="sakura_theme">樱花粉色喵</string>
     <string name="teal_theme">蓝绿色喵</string>
     <string name="yellow_theme">黄色喵</string>
+    <string name="theme_color">主题颜色喵</string>
+    <string name="theme_system">系统喵</string>
 
     <string name="about_app_desc">基于内核的Root方案哒喵，支持内核模块和hook，不用重编内核哦喵！</string>
     <string name="about_powered_by">靠 %s 撑着哒喵！</string>
@@ -462,6 +464,7 @@
     <string name="settings_custom_background_blur">背景模糊喵</string>
     <string name="settings_custom_background_dim">背景暗度喵</string>
     <string name="settings_custom_background_dual_dim">开双切暗色适配喵</string>
+    <string name="settings_custom_background_dual_dim_desc">根据亮色和暗色主题自动调整背景暗度喵</string>
     <string name="settings_custom_background_day_dim">白天模式暗度喵</string>
     <string name="settings_custom_background_night_dim">夜间模式暗度喵</string>
     <string name="settings_multi_background_mode">开多背景模式喵</string>
@@ -743,6 +746,14 @@
     <string name="settings_music_save_error">存音乐文件失败了喵...</string>
     <string name="settings_music_cleared">音乐清了喵！</string>
     <string name="settings_category_multimedia">多媒体喵</string>
+    <string name="settings_category_general_summary">语言喵、更新喵、SELinux喵、系统调整喵</string>
+    <string name="settings_category_appearance_summary">主题喵、颜色喵、布局喵、背景喵、字体喵</string>
+    <string name="settings_category_behavior_summary">Web调试喵、安装行为喵、首页显示喵</string>
+    <string name="settings_category_security_summary">生物识别喵、超级密钥管理喵</string>
+    <string name="settings_category_backup_summary">本地备份喵、云端备份喵、WebDAV喵</string>
+    <string name="settings_category_module_summary">模块信息喵、排序喵、批量安装喵</string>
+    <string name="settings_category_function_summary">FolkPatch隐藏喵、Umount服务喵</string>
+    <string name="settings_category_multimedia_summary">背景音乐喵、音效喵、振动喵</string>
     <string name="settings_music_playback_control">播放控制喵</string>
 
     <!-- Theme Store Filter -->

@@ -403,6 +403,9 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="yellow_theme">Yellow</string>
     <string name="ink_wash_theme">Ink Wash</string>
 
+    <string name="theme_color">Theme Color</string>
+    <string name="theme_system">System</string>
+
     <string name="about_app_desc">A Root implementation based on KernelPatch, allowing kernel function hooks without recompiling the kernel.</string>
     <string name="about_powered_by">Powered by %1$s</string>
     <string name="about_telegram_group">Telegram Group</string>
@@ -482,6 +485,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="settings_custom_background_blur">Background blur</string>
     <string name="settings_custom_background_dim">Background dim</string>
     <string name="settings_custom_background_dual_dim">Enable dual day/night dim</string>
+    <string name="settings_custom_background_dual_dim_desc">Automatically adjust background dim for light and dark themes</string>
     <string name="settings_custom_background_day_dim">Day mode background dim</string>
     <string name="settings_custom_background_night_dim">Night mode background dim</string>
     <string name="settings_multi_background_mode">Multi-Background Mode</string>
@@ -770,6 +774,14 @@ Please ensure the app is completely closed and reopened for the commands to exec
     <string name="settings_music_save_error">Failed to save music file</string>
     <string name="settings_music_cleared">Music cleared</string>
     <string name="settings_category_multimedia">Multimedia</string>
+    <string name="settings_category_general_summary">Language, updates, SELinux, system tweaks</string>
+    <string name="settings_category_appearance_summary">Theme, colors, layout, background, fonts</string>
+    <string name="settings_category_behavior_summary">Web debugging, install behavior, home display</string>
+    <string name="settings_category_security_summary">Biometric, superkey management</string>
+    <string name="settings_category_backup_summary">Local backup, cloud backup, WebDAV</string>
+    <string name="settings_category_module_summary">Module info, sorting, batch install</string>
+    <string name="settings_category_function_summary">FolkPatch Hide, Umount service</string>
+    <string name="settings_category_multimedia_summary">Background music, sounds, vibration</string>
     <string name="settings_use_legacy_su_page">Single-page Superuser authorization</string>
     <string name="settings_use_legacy_su_page_summary">Superuser page switched to single-page authorization design</string>
     <string name="settings_music_playback_control">Playback Control</string>

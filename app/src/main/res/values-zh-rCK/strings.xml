@@ -397,6 +397,8 @@
     <string name="sakura_theme">樱花粉</string>
     <string name="teal_theme">蓝绿色</string>
     <string name="yellow_theme">黄色</string>
+    <string name="theme_color">主题颜色</string>
+    <string name="theme_system">系统</string>
 
     <string name="about_app_desc">基于 KernelPatch 的 Root 实现，无需重新烹饪内核的同时，允许 Hook 内核函数。</string>
     <string name="about_powered_by">由 %1$s 提供支持</string>
@@ -448,6 +450,7 @@
     <string name="settings_custom_background_blur">背景虚化</string>
     <string name="settings_custom_background_dim">背景暗度</string>
     <string name="settings_custom_background_dual_dim">明暗双切</string>
+    <string name="settings_custom_background_dual_dim_desc">根据亮色和暗色主题自动调整背景暗度</string>
     <string name="settings_custom_background_day_dim">白天暗度</string>
     <string name="settings_custom_background_night_dim">夜间暗度</string>
     <string name="settings_multi_background_mode">开多背景模式</string>
@@ -732,6 +735,14 @@
     <string name="settings_music_save_error">保存音乐失败</string>
     <string name="settings_music_cleared">音乐已删</string>
     <string name="settings_category_multimedia">餐厅喇叭</string>
+    <string name="settings_category_general_summary">菜单语言、新菜更新、厨房规矩、餐厅调整</string>
+    <string name="settings_category_appearance_summary">菜单主题、颜色、布局、背景、字体</string>
+    <string name="settings_category_behavior_summary">Web调试、上菜行为、招牌展示</string>
+    <string name="settings_category_security_summary">顾客认证、传世秘方管理</string>
+    <string name="settings_category_backup_summary">本地留份、云端留份、WebDAV</string>
+    <string name="settings_category_module_summary">招牌菜信息、排序、批量上菜</string>
+    <string name="settings_category_function_summary">FolkPatch隐身、Umount服务</string>
+    <string name="settings_category_multimedia_summary">背景音乐、音效、振动</string>
     <string name="settings_music_playback_control">音乐控制</string>
 
     <!-- Theme Store Filter -->

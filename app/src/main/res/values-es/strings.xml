@@ -408,6 +408,8 @@ Aquí hay algunas posibles razones para el fallo de autenticación—por favor v
     <string name="sakura_theme">Sakura</string>
     <string name="teal_theme">Verde azulado</string>
     <string name="yellow_theme">Amarillo</string>
+    <string name="theme_color">Color del tema</string>
+    <string name="theme_system">Sistema</string>
 
     <string name="about_app_desc">Una implementación Root basada en KernelPatch, permitiendo hooks de funciones del kernel sin recompilar el kernel.</string>
     <string name="about_powered_by">Impulsado por %1$s</string>
@@ -461,6 +463,7 @@ Aquí hay algunas posibles razones para el fallo de autenticación—por favor v
     <string name="settings_custom_background_blur">Desenfoque del fondo</string>
     <string name="settings_custom_background_dim">Atenuación del fondo</string>
     <string name="settings_custom_background_dual_dim">Habilitar atenuación dual día/noche</string>
+    <string name="settings_custom_background_dual_dim_desc">Ajustar automáticamente el atenuación del fondo para temas claros y oscuros</string>
     <string name="settings_custom_background_day_dim">Atenuación de fondo en modo día</string>
     <string name="settings_custom_background_night_dim">Atenuación de fondo en modo noche</string>
     <string name="settings_multi_background_mode">Modo Multi-Fondo</string>
@@ -737,6 +740,14 @@ Por ejemplo, los KPM que previenen la modificación de particiones solo pueden u
     <string name="settings_music_save_error">Error al guardar archivo de música</string>
     <string name="settings_music_cleared">Música borrada</string>
     <string name="settings_category_multimedia">Multimedia</string>
+    <string name="settings_category_general_summary">Idioma, actualizaciones, SELinux, ajustes del sistema</string>
+    <string name="settings_category_appearance_summary">Tema, colores, diseño, fondo, fuentes</string>
+    <string name="settings_category_behavior_summary">Depuración web, comportamiento de instalación, pantalla de inicio</string>
+    <string name="settings_category_security_summary">Biometría, gestión de superclaves</string>
+    <string name="settings_category_backup_summary">Copia de seguridad local, en la nube, WebDAV</string>
+    <string name="settings_category_module_summary">Info de módulos, ordenación, instalación por lotes</string>
+    <string name="settings_category_function_summary">Ocultar FolkPatch, servicio Umount</string>
+    <string name="settings_category_multimedia_summary">Música de fondo, sonidos, vibración</string>
     <string name="settings_music_playback_control">Control de Reproducción</string>
 
     <!-- Theme Store Filter -->

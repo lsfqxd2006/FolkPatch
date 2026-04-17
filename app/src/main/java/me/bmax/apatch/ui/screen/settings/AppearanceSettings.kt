@@ -8,7 +8,10 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -36,9 +39,13 @@ import androidx.core.content.edit
 import kotlinx.coroutines.launch
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
+import me.bmax.apatch.ui.component.ExpressiveCard
 import me.bmax.apatch.ui.component.FilePickerDialog
-import me.bmax.apatch.ui.component.SettingsCategory
-import me.bmax.apatch.ui.component.SwitchItem
+import me.bmax.apatch.ui.component.SectionHeader
+import me.bmax.apatch.ui.component.ToggleSettingCard
+import me.bmax.apatch.ui.component.ThemeColorPicker
+import me.bmax.apatch.ui.component.ThemeMode
+import me.bmax.apatch.ui.component.ThemeModeSelector
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.ui.theme.BackgroundConfig
@@ -53,12 +60,12 @@ import androidx.compose.ui.draw.rotate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppearanceSettings(
-    searchText: String,
+fun AppearanceSettingsContent(
     snackBarHost: SnackbarHostState,
     kPatchReady: Boolean,
     onNavigateToThemeStore: () -> Unit,
-    onNavigateToApiMarketplace: () -> Unit
+    onNavigateToApiMarketplace: () -> Unit,
+    flat: Boolean = false,
 ) {
     val prefs = APApplication.sharedPreferences
     val context = LocalContext.current
@@ -67,13 +74,11 @@ fun AppearanceSettings(
 
     LaunchedEffect(Unit) {
         FontConfig.load(context)
-        // Sync state after load
         refreshTheme.value = true
     }
-    
-    // --- Launchers ---
+
     var pickingType by remember { mutableStateOf<String?>(null) }
-    
+
     val pickImageLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -170,15 +175,14 @@ fun AppearanceSettings(
             }
         }
     }
-    
-    // Theme Export/Import Logic
+
     var pendingExportMetadata by remember { mutableStateOf<ThemeManager.ThemeMetadata?>(null) }
     val showExportDialog = remember { mutableStateOf(false) }
     var pendingImportUri by remember { mutableStateOf<Uri?>(null) }
     var pendingImportMetadata by remember { mutableStateOf<ThemeManager.ThemeMetadata?>(null) }
     val showImportDialog = remember { mutableStateOf(false) }
     val showFilePicker = remember { mutableStateOf(false) }
-    
+
     val importThemeLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
@@ -187,7 +191,6 @@ fun AppearanceSettings(
                 loadingDialog.show()
                 val metadata = ThemeManager.readThemeMetadata(context, uri)
                 loadingDialog.hide()
-                
                 if (metadata != null) {
                     pendingImportUri = uri
                     pendingImportMetadata = metadata
@@ -204,26 +207,13 @@ fun AppearanceSettings(
         }
     }
 
-    // ==================== 二级折叠菜单：外观 - 夜间模式 ====================
-    val nightModeCategoryTitle = stringResource(R.string.settings_appearance_night_mode)
-    val nightModeCategorySummary = stringResource(R.string.settings_appearance_night_mode_summary)
-    val matchNightMode = shouldShow(searchText, nightModeCategoryTitle, nightModeCategorySummary)
-    
     val isNightModeSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-    val nightModeFollowSysTitle = stringResource(id = R.string.settings_night_mode_follow_sys)
-    val nightModeFollowSysSummary = stringResource(id = R.string.settings_night_mode_follow_sys_summary)
-    val showNightModeFollowSys = isNightModeSupported && (matchNightMode || shouldShow(searchText, nightModeFollowSysTitle, nightModeFollowSysSummary))
-
     var nightModeFollowSys by remember { mutableStateOf(prefs.getBoolean("night_mode_follow_sys", true)) }
     var nightModeEnabled by remember { mutableStateOf(prefs.getBoolean("night_mode_enabled", true)) }
-
-    val nightModeEnabledTitle = stringResource(id = R.string.settings_night_theme_enabled)
-    val showNightModeEnabled = isNightModeSupported && !nightModeFollowSys && (matchNightMode || shouldShow(searchText, nightModeEnabledTitle))
-
     val isDynamicColorSupport = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     var useSystemDynamicColor by remember { mutableStateOf(prefs.getBoolean("use_system_color_theme", false)) }
     var customFontEnabled by remember { mutableStateOf(FontConfig.isCustomFontEnabled) }
-    
+
     val refreshThemeObserver by refreshTheme.observeAsState(false)
     if (refreshThemeObserver) {
         nightModeFollowSys = prefs.getBoolean("night_mode_follow_sys", false)
@@ -232,54 +222,22 @@ fun AppearanceSettings(
         customFontEnabled = FontConfig.isCustomFontEnabled
     }
 
-    val useSystemColorTitle = stringResource(id = R.string.settings_use_system_color_theme)
-    val useSystemColorSummary = stringResource(id = R.string.settings_use_system_color_theme_summary)
-    val showUseSystemColor = isDynamicColorSupport && (matchNightMode || shouldShow(searchText, useSystemColorTitle, useSystemColorSummary))
+    val isDarkTheme = if (nightModeFollowSys) isSystemInDarkTheme() else nightModeEnabled
+    val themeMode = if (nightModeFollowSys) ThemeMode.SYSTEM else if (nightModeEnabled) ThemeMode.DARK else ThemeMode.LIGHT
+    val customColorScheme = prefs.getString("custom_color", "indigo")
 
-    val customColorTitle = stringResource(id = R.string.settings_custom_color_theme)
-    val colorMode = prefs.getString("custom_color", "light_blue")
-    val customColorValue = stringResource(colorNameToString(colorMode.toString()))
-    val showCustomColor = (!isDynamicColorSupport || !useSystemDynamicColor) && (matchNightMode || shouldShow(searchText, customColorTitle, customColorValue))
-    
-    val showNightModeCategory = showNightModeFollowSys || showNightModeEnabled || showUseSystemColor || showCustomColor
-
-    // ==================== 二级折叠菜单：外观 - 布局 ====================
-    val layoutCategoryTitle = stringResource(R.string.settings_appearance_layout)
-    val layoutCategorySummary = stringResource(R.string.settings_appearance_layout_summary)
-    val matchLayout = shouldShow(searchText, layoutCategoryTitle, layoutCategorySummary)
-    
-    // Home Layout
-    val homeLayoutTitle = stringResource(id = R.string.settings_home_layout_style)
     val currentStyle = prefs.getString("home_layout_style", "stats")
-    val homeLayoutValue = stringResource(homeLayoutStyleToString(currentStyle.toString()))
-    val showHomeLayout = matchLayout || shouldShow(searchText, homeLayoutTitle, homeLayoutValue)
-
-    // StatsUI Top Layout
     val isStatsLayout = currentStyle == "stats"
-    val statsTopLayoutTitle = stringResource(id = R.string.settings_stats_top_layout)
-    val statsTopLayoutSummary = stringResource(id = R.string.settings_stats_top_layout_summary)
+    var statsTopLayout by remember { mutableStateOf(prefs.getString("stats_top_layout", "list") ?: "list") }
     val statsTopLayoutListLabel = stringResource(id = R.string.settings_stats_top_layout_list)
     val statsTopLayoutGridLabel = stringResource(id = R.string.settings_stats_top_layout_grid)
-    var statsTopLayout by remember { mutableStateOf(prefs.getString("stats_top_layout", "list") ?: "list") }
     val statsTopLayoutValue = if (statsTopLayout == "grid") statsTopLayoutGridLabel else statsTopLayoutListLabel
-    val showStatsTopLayout = isStatsLayout && (matchLayout || shouldShow(searchText, statsTopLayoutTitle, statsTopLayoutSummary, statsTopLayoutListLabel, statsTopLayoutGridLabel))
     var showStatsTopLayoutDialog by remember { mutableStateOf(false) }
-
-    // Navigation Layout Settings
-    val navLayoutTitle = stringResource(id = R.string.settings_nav_layout_title)
-    val navLayoutSummary = stringResource(id = R.string.settings_nav_layout_summary)
-    val showNavLayout = kPatchReady && (matchLayout || shouldShow(searchText, navLayoutTitle, navLayoutSummary))
-    
-    val showNavApmTitle = stringResource(id = R.string.settings_show_apm)
-    val showNavKpmTitle = stringResource(id = R.string.settings_show_kpm)
-    val showNavSuperUserTitle = stringResource(id = R.string.settings_show_superuser)
 
     var showNavApm by remember { mutableStateOf(prefs.getBoolean("show_nav_apm", true)) }
     var showNavKpm by remember { mutableStateOf(prefs.getBoolean("show_nav_kpm", true)) }
     var showNavSuperUser by remember { mutableStateOf(prefs.getBoolean("show_nav_superuser", true)) }
 
-    // Navigation Scheme Settings
-    val navSchemeTitle = stringResource(id = R.string.settings_nav_scheme)
     var currentNavMode by remember { mutableStateOf(prefs.getString("nav_mode", "floating") ?: "floating") }
     val navSchemeLabel = when (currentNavMode) {
         "rail" -> stringResource(R.string.settings_nav_mode_rail)
@@ -288,70 +246,15 @@ fun AppearanceSettings(
         else -> stringResource(R.string.settings_nav_mode_auto)
     }
     var showNavSchemeDialog by remember { mutableStateOf(false) }
-    val showNavScheme = matchLayout || shouldShow(searchText, navSchemeTitle, navSchemeLabel)
 
-    // Floating Nav Bar Settings (only visible in floating mode)
     val isFloatingNav = currentNavMode == "floating"
-    val floatingAutoHideTitle = stringResource(id = R.string.settings_floating_auto_hide)
-    val floatingAutoHideSummary = stringResource(id = R.string.settings_floating_auto_hide_summary)
-    val floatingSwipeHideTitle = stringResource(id = R.string.settings_floating_swipe_hide)
-    val floatingSwipeHideSummary = stringResource(id = R.string.settings_floating_swipe_hide_summary)
     var floatingAutoHide by remember { mutableStateOf(prefs.getBoolean("floating_auto_hide", true)) }
     var floatingSwipeHide by remember { mutableStateOf(prefs.getBoolean("floating_swipe_hide", true)) }
-    val showFloatingSettings = isFloatingNav && (matchLayout || shouldShow(searchText, floatingAutoHideTitle, floatingAutoHideSummary, floatingSwipeHideTitle, floatingSwipeHideSummary))
 
-    // Grid Layout Background (KernelSU/Grid style)
     val isKernelSuStyle = currentStyle == "kernelsu"
     val showGridCardSettings = isKernelSuStyle || (isStatsLayout && statsTopLayout == "grid")
-    val gridBackgroundTitle = stringResource(id = R.string.settings_grid_working_card_background)
-    val gridBackgroundSummary = stringResource(id = R.string.settings_grid_working_card_background_summary)
-    val gridBackgroundEnabledText = stringResource(id = R.string.settings_grid_working_card_background_enabled)
-    val gridSelectImageText = stringResource(id = R.string.settings_select_background_image)
-    
-    val showGridBackgroundSwitch = showGridCardSettings && (matchLayout || shouldShow(searchText, gridBackgroundTitle, gridBackgroundSummary, gridBackgroundEnabledText, gridSelectImageText))
-    
-    val gridOpacityTitle = stringResource(id = R.string.settings_custom_background_opacity)
-    val showGridOpacity = showGridCardSettings && BackgroundConfig.isGridWorkingCardBackgroundEnabled && (matchLayout || shouldShow(searchText, gridOpacityTitle))
-    val gridDualOpacityTitle = stringResource(id = R.string.settings_grid_working_card_dual_opacity)
-    val showGridDualOpacitySwitch = showGridCardSettings && BackgroundConfig.isGridWorkingCardBackgroundEnabled && (matchLayout || shouldShow(searchText, gridDualOpacityTitle))
-    
-    val gridDayOpacityTitle = stringResource(id = R.string.settings_grid_working_card_day_opacity)
-    val showGridDayOpacity = showGridCardSettings && BackgroundConfig.isGridWorkingCardBackgroundEnabled && BackgroundConfig.isGridDualOpacityEnabled && (matchLayout || shouldShow(searchText, gridDayOpacityTitle))
-    
-    val gridNightOpacityTitle = stringResource(id = R.string.settings_grid_working_card_night_opacity)
-    val showGridNightOpacity = showGridCardSettings && BackgroundConfig.isGridWorkingCardBackgroundEnabled && BackgroundConfig.isGridDualOpacityEnabled && (matchLayout || shouldShow(searchText, gridNightOpacityTitle))
-
-    val gridDimTitle = stringResource(id = R.string.settings_custom_background_dim)
-    val showGridDim = showGridCardSettings && BackgroundConfig.isGridWorkingCardBackgroundEnabled && (matchLayout || shouldShow(searchText, gridDimTitle))
-
-    val gridSelectTitle = stringResource(id = R.string.settings_select_background_image)
-    val gridSelectedText = stringResource(id = R.string.settings_grid_working_card_background_selected)
-    val showGridPicker = showGridCardSettings && BackgroundConfig.isGridWorkingCardBackgroundEnabled && (matchLayout || shouldShow(searchText, gridSelectTitle, gridSelectedText))
-    
-    val gridClearTitle = stringResource(id = R.string.settings_clear_grid_working_card_background)
-    val showGridClear = showGridCardSettings && BackgroundConfig.isGridWorkingCardBackgroundEnabled && (matchLayout || shouldShow(searchText, gridClearTitle))
-
-    val gridCheckHiddenTitle = stringResource(id = R.string.settings_grid_working_card_hide_check)
-    val gridCheckHiddenSummary = stringResource(id = R.string.settings_grid_working_card_hide_check_summary)
-    val showGridCheckHidden = showGridCardSettings && (matchLayout || shouldShow(searchText, gridCheckHiddenTitle, gridCheckHiddenSummary))
-    
-    val gridTextHiddenTitle = stringResource(id = R.string.settings_grid_working_card_hide_text)
-    val gridTextHiddenSummary = stringResource(id = R.string.settings_grid_working_card_hide_text_summary)
-    val showGridTextHidden = showGridCardSettings && (matchLayout || shouldShow(searchText, gridTextHiddenTitle, gridTextHiddenSummary))
-
-    val gridModeHiddenTitle = stringResource(id = R.string.settings_grid_working_card_hide_mode)
-    val gridModeHiddenSummary = stringResource(id = R.string.settings_grid_working_card_hide_mode_summary)
-    val showGridModeHidden = showGridCardSettings && (matchLayout || shouldShow(searchText, gridModeHiddenTitle, gridModeHiddenSummary))
-
-    // List Layout Customization
     val isListStyle = currentStyle != "kernelsu" && currentStyle != "focus" && !(isStatsLayout && statsTopLayout == "grid")
 
-    val listCardHideStatusBadgeTitle = stringResource(id = R.string.settings_list_card_hide_status_badge)
-    val listCardHideStatusBadgeSummary = stringResource(id = R.string.settings_list_card_hide_status_badge_summary)
-    val showListCardHideStatusBadge = isListStyle && (matchLayout || shouldShow(searchText, listCardHideStatusBadgeTitle, listCardHideStatusBadgeSummary))
-
-    val customBadgeTextTitle = stringResource(id = R.string.settings_custom_badge_text)
-    val customBadgeTextSummary = stringResource(id = R.string.settings_custom_badge_text_summary)
     val badgeTextModes = listOf(
         stringResource(R.string.settings_custom_badge_text_full_half),
         stringResource(R.string.settings_custom_badge_text_lkm),
@@ -362,600 +265,371 @@ fun AppearanceSettings(
     )
     val currentBadgeTextModeIndex = BackgroundConfig.customBadgeTextMode
     val currentBadgeTextMode = badgeTextModes.getOrElse(currentBadgeTextModeIndex) { badgeTextModes[0] }
-    val showCustomBadgeTextList = isListStyle && !BackgroundConfig.isListWorkingCardModeHidden && (matchLayout || shouldShow(searchText, customBadgeTextTitle, customBadgeTextSummary))
-    val showCustomBadgeTextGrid = showGridCardSettings && !BackgroundConfig.isGridWorkingCardModeHidden && (matchLayout || shouldShow(searchText, customBadgeTextTitle, customBadgeTextSummary))
     val showCustomBadgeTextDialog = remember { mutableStateOf(false) }
 
-    // Advanced Title Style
-    val advancedTitleStyleTitle = stringResource(id = R.string.settings_advanced_title_style)
-    val advancedTitleStyleSummary = stringResource(id = R.string.settings_advanced_title_style_summary)
-    val advancedTitleStyleEnabledText = stringResource(id = R.string.settings_advanced_title_style_enabled)
-    val showAdvancedTitleStyleSwitch = matchLayout || shouldShow(searchText, advancedTitleStyleTitle, advancedTitleStyleSummary, advancedTitleStyleEnabledText)
-
-    val titleImageDayOpacityTitle = stringResource(id = R.string.settings_title_image_day_opacity)
-    val showTitleImageDayOpacity = BackgroundConfig.isAdvancedTitleStyleEnabled && (matchLayout || shouldShow(searchText, titleImageDayOpacityTitle))
-
-    val titleImageNightOpacityTitle = stringResource(id = R.string.settings_title_image_night_opacity)
-    val showTitleImageNightOpacity = BackgroundConfig.isAdvancedTitleStyleEnabled && (matchLayout || shouldShow(searchText, titleImageNightOpacityTitle))
-
-    val titleImageDimTitle = stringResource(id = R.string.settings_title_image_dim)
-    val showTitleImageDim = BackgroundConfig.isAdvancedTitleStyleEnabled && (matchLayout || shouldShow(searchText, titleImageDimTitle))
-
-    val titleImageSelectTitle = stringResource(id = R.string.settings_select_title_image)
-    val titleImageSelectedText = stringResource(id = R.string.settings_title_image_selected)
-    val showTitleImagePicker = BackgroundConfig.isAdvancedTitleStyleEnabled && (matchLayout || shouldShow(searchText, titleImageSelectTitle, titleImageSelectedText))
-
-    val titleImageClearTitle = stringResource(id = R.string.settings_clear_title_image)
-    val showTitleImageClear = BackgroundConfig.isAdvancedTitleStyleEnabled && !BackgroundConfig.titleImageUri.isNullOrEmpty() && (matchLayout || shouldShow(searchText, titleImageClearTitle))
-
-    val titleImageOffsetXTitle = stringResource(id = R.string.settings_title_image_offset_x)
-    val showTitleImageOffsetX = BackgroundConfig.isAdvancedTitleStyleEnabled && (matchLayout || shouldShow(searchText, titleImageOffsetXTitle))
-    
-    // ==================== 二级折叠菜单：外观 - 背景 ====================
-    val backgroundCategoryTitle = stringResource(R.string.settings_appearance_background)
-    val backgroundCategorySummary = stringResource(R.string.settings_appearance_background_summary)
-    val matchBackground = shouldShow(searchText, backgroundCategoryTitle, backgroundCategorySummary)
-    
-    val customBackgroundTitle = stringResource(id = R.string.settings_custom_background)
-    val customBackgroundSummary = stringResource(id = R.string.settings_custom_background_summary)
-    val customBackgroundEnabledText = stringResource(id = R.string.settings_custom_background_enabled)
-    
-    val showCustomBackgroundSwitch = matchBackground || shouldShow(searchText, customBackgroundTitle, customBackgroundSummary, customBackgroundEnabledText)
-
-    // 布局分类显示条件（在所有依赖变量定义之后）
-    val showLayoutCategory = showHomeLayout || showNavLayout || showNavScheme || showGridBackgroundSwitch || showGridOpacity || showGridTextHidden || showGridModeHidden || showListCardHideStatusBadge || showCustomBackgroundSwitch  || showAdvancedTitleStyleSwitch
-
-    val customDualDimTitle = stringResource(id = R.string.settings_custom_background_dual_dim)
-    val showCustomDualDimSwitch = BackgroundConfig.isCustomBackgroundEnabled && (matchBackground || shouldShow(searchText, customDualDimTitle))
-
-    val customOpacityTitle = stringResource(id = R.string.settings_custom_background_opacity)
-    val showCustomOpacity = BackgroundConfig.isCustomBackgroundEnabled && (matchBackground || shouldShow(searchText, customOpacityTitle))
-
-    val customBlurTitle = stringResource(id = R.string.settings_custom_background_blur)
-    val showCustomBlur = BackgroundConfig.isCustomBackgroundEnabled && (matchBackground || shouldShow(searchText, customBlurTitle))
-
-    val customDimTitle = stringResource(id = R.string.settings_custom_background_dim)
-    val showCustomDim = BackgroundConfig.isCustomBackgroundEnabled && (matchBackground || shouldShow(searchText, customDimTitle))
-
-    val customDayDimTitle = stringResource(id = R.string.settings_custom_background_day_dim)
-    val showCustomDayDim = BackgroundConfig.isCustomBackgroundEnabled && BackgroundConfig.isDualBackgroundDimEnabled && (matchBackground || shouldShow(searchText, customDayDimTitle))
-
-    val customNightDimTitle = stringResource(id = R.string.settings_custom_background_night_dim)
-    val showCustomNightDim = BackgroundConfig.isCustomBackgroundEnabled && BackgroundConfig.isDualBackgroundDimEnabled && (matchBackground || shouldShow(searchText, customNightDimTitle))
-    
-    val videoVolumeTitle = stringResource(id = R.string.settings_video_volume)
-    val showVideoVolume = BackgroundConfig.isCustomBackgroundEnabled && BackgroundConfig.isVideoBackgroundEnabled && (matchBackground || shouldShow(searchText, videoVolumeTitle))
-    
-    val videoBackgroundTitle = stringResource(id = R.string.settings_video_background)
-    val videoBackgroundSummary = stringResource(id = R.string.settings_video_background_summary)
-    val showVideoBackgroundSwitch = BackgroundConfig.isCustomBackgroundEnabled && (matchBackground || shouldShow(searchText, videoBackgroundTitle, videoBackgroundSummary))
-    
-    val videoSelectTitle = stringResource(id = R.string.settings_select_video)
-    val videoSelectedText = stringResource(id = R.string.settings_video_selected)
-    val showVideoPicker = BackgroundConfig.isCustomBackgroundEnabled && BackgroundConfig.isVideoBackgroundEnabled && (matchBackground || shouldShow(searchText, videoSelectTitle, videoSelectedText))
-    
-    val videoClearTitle = stringResource(id = R.string.settings_clear_video_background)
-    val showVideoClear = BackgroundConfig.isCustomBackgroundEnabled && BackgroundConfig.isVideoBackgroundEnabled && !BackgroundConfig.videoBackgroundUri.isNullOrEmpty() && (matchBackground || shouldShow(searchText, videoClearTitle))
-    
-    val multiBackgroundTitle = stringResource(id = R.string.settings_multi_background_mode)
-    val multiBackgroundSummary = stringResource(id = R.string.settings_multi_background_mode_summary)
-    val showMultiBackgroundSwitch = BackgroundConfig.isCustomBackgroundEnabled && !BackgroundConfig.isVideoBackgroundEnabled && (matchBackground || shouldShow(searchText, multiBackgroundTitle, multiBackgroundSummary))
-    
-    val singleSelectTitle = stringResource(id = R.string.settings_select_background_image)
-    val singleSelectedText = stringResource(id = R.string.settings_background_selected)
-    val showSinglePicker = BackgroundConfig.isCustomBackgroundEnabled && !BackgroundConfig.isVideoBackgroundEnabled && !BackgroundConfig.isMultiBackgroundEnabled && (matchBackground || shouldShow(searchText, singleSelectTitle, singleSelectedText))
-    
-    val singleClearTitle = stringResource(id = R.string.settings_clear_background)
-    val showSingleClear = BackgroundConfig.isCustomBackgroundEnabled && !BackgroundConfig.isVideoBackgroundEnabled && !BackgroundConfig.isMultiBackgroundEnabled && !BackgroundConfig.customBackgroundUri.isNullOrEmpty() && (matchBackground || shouldShow(searchText, singleClearTitle))
-    
-    val showBackgroundCategory = showCustomBackgroundSwitch || showCustomDualDimSwitch || showCustomOpacity || showCustomBlur || showCustomDim || showCustomDayDim || showCustomNightDim || showVideoBackgroundSwitch || showVideoPicker || showVideoClear || showMultiBackgroundSwitch || showSinglePicker
-
-    // ==================== 渲染设置界面 ====================
-    
-    val showThemeChooseDialog = remember { mutableStateOf(false) }
     val showHomeLayoutChooseDialog = remember { mutableStateOf(false) }
 
-    // ==================== 二级折叠菜单：外观 - 横幅 ====================
-    val bannerCategoryTitle = stringResource(R.string.settings_appearance_banner)
-    val bannerCategorySummary = stringResource(R.string.settings_appearance_banner_summary)
-    val matchBanner = shouldShow(searchText, bannerCategoryTitle, bannerCategorySummary)
-    
-    val bannerEnabledTitle = stringResource(id = R.string.apm_enable_module_banner)
-    val bannerEnabledSummary = stringResource(id = R.string.apm_enable_module_banner_summary)
-    val showBannerEnabled = matchBanner || shouldShow(searchText, bannerEnabledTitle, bannerEnabledSummary)
+    Column(modifier = Modifier.fillMaxWidth()) {
 
-    val folkBannerTitle = stringResource(id = R.string.apm_enable_folk_banner)
-    val folkBannerSummary = stringResource(id = R.string.apm_enable_folk_banner_summary)
-    val showFolkBanner = BackgroundConfig.isBannerEnabled && (matchBanner || shouldShow(searchText, folkBannerTitle, folkBannerSummary))
+        SectionHeader(text = stringResource(R.string.settings_appearance_night_mode))
+        Spacer(Modifier.height(8.dp))
 
-    val bannerApiModeTitle = stringResource(id = R.string.apm_banner_api_mode)
-    val bannerApiModeSummary = stringResource(id = R.string.apm_banner_api_mode_summary)
-    val showBannerApiModeSwitch = BackgroundConfig.isBannerEnabled && BackgroundConfig.isFolkBannerEnabled && (matchBanner || shouldShow(searchText, bannerApiModeTitle, bannerApiModeSummary))
-
-    val bannerApiSourceTitle = stringResource(id = R.string.apm_banner_api_source)
-    val bannerApiSourceHint = stringResource(id = R.string.apm_banner_api_source_hint)
-    val showBannerApiSource = BackgroundConfig.isBannerEnabled && BackgroundConfig.isFolkBannerEnabled && BackgroundConfig.isBannerApiModeEnabled && (matchBanner || shouldShow(searchText, bannerApiSourceTitle, bannerApiSourceHint))
-
-    val apiMarketplaceTitle = stringResource(id = R.string.apm_api_marketplace_title)
-    val showApiMarketplace = BackgroundConfig.isBannerEnabled && BackgroundConfig.isFolkBannerEnabled && BackgroundConfig.isBannerApiModeEnabled && (matchBanner || shouldShow(searchText, apiMarketplaceTitle))
-
-    val bannerCustomOpacityTitle = stringResource(id = R.string.settings_banner_custom_opacity)
-    val bannerCustomOpacitySummary = stringResource(id = R.string.settings_banner_custom_opacity_summary)
-    val showBannerCustomOpacitySwitch = BackgroundConfig.isBannerEnabled && (matchBanner || shouldShow(searchText, bannerCustomOpacityTitle, bannerCustomOpacitySummary))
-
-    val bannerOpacityTitle = stringResource(id = R.string.settings_banner_opacity)
-    val showBannerOpacity = BackgroundConfig.isBannerEnabled && BackgroundConfig.isBannerCustomOpacityEnabled && (matchBanner || shouldShow(searchText, bannerOpacityTitle))
-    
-    val showBannerCategory = showBannerEnabled || showFolkBanner || showBannerApiModeSwitch || showBannerApiSource || showApiMarketplace || showBannerCustomOpacitySwitch || showBannerOpacity
-
-    // ==================== 二级折叠菜单：外观 - 字体 ====================
-    val fontCategoryTitle = stringResource(R.string.settings_appearance_font)
-    val fontCategorySummary = stringResource(R.string.settings_appearance_font_summary)
-    val matchFont = shouldShow(searchText, fontCategoryTitle, fontCategorySummary)
-    
-    val customFontTitle = stringResource(id = R.string.settings_custom_font)
-    val customFontSummary = stringResource(id = R.string.settings_custom_font_summary)
-    val customFontEnabledText = stringResource(id = R.string.settings_custom_font_enabled)
-    val customFontSelectedText = stringResource(id = R.string.settings_font_selected)
-    val showCustomFontSwitch = matchFont || shouldShow(searchText, customFontTitle, customFontSummary, customFontEnabledText, customFontSelectedText)
-    
-    val selectFontTitle = stringResource(id = R.string.settings_select_font_file)
-    val showSelectFont = FontConfig.isCustomFontEnabled && (matchFont || shouldShow(searchText, selectFontTitle))
-    
-    val clearFontTitle = stringResource(id = R.string.settings_clear_font)
-    val showClearFont = FontConfig.isCustomFontEnabled && FontConfig.customFontFilename != null && (matchFont || shouldShow(searchText, clearFontTitle))
-    
-    val showFontCategory = showCustomFontSwitch || showSelectFont || showClearFont
-
-    // ==================== 二级折叠菜单：外观 - 主题 ====================
-    val themeCategoryTitle = stringResource(R.string.settings_appearance_theme)
-    val themeCategorySummary = stringResource(R.string.settings_appearance_theme_summary)
-    val matchTheme = shouldShow(searchText, themeCategoryTitle, themeCategorySummary)
-    
-    val themeStoreTitle = stringResource(id = R.string.theme_store_title)
-    val showThemeStore = matchTheme || shouldShow(searchText, themeStoreTitle)
-    
-    val saveThemeTitle = stringResource(id = R.string.settings_save_theme)
-    val showSaveTheme = matchTheme || shouldShow(searchText, saveThemeTitle)
-    
-    val importThemeTitle = stringResource(id = R.string.settings_import_theme)
-    val showImportTheme = matchTheme || shouldShow(searchText, importThemeTitle)
-
-    val resetThemeTitle = stringResource(id = R.string.settings_reset_theme)
-    val showResetTheme = matchTheme || shouldShow(searchText, resetThemeTitle)
-    
-    val showThemeCategory = showThemeStore || showSaveTheme || showImportTheme || showResetTheme
-
-    // ==================== 一级折叠菜单：外观 ====================
-    val appearanceTitle = stringResource(R.string.settings_category_appearance)
-    val showAppearanceCategory = showNightModeCategory || showFontCategory || showThemeCategory || showBannerCategory || showLayoutCategory || showBackgroundCategory
-    
-    if (showAppearanceCategory) {
-        SettingsCategory(
-            icon = Icons.Filled.Palette,
-            title = appearanceTitle,
-            summary = null,
-            isSearching = searchText.isNotEmpty()
-        ) {
-            // --- 二级折叠菜单：外观 - 夜间模式 ---
-            if (showNightModeCategory) {
-                SettingsCategory(
-                    icon = Icons.Filled.Palette,
-                    title = nightModeCategoryTitle,
-                    summary = nightModeCategorySummary,
-                    isSearching = searchText.isNotEmpty()
-                ) {
-            // Night Mode Follow System
-            if (showNightModeFollowSys) {
-                SwitchItem(
-                    icon = Icons.Filled.DarkMode,
-                    title = nightModeFollowSysTitle,
-                    summary = nightModeFollowSysSummary,
-                    checked = nightModeFollowSys,
-                    onCheckedChange = {
-                        nightModeFollowSys = it
-                        prefs.edit().putBoolean("night_mode_follow_sys", it).apply()
-                        refreshTheme.value = true
+        if (isNightModeSupported) {
+            ThemeModeSelector(
+                selectedMode = themeMode,
+                onModeSelected = { mode ->
+                    when (mode) {
+                        ThemeMode.LIGHT -> {
+                            nightModeFollowSys = false
+                            nightModeEnabled = false
+                            prefs.edit().putBoolean("night_mode_follow_sys", false).putBoolean("night_mode_enabled", false).apply()
+                        }
+                        ThemeMode.DARK -> {
+                            nightModeFollowSys = false
+                            nightModeEnabled = true
+                            prefs.edit().putBoolean("night_mode_follow_sys", false).putBoolean("night_mode_enabled", true).apply()
+                        }
+                        ThemeMode.SYSTEM -> {
+                            nightModeFollowSys = true
+                            prefs.edit().putBoolean("night_mode_follow_sys", true).apply()
+                        }
                     }
-                )
-            }
+                    refreshTheme.value = true
+                },
+                flat = flat,
+            )
+            Spacer(Modifier.height(8.dp))
+        }
 
-            // Night Mode Enabled
-            if (showNightModeEnabled) {
-                SwitchItem(
-                    icon = Icons.Filled.DarkMode,
-                    title = nightModeEnabledTitle,
-                    summary = null,
-                    checked = nightModeEnabled,
-                    onCheckedChange = {
-                        nightModeEnabled = it
-                        prefs.edit().putBoolean("night_mode_enabled", it).apply()
-                        refreshTheme.value = true
-                    }
-                )
-            }
+        ThemeColorPicker(
+            selectedColorKey = customColorScheme ?: "indigo",
+            onColorSelected = { key ->
+                prefs.edit().putString("custom_color", key).putBoolean("use_system_color_theme", false).apply()
+                useSystemDynamicColor = false
+                refreshTheme.value = true
+            },
+            isDarkTheme = isDarkTheme,
+            flat = flat,
+            isDynamicColorSupported = isDynamicColorSupport,
+            isDynamicColorEnabled = useSystemDynamicColor,
+            onDynamicColorSelected = {
+                prefs.edit().putBoolean("use_system_color_theme", true).apply()
+                useSystemDynamicColor = true
+                refreshTheme.value = true
+            },
+        )
+        Spacer(Modifier.height(8.dp))
 
-            // Use System Color
-            if (showUseSystemColor) {
-                SwitchItem(
-                    icon = Icons.Filled.InvertColors,
-                    title = useSystemColorTitle,
-                    summary = useSystemColorSummary,
-                    checked = useSystemDynamicColor,
-                    onCheckedChange = {
-                        useSystemDynamicColor = it
-                        prefs.edit().putBoolean("use_system_color_theme", it).apply()
-                        refreshTheme.value = true
-                    }
-                )
-            }
+        Spacer(Modifier.height(16.dp))
+        SectionHeader(text = stringResource(R.string.settings_appearance_layout))
+        Spacer(Modifier.height(8.dp))
 
-            // Custom Color
-            if (showCustomColor) {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(text = customColorTitle) },
-                    modifier = Modifier.clickable {
-                        showThemeChooseDialog.value = true
-                    },
-                    supportingContent = {
-                        Text(
-                            text = customColorValue,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                    },
-                    leadingContent = { Icon(Icons.Filled.ColorLens, null) }
-                )
-            }
+        ExpressiveCard(flat = flat, onClick = { showHomeLayoutChooseDialog.value = true }) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(id = R.string.settings_home_layout_style),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = stringResource(homeLayoutStyleToString(currentStyle.toString())),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
                 }
             }
+        }
+        Spacer(Modifier.height(8.dp))
 
-            // --- 二级折叠菜单：外观 - 布局 ---
-            if (showLayoutCategory) {
-                SettingsCategory(
-                    icon = Icons.Filled.Dashboard,
-                    title = layoutCategoryTitle,
-                    summary = layoutCategorySummary,
-                    isSearching = searchText.isNotEmpty()
+        if (isStatsLayout) {
+            ExpressiveCard(flat = flat, onClick = { showStatsTopLayoutDialog = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-            // Home Layout
-            if (showHomeLayout) {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(text = homeLayoutTitle) },
-                    modifier = Modifier.clickable {
-                        showHomeLayoutChooseDialog.value = true
-                    },
-                    supportingContent = {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = homeLayoutValue,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline
+                            text = stringResource(id = R.string.settings_stats_top_layout),
+                            style = MaterialTheme.typography.titleMedium,
                         )
-                    },
-                    leadingContent = { Icon(Icons.Filled.Dashboard, null) }
-                )
-            }
-
-            // StatsUI Top Layout
-            if (showStatsTopLayout) {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(text = statsTopLayoutTitle) },
-                    modifier = Modifier.clickable { showStatsTopLayoutDialog = true },
-                    supportingContent = {
                         Text(
                             text = statsTopLayoutValue,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline
+                            color = MaterialTheme.colorScheme.outline,
                         )
-                    },
-                    leadingContent = { Icon(Icons.Filled.Widgets, null) }
-                )
-            }
-
-            // Nav Layout
-            if (showNavLayout) {
-                var expanded by remember { mutableStateOf(false) }
-                val rotationState by androidx.compose.animation.core.animateFloatAsState(
-                    targetValue = if (expanded) 180f else 0f,
-                    label = "ArrowRotation"
-                )
-
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(text = navLayoutTitle) },
-                    modifier = Modifier.clickable { expanded = !expanded },
-                    supportingContent = {
-                        Text(
-                            text = navLayoutSummary,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                    },
-                    leadingContent = { Icon(Icons.AutoMirrored.Filled.ViewQuilt, null) },
-                    trailingContent = {
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null,
-                            modifier = Modifier.rotate(rotationState)
-                        )
-                    }
-                )
-
-                androidx.compose.animation.AnimatedVisibility(visible = expanded) {
-                    Column(modifier = Modifier.padding(start = 16.dp)) {
-                        // APM
-                        if (matchLayout || shouldShow(searchText, showNavApmTitle)) {
-                            me.bmax.apatch.ui.component.CheckboxItem(
-                                icon = null,
-                                title = showNavApmTitle,
-                                summary = null,
-                                checked = showNavApm,
-                                onCheckedChange = {
-                                    showNavApm = it
-                                    prefs.edit().putBoolean("show_nav_apm", it).apply()
-                                }
-                            )
-                        }
-                        // KPM
-                        if (matchLayout || shouldShow(searchText, showNavKpmTitle)) {
-                            me.bmax.apatch.ui.component.CheckboxItem(
-                                icon = null,
-                                title = showNavKpmTitle,
-                                summary = null,
-                                checked = showNavKpm,
-                                onCheckedChange = {
-                                    showNavKpm = it
-                                    prefs.edit().putBoolean("show_nav_kpm", it).apply()
-                                }
-                            )
-                        }
-                        // SuperUser
-                        if (matchLayout || shouldShow(searchText, showNavSuperUserTitle)) {
-                            me.bmax.apatch.ui.component.CheckboxItem(
-                                icon = null,
-                                title = showNavSuperUserTitle,
-                                summary = null,
-                                checked = showNavSuperUser,
-                                onCheckedChange = {
-                                    showNavSuperUser = it
-                                    prefs.edit().putBoolean("show_nav_superuser", it).apply()
-                                }
-                            )
-                        }
                     }
                 }
             }
-            
-            // Navigation Scheme Settings
-            if (showNavScheme) {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(text = navSchemeTitle) },
-                    modifier = Modifier.clickable { showNavSchemeDialog = true },
-                    supportingContent = {
-                        Text(
-                            text = navSchemeLabel,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                    },
-                    leadingContent = { Icon(Icons.Filled.SwapHoriz, null) }
-                )
-            }
-            
-            // Floating Nav Bar Settings
-            if (showFloatingSettings) {
-                SwitchItem(
-                    icon = Icons.Filled.VisibilityOff,
-                    title = floatingAutoHideTitle,
-                    summary = floatingAutoHideSummary,
-                    checked = floatingAutoHide,
-                    onCheckedChange = {
-                        floatingAutoHide = it
-                        prefs.edit().putBoolean("floating_auto_hide", it).apply()
-                    }
-                )
-                SwitchItem(
-                    icon = Icons.Filled.TouchApp,
-                    title = floatingSwipeHideTitle,
-                    summary = floatingSwipeHideSummary,
-                    checked = floatingSwipeHide,
-                    onCheckedChange = {
-                        floatingSwipeHide = it
-                        prefs.edit().putBoolean("floating_swipe_hide", it).apply()
-                    }
-                )
-            }
-            
-            // List Layout Customization (List UI only)
-            if (showListCardHideStatusBadge) {
-                SwitchItem(
-                    icon = Icons.Filled.EmojiEmotions,
-                    title = listCardHideStatusBadgeTitle,
-                    summary = listCardHideStatusBadgeSummary,
-                    checked = BackgroundConfig.isListWorkingCardModeHidden,
-                    onCheckedChange = {
-                        BackgroundConfig.setListWorkingCardModeHiddenState(it)
-                        BackgroundConfig.save(context)
-                    }
-                )
-            }
+            Spacer(Modifier.height(8.dp))
+        }
 
-            if (showCustomBadgeTextList) {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(customBadgeTextTitle) },
-                    supportingContent = {
+        if (kPatchReady) {
+            var expanded by remember { mutableStateOf(false) }
+            val rotationState by animateFloatAsState(
+                targetValue = if (expanded) 180f else 0f,
+                label = "ArrowRotation",
+            )
+            ExpressiveCard(flat = flat, onClick = { expanded = !expanded }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(id = R.string.settings_nav_layout_title),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = stringResource(id = R.string.settings_nav_layout_summary),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Filled.KeyboardArrowDown,
+                        contentDescription = null,
+                        modifier = Modifier.rotate(rotationState),
+                    )
+                }
+            }
+            AnimatedVisibility(visible = expanded) {
+                Column(modifier = Modifier.padding(start = 16.dp, top = 8.dp)) {
+                    me.bmax.apatch.ui.component.CheckboxItem(
+                        icon = null,
+                        title = stringResource(id = R.string.settings_show_apm),
+                        summary = null,
+                        checked = showNavApm,
+                        onCheckedChange = {
+                            showNavApm = it
+                            prefs.edit().putBoolean("show_nav_apm", it).apply()
+                        },
+                    )
+                    me.bmax.apatch.ui.component.CheckboxItem(
+                        icon = null,
+                        title = stringResource(id = R.string.settings_show_kpm),
+                        summary = null,
+                        checked = showNavKpm,
+                        onCheckedChange = {
+                            showNavKpm = it
+                            prefs.edit().putBoolean("show_nav_kpm", it).apply()
+                        },
+                    )
+                    me.bmax.apatch.ui.component.CheckboxItem(
+                        icon = null,
+                        title = stringResource(id = R.string.settings_show_superuser),
+                        summary = null,
+                        checked = showNavSuperUser,
+                        onCheckedChange = {
+                            showNavSuperUser = it
+                            prefs.edit().putBoolean("show_nav_superuser", it).apply()
+                        },
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+
+        ExpressiveCard(flat = flat, onClick = { showNavSchemeDialog = true }) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(id = R.string.settings_nav_scheme),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = navSchemeLabel,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+
+        if (isFloatingNav) {
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_floating_auto_hide),
+                description = stringResource(id = R.string.settings_floating_auto_hide_summary),
+                checked = floatingAutoHide,
+                onCheckedChange = {
+                    floatingAutoHide = it
+                    prefs.edit().putBoolean("floating_auto_hide", it).apply()
+                },
+            )
+            Spacer(Modifier.height(8.dp))
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_floating_swipe_hide),
+                description = stringResource(id = R.string.settings_floating_swipe_hide_summary),
+                checked = floatingSwipeHide,
+                onCheckedChange = {
+                    floatingSwipeHide = it
+                    prefs.edit().putBoolean("floating_swipe_hide", it).apply()
+                },
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+
+        if (isListStyle) {
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_list_card_hide_status_badge),
+                description = stringResource(id = R.string.settings_list_card_hide_status_badge_summary),
+                checked = BackgroundConfig.isListWorkingCardModeHidden,
+                onCheckedChange = {
+                    BackgroundConfig.setListWorkingCardModeHiddenState(it)
+                    BackgroundConfig.save(context)
+                },
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+
+        if (isListStyle && !BackgroundConfig.isListWorkingCardModeHidden) {
+            ExpressiveCard(flat = flat, onClick = { showCustomBadgeTextDialog.value = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(id = R.string.settings_custom_badge_text),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
                         Text(
                             text = currentBadgeTextMode,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline
+                            color = MaterialTheme.colorScheme.outline,
                         )
-                    },
-                    leadingContent = { Icon(Icons.Filled.NewReleases, null) },
-                    modifier = Modifier.clickable { showCustomBadgeTextDialog.value = true }
-                )
+                    }
+                }
             }
+            Spacer(Modifier.height(8.dp))
+        }
 
-            if (showCustomBadgeTextDialog.value) {
-                AlertDialog(
-                    onDismissRequest = { showCustomBadgeTextDialog.value = false },
-                    title = { Text(customBadgeTextTitle) },
-                    text = {
-                        Column {
-                            Text(customBadgeTextSummary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 16.dp))
-                            badgeTextModes.forEachIndexed { index, mode ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            BackgroundConfig.setCustomBadgeTextModeValue(index)
-                                            BackgroundConfig.save(context)
-                                            showCustomBadgeTextDialog.value = false
-                                        }
-                                        .padding(vertical = 12.dp)
-                                ) {
-                                    RadioButton(
-                                        selected = index == currentBadgeTextModeIndex,
-                                        onClick = null
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(text = mode)
-                                }
-                            }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.settings_advanced_title_style),
+            description = if (BackgroundConfig.isAdvancedTitleStyleEnabled) stringResource(id = R.string.settings_advanced_title_style_enabled) else stringResource(id = R.string.settings_advanced_title_style_summary),
+            checked = BackgroundConfig.isAdvancedTitleStyleEnabled,
+            onCheckedChange = {
+                BackgroundConfig.setAdvancedTitleStyleEnabledState(it)
+                BackgroundConfig.save(context)
+                refreshTheme.value = true
+            },
+        )
+        Spacer(Modifier.height(8.dp))
+
+        if (BackgroundConfig.isAdvancedTitleStyleEnabled) {
+            ExpressiveCard(flat = flat) {
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                    Text(text = stringResource(id = R.string.settings_title_image_day_opacity), style = MaterialTheme.typography.titleMedium)
+                    Slider(
+                        value = BackgroundConfig.titleImageDayOpacity,
+                        onValueChange = { BackgroundConfig.setTitleImageDayOpacityValue(it) },
+                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                        valueRange = 0f..1f,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                        ),
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            ExpressiveCard(flat = flat) {
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                    Text(text = stringResource(id = R.string.settings_title_image_night_opacity), style = MaterialTheme.typography.titleMedium)
+                    Slider(
+                        value = BackgroundConfig.titleImageNightOpacity,
+                        onValueChange = { BackgroundConfig.setTitleImageNightOpacityValue(it) },
+                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                        valueRange = 0f..1f,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                        ),
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            ExpressiveCard(flat = flat) {
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                    Text(text = stringResource(id = R.string.settings_title_image_dim), style = MaterialTheme.typography.titleMedium)
+                    Slider(
+                        value = BackgroundConfig.titleImageDim,
+                        onValueChange = { BackgroundConfig.setTitleImageDimValue(it) },
+                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                        valueRange = 0f..1f,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                        ),
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            ExpressiveCard(flat = flat) {
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                    Text(text = stringResource(id = R.string.settings_title_image_offset_x), style = MaterialTheme.typography.titleMedium)
+                    Slider(
+                        value = BackgroundConfig.titleImageOffsetX,
+                        onValueChange = { BackgroundConfig.setTitleImageOffsetXValue(it) },
+                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                        valueRange = -1f..1f,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                        ),
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            ExpressiveCard(
+                flat = flat,
+                onClick = {
+                    if (PermissionUtils.hasExternalStoragePermission(context)) {
+                        try {
+                            pickTitleImageLauncher.launch("image/*")
+                        } catch (e: ActivityNotFoundException) {
+                            Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
                         }
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { showCustomBadgeTextDialog.value = false }) {
-                            Text(stringResource(android.R.string.cancel))
+                    } else {
+                        Toast.makeText(context, "请先授予存储权限才能选择标题图片", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = stringResource(id = R.string.settings_select_title_image), style = MaterialTheme.typography.titleMedium)
+                        if (!BackgroundConfig.titleImageUri.isNullOrEmpty()) {
+                            Text(text = stringResource(id = R.string.settings_title_image_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
                         }
                     }
-                )
-            }
-
-            // Advanced Title Style
-            if (showAdvancedTitleStyleSwitch) {
-                SwitchItem(
-                    icon = Icons.Filled.Brush,
-                    title = advancedTitleStyleTitle,
-                    summary = if (BackgroundConfig.isAdvancedTitleStyleEnabled) advancedTitleStyleEnabledText else advancedTitleStyleSummary,
-                    checked = BackgroundConfig.isAdvancedTitleStyleEnabled
-                ) {
-                    BackgroundConfig.setAdvancedTitleStyleEnabledState(it)
-                    BackgroundConfig.save(context)
-                    refreshTheme.value = true
                 }
             }
+            Spacer(Modifier.height(8.dp))
 
-            if (BackgroundConfig.isAdvancedTitleStyleEnabled) {
-                if (showTitleImageDayOpacity) {
-                    ListItem(
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        headlineContent = { Text(titleImageDayOpacityTitle) },
-                        supportingContent = {
-                            androidx.compose.material3.Slider(
-                                value = BackgroundConfig.titleImageDayOpacity,
-                                onValueChange = { BackgroundConfig.setTitleImageDayOpacityValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = androidx.compose.material3.SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                )
-                            )
-                        }
-                    )
-                }
-
-                if (showTitleImageNightOpacity) {
-                    ListItem(
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        headlineContent = { Text(titleImageNightOpacityTitle) },
-                        supportingContent = {
-                            androidx.compose.material3.Slider(
-                                value = BackgroundConfig.titleImageNightOpacity,
-                                onValueChange = { BackgroundConfig.setTitleImageNightOpacityValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = androidx.compose.material3.SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                )
-                            )
-                        }
-                    )
-                }
-
-                if (showTitleImageDim) {
-                    ListItem(
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        headlineContent = { Text(titleImageDimTitle) },
-                        supportingContent = {
-                            androidx.compose.material3.Slider(
-                                value = BackgroundConfig.titleImageDim,
-                                onValueChange = { BackgroundConfig.setTitleImageDimValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = androidx.compose.material3.SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                )
-                            )
-                        }
-                    )
-                }
-
-                if (showTitleImageOffsetX) {
-                    ListItem(
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        headlineContent = { Text(titleImageOffsetXTitle) },
-                        supportingContent = {
-                            androidx.compose.material3.Slider(
-                                value = BackgroundConfig.titleImageOffsetX,
-                                onValueChange = { BackgroundConfig.setTitleImageOffsetXValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = -1f..1f,
-                                colors = androidx.compose.material3.SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                )
-                            )
-                        }
-                    )
-                }
-
-                if (showTitleImagePicker) {
-                    ListItem(
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        headlineContent = { Text(text = titleImageSelectTitle) },
-                        supportingContent = {
-                            if (!BackgroundConfig.titleImageUri.isNullOrEmpty()) {
-                                Text(
-                                    text = titleImageSelectedText,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.outline
-                                )
-                            }
-                        },
-                        leadingContent = { Icon(painterResource(id = R.drawable.ic_custom_background), null) },
-                        modifier = Modifier.clickable {
-                            if (PermissionUtils.hasExternalStoragePermission(context)) {
-                                try {
-                                    pickTitleImageLauncher.launch("image/*")
-                                } catch (e: ActivityNotFoundException) {
-                                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                                }
-                            } else {
-                                Toast.makeText(context, "请先授予存储权限才能选择标题图片", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    )
-                }
-
+            if (!BackgroundConfig.titleImageUri.isNullOrEmpty()) {
                 val clearTitleImageDialog = rememberConfirmDialog(
                     onConfirm = {
                         scope.launch {
@@ -967,467 +641,268 @@ fun AppearanceSettings(
                         }
                     }
                 )
-                if (showTitleImageClear) {
-                    ListItem(
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        headlineContent = { Text(text = titleImageClearTitle) },
-                        leadingContent = { Icon(painterResource(id = R.drawable.ic_clear_background), null) },
-                        modifier = Modifier.clickable {
-                            clearTitleImageDialog.showConfirm(
-                                title = context.getString(R.string.settings_clear_title_image),
-                                content = context.getString(R.string.settings_clear_title_image_confirm),
-                                markdown = false
-                            )
-                        }
-                    )
-                }
-            }
-                }
-            }
-
-            // --- 二级折叠菜单：外观 - 背景 ---
-            if (showBackgroundCategory) {
-                SettingsCategory(
-                    icon = Icons.Filled.Image,
-                    title = backgroundCategoryTitle,
-                    summary = backgroundCategorySummary,
-                    isSearching = searchText.isNotEmpty()
+                ExpressiveCard(
+                    flat = flat,
+                    onClick = {
+                        clearTitleImageDialog.showConfirm(
+                            title = context.getString(R.string.settings_clear_title_image),
+                            content = context.getString(R.string.settings_clear_title_image_confirm),
+                            markdown = false,
+                        )
+                    }
                 ) {
-            // Custom Background
-            if (showCustomBackgroundSwitch) {
-                SwitchItem(
-                    icon = Icons.Filled.Image,
-                    title = customBackgroundTitle,
-                    summary = if (BackgroundConfig.isCustomBackgroundEnabled) customBackgroundEnabledText else customBackgroundSummary,
-                    checked = BackgroundConfig.isCustomBackgroundEnabled
-                ) {
-                    BackgroundConfig.setCustomBackgroundEnabledState(it)
-                    BackgroundConfig.save(context)
-                    refreshTheme.value = true
-                }
-            }
-            
-            if (BackgroundConfig.isCustomBackgroundEnabled) {
-                // Only show image-specific settings when video background is not enabled
-                if (!BackgroundConfig.isVideoBackgroundEnabled) {
-                    if (showCustomDualDimSwitch) {
-                        SwitchItem(
-                            icon = Icons.Filled.DarkMode,
-                            title = customDualDimTitle,
-                            summary = null,
-                            checked = BackgroundConfig.isDualBackgroundDimEnabled
-                        ) {
-                            BackgroundConfig.setDualBackgroundDimEnabledState(it)
-                            BackgroundConfig.save(context)
-                            refreshTheme.value = true
-                        }
-                    }
-
-                    if (showCustomOpacity) {
-                        ListItem(
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            headlineContent = { Text(customOpacityTitle) },
-                            supportingContent = {
-                                androidx.compose.material3.Slider(
-                                    value = BackgroundConfig.customBackgroundOpacity,
-                                    onValueChange = { BackgroundConfig.setCustomBackgroundOpacityValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = androidx.compose.material3.SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                    )
-                                )
-                            }
-                        )
-                    }
-                    
-                    if (showCustomBlur) {
-                        ListItem(
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            headlineContent = { Text(customBlurTitle) },
-                            supportingContent = {
-                                androidx.compose.material3.Slider(
-                                    value = BackgroundConfig.customBackgroundBlur,
-                                    onValueChange = { BackgroundConfig.setCustomBackgroundBlurValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..50f,
-                                    colors = androidx.compose.material3.SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                    )
-                                )
-                            }
-                        )
-                    }
-
-                    if (!BackgroundConfig.isDualBackgroundDimEnabled && showCustomDim) {
-                        ListItem(
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            headlineContent = { Text(customDimTitle) },
-                            supportingContent = {
-                                androidx.compose.material3.Slider(
-                                    value = BackgroundConfig.customBackgroundDim,
-                                    onValueChange = { BackgroundConfig.setCustomBackgroundDimValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = androidx.compose.material3.SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                    )
-                                )
-                            }
-                        )
-                    } else {
-                        if (BackgroundConfig.isDualBackgroundDimEnabled && showCustomDayDim) {
-                            ListItem(
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                headlineContent = { Text(customDayDimTitle) },
-                                supportingContent = {
-                                    androidx.compose.material3.Slider(
-                                        value = BackgroundConfig.customBackgroundDayDim,
-                                        onValueChange = { BackgroundConfig.setCustomBackgroundDayDimValue(it) },
-                                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                                        valueRange = 0f..1f,
-                                        colors = androidx.compose.material3.SliderDefaults.colors(
-                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                        )
-                                    )
-                                }
-                            )
-                        }
-                        if (BackgroundConfig.isDualBackgroundDimEnabled && showCustomNightDim) {
-                            ListItem(
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                headlineContent = { Text(customNightDimTitle) },
-                                supportingContent = {
-                                    androidx.compose.material3.Slider(
-                                        value = BackgroundConfig.customBackgroundNightDim,
-                                        onValueChange = { BackgroundConfig.setCustomBackgroundNightDimValue(it) },
-                                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                                        valueRange = 0f..1f,
-                                        colors = androidx.compose.material3.SliderDefaults.colors(
-                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                        )
-                                    )
-                                }
-                            )
-                        }
-                    }
-                }
-
-                if (showVideoBackgroundSwitch) {
-                    SwitchItem(
-                        icon = Icons.Filled.PlayArrow,
-                        title = videoBackgroundTitle,
-                        summary = videoBackgroundSummary,
-                        checked = BackgroundConfig.isVideoBackgroundEnabled
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        BackgroundConfig.setVideoBackgroundEnabledState(it)
+                        Text(text = stringResource(id = R.string.settings_clear_title_image), style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        SectionHeader(text = stringResource(R.string.settings_appearance_background))
+        Spacer(Modifier.height(8.dp))
+
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.settings_custom_background),
+            description = if (BackgroundConfig.isCustomBackgroundEnabled) stringResource(id = R.string.settings_custom_background_enabled) else stringResource(id = R.string.settings_custom_background_summary),
+            checked = BackgroundConfig.isCustomBackgroundEnabled,
+            onCheckedChange = {
+                BackgroundConfig.setCustomBackgroundEnabledState(it)
+                BackgroundConfig.save(context)
+                refreshTheme.value = true
+            },
+        )
+        Spacer(Modifier.height(8.dp))
+
+        if (BackgroundConfig.isCustomBackgroundEnabled) {
+            if (!BackgroundConfig.isVideoBackgroundEnabled) {
+                ToggleSettingCard(
+                    flat = flat,
+                    title = stringResource(id = R.string.settings_custom_background_dual_dim),
+                    description = stringResource(id = R.string.settings_custom_background_dual_dim_desc),
+                    checked = BackgroundConfig.isDualBackgroundDimEnabled,
+                    onCheckedChange = {
+                        BackgroundConfig.setDualBackgroundDimEnabledState(it)
                         BackgroundConfig.save(context)
                         refreshTheme.value = true
+                    },
+                )
+                Spacer(Modifier.height(8.dp))
+
+                ExpressiveCard(flat = flat) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium)
+                        Slider(
+                            value = BackgroundConfig.customBackgroundOpacity,
+                            onValueChange = { BackgroundConfig.setCustomBackgroundOpacityValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                            valueRange = 0f..1f,
+                            colors = SliderDefaults.colors(
+                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                            ),
+                        )
                     }
                 }
-                
-                if (BackgroundConfig.isVideoBackgroundEnabled) {
-                    if (showVideoPicker) {
-                        ListItem(
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            headlineContent = { Text(text = videoSelectTitle) },
-                            supportingContent = {
-                                if (!BackgroundConfig.videoBackgroundUri.isNullOrEmpty()) {
-                                    Text(text = videoSelectedText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
-                                }
-                            },
-                            leadingContent = { Icon(Icons.Filled.PlayArrow, null) },
-                            modifier = Modifier.clickable {
-                                try {
-                                    pickVideoLauncher.launch("video/*")
-                                } catch (e: ActivityNotFoundException) {
-                                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                                }
-                            }
+                Spacer(Modifier.height(8.dp))
+
+                ExpressiveCard(flat = flat) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Text(text = stringResource(id = R.string.settings_custom_background_blur), style = MaterialTheme.typography.titleMedium)
+                        Slider(
+                            value = BackgroundConfig.customBackgroundBlur,
+                            onValueChange = { BackgroundConfig.setCustomBackgroundBlurValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                            valueRange = 0f..50f,
+                            colors = SliderDefaults.colors(
+                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                            ),
                         )
                     }
+                }
+                Spacer(Modifier.height(8.dp))
 
-                    val clearVideoDialog = rememberConfirmDialog(
-                        onConfirm = {
-                            scope.launch {
-                                loadingDialog.show()
-                                BackgroundManager.clearVideoBackground(context)
-                                loadingDialog.hide()
-                                snackBarHost.showSnackbar(message = context.getString(R.string.settings_background_image_cleared))
-                                refreshTheme.value = true
+                if (!BackgroundConfig.isDualBackgroundDimEnabled) {
+                    ExpressiveCard(flat = flat) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium)
+                            Slider(
+                                value = BackgroundConfig.customBackgroundDim,
+                                onValueChange = { BackgroundConfig.setCustomBackgroundDimValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                                valueRange = 0f..1f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                ),
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                } else {
+                    ExpressiveCard(flat = flat) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Text(text = stringResource(id = R.string.settings_custom_background_day_dim), style = MaterialTheme.typography.titleMedium)
+                            Slider(
+                                value = BackgroundConfig.customBackgroundDayDim,
+                                onValueChange = { BackgroundConfig.setCustomBackgroundDayDimValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                                valueRange = 0f..1f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                ),
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+
+                    ExpressiveCard(flat = flat) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Text(text = stringResource(id = R.string.settings_custom_background_night_dim), style = MaterialTheme.typography.titleMedium)
+                            Slider(
+                                value = BackgroundConfig.customBackgroundNightDim,
+                                onValueChange = { BackgroundConfig.setCustomBackgroundNightDimValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                                valueRange = 0f..1f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                ),
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
+            }
+
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_video_background),
+                description = stringResource(id = R.string.settings_video_background_summary),
+                checked = BackgroundConfig.isVideoBackgroundEnabled,
+                onCheckedChange = {
+                    BackgroundConfig.setVideoBackgroundEnabledState(it)
+                    BackgroundConfig.save(context)
+                    refreshTheme.value = true
+                },
+            )
+            Spacer(Modifier.height(8.dp))
+
+            if (BackgroundConfig.isVideoBackgroundEnabled) {
+                ExpressiveCard(
+                    flat = flat,
+                    onClick = {
+                        try {
+                            pickVideoLauncher.launch("video/*")
+                        } catch (e: ActivityNotFoundException) {
+                            Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = stringResource(id = R.string.settings_select_video), style = MaterialTheme.typography.titleMedium)
+                            if (!BackgroundConfig.videoBackgroundUri.isNullOrEmpty()) {
+                                Text(text = stringResource(id = R.string.settings_video_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
                             }
                         }
-                    )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
 
-                    if (showVideoClear) {
-                        ListItem(
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            headlineContent = { Text(text = videoClearTitle) },
-                            leadingContent = { Icon(painterResource(id = R.drawable.ic_clear_background), null) },
-                            modifier = Modifier.clickable {
-                                clearVideoDialog.showConfirm(
-                                    title = videoClearTitle,
-                                    content = context.getString(R.string.settings_clear_video_background_confirm),
-                                    markdown = false
-                                )
-                            }
-                        )
-                    }
-                    
-                    if (showVideoVolume) {
-                        ListItem(
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            headlineContent = { Text(videoVolumeTitle) },
-                            supportingContent = {
-                                androidx.compose.material3.Slider(
-                                    value = BackgroundConfig.videoVolume,
-                                    onValueChange = { BackgroundConfig.setVideoVolumeValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = androidx.compose.material3.SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                    )
-                                )
-                            },
-                            leadingContent = { Icon(Icons.AutoMirrored.Filled.VolumeUp, null) }
-                        )
-                    }
-                } else {
-                    if (showMultiBackgroundSwitch) {
-                        SwitchItem(
-                            icon = Icons.AutoMirrored.Filled.ViewQuilt,
-                            title = multiBackgroundTitle,
-                            summary = multiBackgroundSummary,
-                            checked = BackgroundConfig.isMultiBackgroundEnabled
-                        ) {
-                            BackgroundConfig.setMultiBackgroundEnabledState(it)
-                            BackgroundConfig.save(context)
+                val clearVideoDialog = rememberConfirmDialog(
+                    onConfirm = {
+                        scope.launch {
+                            loadingDialog.show()
+                            BackgroundManager.clearVideoBackground(context)
+                            loadingDialog.hide()
+                            snackBarHost.showSnackbar(message = context.getString(R.string.settings_background_image_cleared))
                             refreshTheme.value = true
                         }
                     }
-                    
-                    if (BackgroundConfig.isMultiBackgroundEnabled) {
-                        val items = listOf(
-                            Triple(R.string.settings_select_home_background, "home", BackgroundConfig.homeBackgroundUri),
-                            Triple(R.string.settings_select_kernel_background, "kernel", BackgroundConfig.kernelBackgroundUri),
-                            Triple(R.string.settings_select_superuser_background, "superuser", BackgroundConfig.superuserBackgroundUri),
-                            Triple(R.string.settings_select_system_module_background, "system", BackgroundConfig.systemModuleBackgroundUri),
-                            Triple(R.string.settings_select_settings_background, "settings", BackgroundConfig.settingsBackgroundUri)
-                        )
-                        items.forEach { (titleRes, type, uri) ->
-                            val title = stringResource(id = titleRes)
-                            if (matchBackground || shouldShow(searchText, title)) {
-                                ListItem(
-                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                    headlineContent = { Text(text = title) },
-                                    supportingContent = {
-                                        if (!uri.isNullOrEmpty()) {
-                                            Text(
-                                                text = stringResource(id = R.string.settings_background_selected),
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.outline
-                                            )
-                                        }
-                                    },
-                                    leadingContent = { Icon(painterResource(id = R.drawable.ic_custom_background), null) },
-                                    modifier = Modifier.clickable {
-                                        if (PermissionUtils.hasExternalStoragePermission(context) && 
-                                            PermissionUtils.hasWriteExternalStoragePermission(context)) {
-                                            pickingType = type
-                                            try {
-                                                pickImageLauncher.launch("image/*")
-                                            } catch (e: ActivityNotFoundException) {
-                                                Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                                            }
-                                        } else {
-                                            Toast.makeText(context, "请先授予存储权限才能选择背景图片", Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    } else {
-                        if (showSinglePicker) {
-                            ListItem(
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                headlineContent = { Text(text = singleSelectTitle) },
-                                supportingContent = {
-                                    if (!BackgroundConfig.customBackgroundUri.isNullOrEmpty()) {
-                                        Text(text = singleSelectedText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
-                                    }
-                                },
-                                leadingContent = { Icon(painterResource(id = R.drawable.ic_custom_background), null) },
-                                modifier = Modifier.clickable {
-                                    if (PermissionUtils.hasExternalStoragePermission(context) && 
-                                        PermissionUtils.hasWriteExternalStoragePermission(context)) {
-                                        pickingType = "default"
-                                        try {
-                                            pickImageLauncher.launch("image/*")
-                                        } catch (e: ActivityNotFoundException) {
-                                            Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                                        }
-                                    } else {
-                                        Toast.makeText(context, "请先授予存储权限才能选择背景图片", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
+                )
+
+                if (!BackgroundConfig.videoBackgroundUri.isNullOrEmpty()) {
+                    val clearVideoTitle = stringResource(id = R.string.settings_clear_video_background)
+                    val clearVideoConfirm = context.getString(R.string.settings_clear_video_background_confirm)
+                    ExpressiveCard(
+                        flat = flat,
+                        onClick = {
+                            clearVideoDialog.showConfirm(
+                                title = clearVideoTitle,
+                                content = clearVideoConfirm,
+                                markdown = false,
                             )
                         }
-                        
-                        if (!BackgroundConfig.customBackgroundUri.isNullOrEmpty()) {
-                            val clearBackgroundDialog = rememberConfirmDialog(
-                                onConfirm = {
-                                    scope.launch {
-                                        loadingDialog.show()
-                                        BackgroundManager.clearCustomBackground(context)
-                                        loadingDialog.hide()
-                                        snackBarHost.showSnackbar(message = context.getString(R.string.settings_background_image_cleared))
-                                        refreshTheme.value = true
-                                    }
-                                }
-                            )
-                            if (showSingleClear) {
-                                ListItem(
-                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                    headlineContent = { Text(text = singleClearTitle) },
-                                    leadingContent = { Icon(painterResource(id = R.drawable.ic_clear_background), null) },
-                                    modifier = Modifier.clickable {
-                                        clearBackgroundDialog.showConfirm(title = singleClearTitle, content = context.getString(R.string.settings_clear_background_confirm), markdown = false)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Grid Working Card Settings (KernelSU/Grid UI only)
-            if (showGridCardSettings) {
-                // Grid Background Switch
-                if (showGridBackgroundSwitch) {
-                    SwitchItem(
-                        icon = Icons.Filled.Image,
-                        title = gridBackgroundTitle,
-                        summary = if (BackgroundConfig.isGridWorkingCardBackgroundEnabled) gridBackgroundEnabledText else gridBackgroundSummary,
-                        checked = BackgroundConfig.isGridWorkingCardBackgroundEnabled
                     ) {
-                        BackgroundConfig.setGridWorkingCardBackgroundEnabledState(it)
-                        BackgroundConfig.save(context)
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(text = clearVideoTitle, style = MaterialTheme.typography.titleMedium)
+                        }
                     }
+                    Spacer(Modifier.height(8.dp))
                 }
 
-                if (BackgroundConfig.isGridWorkingCardBackgroundEnabled) {
-                    if (showGridDualOpacitySwitch) {
-                        SwitchItem(
-                            icon = Icons.Filled.DarkMode,
-                            title = gridDualOpacityTitle,
-                            summary = null,
-                            checked = BackgroundConfig.isGridDualOpacityEnabled,
-                            onCheckedChange = {
-                                BackgroundConfig.setGridDualOpacityEnabledState(it)
-                                BackgroundConfig.save(context)
-                            }
+                ExpressiveCard(flat = flat) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Text(text = stringResource(id = R.string.settings_video_volume), style = MaterialTheme.typography.titleMedium)
+                        Slider(
+                            value = BackgroundConfig.videoVolume,
+                            onValueChange = { BackgroundConfig.setVideoVolumeValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                            valueRange = 0f..1f,
+                            colors = SliderDefaults.colors(
+                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                            ),
                         )
                     }
+                }
+                Spacer(Modifier.height(8.dp))
+            } else {
+                ToggleSettingCard(
+                    flat = flat,
+                    title = stringResource(id = R.string.settings_multi_background_mode),
+                    description = stringResource(id = R.string.settings_multi_background_mode_summary),
+                    checked = BackgroundConfig.isMultiBackgroundEnabled,
+                    onCheckedChange = {
+                        BackgroundConfig.setMultiBackgroundEnabledState(it)
+                        BackgroundConfig.save(context)
+                        refreshTheme.value = true
+                    },
+                )
+                Spacer(Modifier.height(8.dp))
 
-                    if (!BackgroundConfig.isGridDualOpacityEnabled && showGridOpacity) {
-                        ListItem(
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            headlineContent = { Text(gridOpacityTitle) },
-                            supportingContent = {
-                                androidx.compose.material3.Slider(
-                                    value = BackgroundConfig.gridWorkingCardBackgroundOpacity,
-                                    onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundOpacityValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = androidx.compose.material3.SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                    )
-                                )
-                            }
-                        )
-                    } else {
-                        if (BackgroundConfig.isGridDualOpacityEnabled && showGridDayOpacity) {
-                            ListItem(
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                headlineContent = { Text(gridDayOpacityTitle) },
-                                supportingContent = {
-                                    androidx.compose.material3.Slider(
-                                        value = BackgroundConfig.gridWorkingCardBackgroundDayOpacity,
-                                        onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDayOpacityValue(it) },
-                                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                                        valueRange = 0f..1f,
-                                        colors = androidx.compose.material3.SliderDefaults.colors(
-                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                        )
-                                    )
-                                }
-                            )
-                        }
-                        if (BackgroundConfig.isGridDualOpacityEnabled && showGridNightOpacity) {
-                            ListItem(
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                headlineContent = { Text(gridNightOpacityTitle) },
-                                supportingContent = {
-                                    androidx.compose.material3.Slider(
-                                        value = BackgroundConfig.gridWorkingCardBackgroundNightOpacity,
-                                        onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundNightOpacityValue(it) },
-                                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                                        valueRange = 0f..1f,
-                                        colors = androidx.compose.material3.SliderDefaults.colors(
-                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                        )
-                                    )
-                                }
-                            )
-                        }
-                    }
-
-                    if (showGridDim) {
-                        ListItem(
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            headlineContent = { Text(gridDimTitle) },
-                            supportingContent = {
-                                androidx.compose.material3.Slider(
-                                    value = BackgroundConfig.gridWorkingCardBackgroundDim,
-                                    onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDimValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = androidx.compose.material3.SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                                    )
-                                )
-                            }
-                        )
-                    }
-
-                    if (showGridPicker) {
-                        ListItem(
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            headlineContent = { Text(text = gridSelectTitle) },
-                            supportingContent = {
-                                if (!BackgroundConfig.gridWorkingCardBackgroundUri.isNullOrEmpty()) {
-                                    Text(
-                                        text = gridSelectedText,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.outline
-                                    )
-                                }
-                            },
-                            leadingContent = { Icon(painterResource(id = R.drawable.ic_custom_background), null) },
-                            modifier = Modifier.clickable {
-                                if (PermissionUtils.hasExternalStoragePermission(context)) {
+                if (BackgroundConfig.isMultiBackgroundEnabled) {
+                    val items = listOf(
+                        Triple(R.string.settings_select_home_background, "home", BackgroundConfig.homeBackgroundUri),
+                        Triple(R.string.settings_select_kernel_background, "kernel", BackgroundConfig.kernelBackgroundUri),
+                        Triple(R.string.settings_select_superuser_background, "superuser", BackgroundConfig.superuserBackgroundUri),
+                        Triple(R.string.settings_select_system_module_background, "system", BackgroundConfig.systemModuleBackgroundUri),
+                        Triple(R.string.settings_select_settings_background, "settings", BackgroundConfig.settingsBackgroundUri)
+                    )
+                    items.forEach { (titleRes, type, uri) ->
+                        ExpressiveCard(
+                            flat = flat,
+                            onClick = {
+                                if (PermissionUtils.hasExternalStoragePermission(context) &&
+                                    PermissionUtils.hasWriteExternalStoragePermission(context)) {
+                                    pickingType = type
                                     try {
-                                        pickGridImageLauncher.launch("image/*")
+                                        pickImageLauncher.launch("image/*")
                                     } catch (e: ActivityNotFoundException) {
                                         Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
                                     }
@@ -1435,220 +910,472 @@ fun AppearanceSettings(
                                     Toast.makeText(context, "请先授予存储权限才能选择背景图片", Toast.LENGTH_SHORT).show()
                                 }
                             }
-                        )
-                    }
-
-                    val clearGridBackgroundDialog = rememberConfirmDialog(
-                        onConfirm = {
-                            scope.launch {
-                                loadingDialog.show()
-                                BackgroundManager.clearGridWorkingCardBackground(context)
-                                loadingDialog.hide()
-                                snackBarHost.showSnackbar(message = context.getString(R.string.settings_grid_working_card_background_cleared))
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(text = stringResource(id = titleRes), style = MaterialTheme.typography.titleMedium)
+                                    if (!uri.isNullOrEmpty()) {
+                                        Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                    }
+                                }
                             }
                         }
-                    )
-                    if (showGridClear) {
-                        ListItem(
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            headlineContent = { Text(text = gridClearTitle) },
-                            leadingContent = { Icon(painterResource(id = R.drawable.ic_clear_background), null) },
-                            modifier = Modifier.clickable {
-                                clearGridBackgroundDialog.showConfirm(
-                                    title = context.getString(R.string.settings_clear_grid_working_card_background),
-                                    content = context.getString(R.string.settings_clear_grid_working_card_background_confirm),
-                                    markdown = false
+                        Spacer(Modifier.height(8.dp))
+                    }
+                } else {
+                    ExpressiveCard(
+                        flat = flat,
+                        onClick = {
+                            if (PermissionUtils.hasExternalStoragePermission(context) &&
+                                PermissionUtils.hasWriteExternalStoragePermission(context)) {
+                                pickingType = "default"
+                                try {
+                                    pickImageLauncher.launch("image/*")
+                                } catch (e: ActivityNotFoundException) {
+                                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                                }
+                            } else {
+                                Toast.makeText(context, "请先授予存储权限才能选择背景图片", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium)
+                                if (!BackgroundConfig.customBackgroundUri.isNullOrEmpty()) {
+                                    Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+
+                    if (!BackgroundConfig.customBackgroundUri.isNullOrEmpty()) {
+                        val clearBackgroundDialog = rememberConfirmDialog(
+                            onConfirm = {
+                                scope.launch {
+                                    loadingDialog.show()
+                                    BackgroundManager.clearCustomBackground(context)
+                                    loadingDialog.hide()
+                                    snackBarHost.showSnackbar(message = context.getString(R.string.settings_background_image_cleared))
+                                    refreshTheme.value = true
+                                }
+                            }
+                        )
+                        val clearBgTitle = stringResource(id = R.string.settings_clear_background)
+                        val clearBgConfirm = context.getString(R.string.settings_clear_background_confirm)
+                        ExpressiveCard(
+                            flat = flat,
+                            onClick = {
+                                clearBackgroundDialog.showConfirm(
+                                    title = clearBgTitle,
+                                    content = clearBgConfirm,
+                                    markdown = false,
                                 )
                             }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(text = clearBgTitle, style = MaterialTheme.typography.titleMedium)
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+                }
+            }
+        }
+
+        if (showGridCardSettings) {
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_grid_working_card_background),
+                description = if (BackgroundConfig.isGridWorkingCardBackgroundEnabled) stringResource(id = R.string.settings_grid_working_card_background_enabled) else stringResource(id = R.string.settings_grid_working_card_background_summary),
+                checked = BackgroundConfig.isGridWorkingCardBackgroundEnabled,
+                onCheckedChange = {
+                    BackgroundConfig.setGridWorkingCardBackgroundEnabledState(it)
+                    BackgroundConfig.save(context)
+                },
+            )
+            Spacer(Modifier.height(8.dp))
+
+            if (BackgroundConfig.isGridWorkingCardBackgroundEnabled) {
+                ToggleSettingCard(
+                    flat = flat,
+                    title = stringResource(id = R.string.settings_grid_working_card_dual_opacity),
+                    description = "",
+                    checked = BackgroundConfig.isGridDualOpacityEnabled,
+                    onCheckedChange = {
+                        BackgroundConfig.setGridDualOpacityEnabledState(it)
+                        BackgroundConfig.save(context)
+                    },
+                )
+                Spacer(Modifier.height(8.dp))
+
+                if (!BackgroundConfig.isGridDualOpacityEnabled) {
+                    ExpressiveCard(flat = flat) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium)
+                            Slider(
+                                value = BackgroundConfig.gridWorkingCardBackgroundOpacity,
+                                onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundOpacityValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                                valueRange = 0f..1f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                ),
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                } else {
+                    ExpressiveCard(flat = flat) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Text(text = stringResource(id = R.string.settings_grid_working_card_day_opacity), style = MaterialTheme.typography.titleMedium)
+                            Slider(
+                                value = BackgroundConfig.gridWorkingCardBackgroundDayOpacity,
+                                onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDayOpacityValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                                valueRange = 0f..1f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                ),
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+
+                    ExpressiveCard(flat = flat) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Text(text = stringResource(id = R.string.settings_grid_working_card_night_opacity), style = MaterialTheme.typography.titleMedium)
+                            Slider(
+                                value = BackgroundConfig.gridWorkingCardBackgroundNightOpacity,
+                                onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundNightOpacityValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                                valueRange = 0f..1f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                ),
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
+
+                ExpressiveCard(flat = flat) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium)
+                        Slider(
+                            value = BackgroundConfig.gridWorkingCardBackgroundDim,
+                            onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDimValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                            valueRange = 0f..1f,
+                            colors = SliderDefaults.colors(
+                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                            ),
                         )
                     }
                 }
+                Spacer(Modifier.height(8.dp))
 
-                // Grid Card Display Options
-                if (showGridCheckHidden) {
-                    SwitchItem(
-                        icon = Icons.Filled.VisibilityOff,
-                        title = gridCheckHiddenTitle,
-                        summary = gridCheckHiddenSummary,
-                        checked = BackgroundConfig.isGridWorkingCardCheckHidden,
-                        onCheckedChange = {
-                            BackgroundConfig.setGridWorkingCardCheckHiddenState(it)
-                            BackgroundConfig.save(context)
+                ExpressiveCard(
+                    flat = flat,
+                    onClick = {
+                        if (PermissionUtils.hasExternalStoragePermission(context)) {
+                            try {
+                                pickGridImageLauncher.launch("image/*")
+                            } catch (e: ActivityNotFoundException) {
+                                Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "请先授予存储权限才能选择背景图片", Toast.LENGTH_SHORT).show()
                         }
-                    )
-                }
-
-                if (showGridTextHidden) {
-                    SwitchItem(
-                        icon = Icons.Filled.VisibilityOff,
-                        title = gridTextHiddenTitle,
-                        summary = gridTextHiddenSummary,
-                        checked = BackgroundConfig.isGridWorkingCardTextHidden,
-                        onCheckedChange = {
-                            BackgroundConfig.setGridWorkingCardTextHiddenState(it)
-                            BackgroundConfig.save(context)
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium)
+                            if (!BackgroundConfig.gridWorkingCardBackgroundUri.isNullOrEmpty()) {
+                                Text(text = stringResource(id = R.string.settings_grid_working_card_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                            }
                         }
-                    )
+                    }
                 }
+                Spacer(Modifier.height(8.dp))
 
-                if (showGridModeHidden) {
-                    SwitchItem(
-                        icon = Icons.Filled.VisibilityOff,
-                        title = gridModeHiddenTitle,
-                        summary = gridModeHiddenSummary,
-                        checked = BackgroundConfig.isGridWorkingCardModeHidden,
-                        onCheckedChange = {
-                            BackgroundConfig.setGridWorkingCardModeHiddenState(it)
-                            BackgroundConfig.save(context)
+                val clearGridBackgroundDialog = rememberConfirmDialog(
+                    onConfirm = {
+                        scope.launch {
+                            loadingDialog.show()
+                            BackgroundManager.clearGridWorkingCardBackground(context)
+                            loadingDialog.hide()
+                            snackBarHost.showSnackbar(message = context.getString(R.string.settings_grid_working_card_background_cleared))
                         }
-                    )
+                    }
+                )
+                ExpressiveCard(
+                    flat = flat,
+                    onClick = {
+                        clearGridBackgroundDialog.showConfirm(
+                            title = context.getString(R.string.settings_clear_grid_working_card_background),
+                            content = context.getString(R.string.settings_clear_grid_working_card_background_confirm),
+                            markdown = false,
+                        )
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(text = stringResource(id = R.string.settings_clear_grid_working_card_background), style = MaterialTheme.typography.titleMedium)
+                    }
                 }
+                Spacer(Modifier.height(8.dp))
+            }
 
-                if (showCustomBadgeTextGrid) {
-                    ListItem(
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        headlineContent = { Text(customBadgeTextTitle) },
-                        supportingContent = {
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_grid_working_card_hide_check),
+                description = stringResource(id = R.string.settings_grid_working_card_hide_check_summary),
+                checked = BackgroundConfig.isGridWorkingCardCheckHidden,
+                onCheckedChange = {
+                    BackgroundConfig.setGridWorkingCardCheckHiddenState(it)
+                    BackgroundConfig.save(context)
+                },
+            )
+            Spacer(Modifier.height(8.dp))
+
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_grid_working_card_hide_text),
+                description = stringResource(id = R.string.settings_grid_working_card_hide_text_summary),
+                checked = BackgroundConfig.isGridWorkingCardTextHidden,
+                onCheckedChange = {
+                    BackgroundConfig.setGridWorkingCardTextHiddenState(it)
+                    BackgroundConfig.save(context)
+                },
+            )
+            Spacer(Modifier.height(8.dp))
+
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_grid_working_card_hide_mode),
+                description = stringResource(id = R.string.settings_grid_working_card_hide_mode_summary),
+                checked = BackgroundConfig.isGridWorkingCardModeHidden,
+                onCheckedChange = {
+                    BackgroundConfig.setGridWorkingCardModeHiddenState(it)
+                    BackgroundConfig.save(context)
+                },
+            )
+            Spacer(Modifier.height(8.dp))
+
+            if (!BackgroundConfig.isGridWorkingCardModeHidden) {
+                ExpressiveCard(flat = flat, onClick = { showCustomBadgeTextDialog.value = true }) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(id = R.string.settings_custom_badge_text),
+                                style = MaterialTheme.typography.titleMedium,
+                            )
                             Text(
                                 text = currentBadgeTextMode,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.outline
+                                color = MaterialTheme.colorScheme.outline,
                             )
-                        },
-                        leadingContent = { Icon(Icons.Filled.NewReleases, null) },
-                        modifier = Modifier.clickable { showCustomBadgeTextDialog.value = true }
-                    )
-                }
-            }
-                }
-            }
-            // --- 二级折叠菜单：外观 - 横幅 ---
-            if (showBannerCategory) {
-                SettingsCategory(
-                    icon = Icons.Filled.ViewCarousel,
-                    title = bannerCategoryTitle,
-                    summary = bannerCategorySummary,
-                    isSearching = searchText.isNotEmpty()
-                ) {
-            // Banner Enabled
-            if (showBannerEnabled) {
-                SwitchItem(
-                    icon = Icons.Filled.ViewCarousel,
-                    title = bannerEnabledTitle,
-                    summary = bannerEnabledSummary,
-                    checked = BackgroundConfig.isBannerEnabled,
-                    onCheckedChange = {
-                        BackgroundConfig.setBannerEnabledState(it)
-                        BackgroundConfig.save(context)
+                        }
                     }
-                )
+                }
+                Spacer(Modifier.height(8.dp))
             }
+        }
 
-            if (showFolkBanner) {
-                SwitchItem(
-                    icon = Icons.Filled.Edit,
-                    title = folkBannerTitle,
-                    summary = folkBannerSummary,
-                    checked = BackgroundConfig.isFolkBannerEnabled,
-                    onCheckedChange = {
-                        BackgroundConfig.setFolkBannerEnabledState(it)
-                        BackgroundConfig.save(context)
+        if (showCustomBadgeTextDialog.value) {
+            AlertDialog(
+                onDismissRequest = { showCustomBadgeTextDialog.value = false },
+                title = { Text(stringResource(id = R.string.settings_custom_badge_text)) },
+                text = {
+                    Column {
+                        Text(
+                            stringResource(id = R.string.settings_custom_badge_text_summary),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 16.dp),
+                        )
+                        badgeTextModes.forEachIndexed { index, mode ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        BackgroundConfig.setCustomBadgeTextModeValue(index)
+                                        BackgroundConfig.save(context)
+                                        showCustomBadgeTextDialog.value = false
+                                    }
+                                    .padding(vertical = 12.dp)
+                            ) {
+                                RadioButton(
+                                    selected = index == currentBadgeTextModeIndex,
+                                    onClick = null
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = mode)
+                            }
+                        }
                     }
-                )
-            }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showCustomBadgeTextDialog.value = false }) {
+                        Text(stringResource(android.R.string.cancel))
+                    }
+                }
+            )
+        }
 
-            // Banner API Mode Switch
-            if (showBannerApiModeSwitch) {
-                SwitchItem(
-                    icon = Icons.Filled.CloudDownload,
-                    title = bannerApiModeTitle,
-                    summary = bannerApiModeSummary,
+        Spacer(Modifier.height(16.dp))
+        SectionHeader(text = stringResource(R.string.settings_appearance_banner))
+        Spacer(Modifier.height(8.dp))
+
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.apm_enable_module_banner),
+            description = stringResource(id = R.string.apm_enable_module_banner_summary),
+            checked = BackgroundConfig.isBannerEnabled,
+            onCheckedChange = {
+                BackgroundConfig.setBannerEnabledState(it)
+                BackgroundConfig.save(context)
+            },
+        )
+        Spacer(Modifier.height(8.dp))
+
+        if (BackgroundConfig.isBannerEnabled) {
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.apm_enable_folk_banner),
+                description = stringResource(id = R.string.apm_enable_folk_banner_summary),
+                checked = BackgroundConfig.isFolkBannerEnabled,
+                onCheckedChange = {
+                    BackgroundConfig.setFolkBannerEnabledState(it)
+                    BackgroundConfig.save(context)
+                },
+            )
+            Spacer(Modifier.height(8.dp))
+
+            if (BackgroundConfig.isFolkBannerEnabled) {
+                ToggleSettingCard(
+                    flat = flat,
+                    title = stringResource(id = R.string.apm_banner_api_mode),
+                    description = stringResource(id = R.string.apm_banner_api_mode_summary),
                     checked = BackgroundConfig.isBannerApiModeEnabled,
                     onCheckedChange = {
                         BackgroundConfig.setBannerApiModeEnabledState(it)
                         BackgroundConfig.save(context)
-                    }
-                )
-            }
-
-            // Banner API Source Config Entry
-            if (showBannerApiSource) {
-                val showBannerApiConfigDialog = remember { mutableStateOf(false) }
-                val apiSourceSummary = if (BackgroundConfig.bannerApiSource.isNotBlank()) {
-                    if (BackgroundConfig.bannerApiSource.startsWith("/")) {
-                        context.getString(R.string.apm_banner_local_dir_configured)
-                    } else {
-                        context.getString(R.string.apm_banner_api_url_configured)
-                    }
-                } else {
-                    context.getString(R.string.apm_banner_api_source_not_configured)
-                }
-
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(bannerApiSourceTitle) },
-                    supportingContent = {
-                        Text(
-                            text = apiSourceSummary,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline
-                        )
                     },
-                    leadingContent = { Icon(Icons.Filled.Settings, null) },
-                    modifier = Modifier.clickable { showBannerApiConfigDialog.value = true }
                 )
+                Spacer(Modifier.height(8.dp))
 
-                // Banner API Config Dialog
-                if (showBannerApiConfigDialog.value) {
-                    BannerApiConfigDialog(
-                        showDialog = showBannerApiConfigDialog,
-                        currentSource = BackgroundConfig.bannerApiSource,
-                        onConfirm = { newSource ->
-                            BackgroundConfig.setBannerApiSourceValue(newSource)
-                            BackgroundConfig.save(context)
-                        },
-                        onClearCache = {
-                            scope.launch {
-                                loadingDialog.show()
-                                me.bmax.apatch.ui.screen.BannerApiService.clearAllCache(context)
-                                loadingDialog.hide()
-                                Toast.makeText(context, context.getString(R.string.apm_banner_cache_cleared), Toast.LENGTH_SHORT).show()
+                if (BackgroundConfig.isBannerApiModeEnabled) {
+                    val showBannerApiConfigDialog = remember { mutableStateOf(false) }
+                    val apiSourceSummary = if (BackgroundConfig.bannerApiSource.isNotBlank()) {
+                        if (BackgroundConfig.bannerApiSource.startsWith("/")) {
+                            context.getString(R.string.apm_banner_local_dir_configured)
+                        } else {
+                            context.getString(R.string.apm_banner_api_url_configured)
+                        }
+                    } else {
+                        context.getString(R.string.apm_banner_api_source_not_configured)
+                    }
+
+                    ExpressiveCard(flat = flat, onClick = { showBannerApiConfigDialog.value = true }) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(id = R.string.apm_banner_api_source),
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
+                                Text(
+                                    text = apiSourceSummary,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
                             }
                         }
-                    )
+                    }
+                    Spacer(Modifier.height(8.dp))
+
+                    if (showBannerApiConfigDialog.value) {
+                        BannerApiConfigDialog(
+                            showDialog = showBannerApiConfigDialog,
+                            currentSource = BackgroundConfig.bannerApiSource,
+                            onConfirm = { newSource ->
+                                BackgroundConfig.setBannerApiSourceValue(newSource)
+                                BackgroundConfig.save(context)
+                            },
+                            onClearCache = {
+                                scope.launch {
+                                    loadingDialog.show()
+                                    me.bmax.apatch.ui.screen.BannerApiService.clearAllCache(context)
+                                    loadingDialog.hide()
+                                    Toast.makeText(context, context.getString(R.string.apm_banner_cache_cleared), Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
+                    }
+
+                    ExpressiveCard(flat = flat, onClick = { onNavigateToApiMarketplace() }) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.apm_api_marketplace_title),
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
                 }
             }
 
-            // API Marketplace Entry
-            if (showApiMarketplace) {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(apiMarketplaceTitle) },
-                    leadingContent = { Icon(Icons.Filled.Store, null) },
-                    modifier = Modifier.clickable {
-                        onNavigateToApiMarketplace()
-                    }
-                )
-            }
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_banner_custom_opacity),
+                description = stringResource(id = R.string.settings_banner_custom_opacity_summary),
+                checked = BackgroundConfig.isBannerCustomOpacityEnabled,
+                onCheckedChange = {
+                    BackgroundConfig.setBannerCustomOpacityEnabledState(it)
+                    BackgroundConfig.save(context)
+                },
+            )
+            Spacer(Modifier.height(8.dp))
 
-            if (showBannerCustomOpacitySwitch) {
-                SwitchItem(
-                    icon = Icons.Filled.Opacity,
-                    title = bannerCustomOpacityTitle,
-                    summary = bannerCustomOpacitySummary,
-                    checked = BackgroundConfig.isBannerCustomOpacityEnabled,
-                    onCheckedChange = {
-                        BackgroundConfig.setBannerCustomOpacityEnabledState(it)
-                        BackgroundConfig.save(context)
-                    }
-                )
-            }
-
-            if (showBannerOpacity) {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(bannerOpacityTitle) },
-                    supportingContent = {
+            if (BackgroundConfig.isBannerCustomOpacityEnabled) {
+                ExpressiveCard(flat = flat) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Text(text = stringResource(id = R.string.settings_banner_opacity), style = MaterialTheme.typography.titleMedium)
                         Slider(
                             value = BackgroundConfig.bannerCustomOpacity,
                             onValueChange = { BackgroundConfig.setBannerCustomOpacityValue(it) },
@@ -1656,166 +1383,160 @@ fun AppearanceSettings(
                             valueRange = 0f..1f,
                             colors = SliderDefaults.colors(
                                 thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f)
-                            )
+                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                            ),
                         )
                     }
-                )
-            }
                 }
-            }
-
-            // --- 二级折叠菜单：外观 - 字体 ---
-            if (showFontCategory) {
-                SettingsCategory(
-                    icon = Icons.Filled.TextFields,
-                    title = fontCategoryTitle,
-                    summary = fontCategorySummary,
-                    isSearching = searchText.isNotEmpty()
-                ) {
-            // Custom Font
-            if (showCustomFontSwitch) {
-                SwitchItem(
-                    icon = Icons.Filled.TextFields,
-                    title = customFontTitle,
-                    summary = if (customFontEnabled) {
-                        if (FontConfig.customFontFilename != null) customFontSelectedText else customFontEnabledText
-                    } else {
-                        customFontSummary
-                    },
-                    checked = customFontEnabled
-                ) {
-                    customFontEnabled = it
-                    FontConfig.setCustomFontEnabledState(it)
-                    FontConfig.save(context)
-                    refreshTheme.value = true
-                }
-            }
-            
-            if (FontConfig.isCustomFontEnabled) {
-                if (showSelectFont) {
-                    ListItem(
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        headlineContent = { Text(text = selectFontTitle) },
-                        leadingContent = { Icon(Icons.Filled.Folder, null) },
-                        modifier = Modifier.clickable {
-                            try {
-                                pickFontLauncher.launch("*/*")
-                            } catch (e: ActivityNotFoundException) {
-                                Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    )
-                }
-                
-                if (showClearFont) {
-                    val clearFontDialog = rememberConfirmDialog(
-                        onConfirm = {
-                            FontConfig.clearFont(context)
-                            refreshTheme.value = true
-                            scope.launch {
-                                snackBarHost.showSnackbar(message = context.getString(R.string.settings_font_cleared))
-                            }
-                        }
-                    )
-                    ListItem(
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        headlineContent = { Text(text = clearFontTitle) },
-                        leadingContent = { Icon(Icons.Filled.RemoveFromQueue, null) },
-                        modifier = Modifier.clickable {
-                            clearFontDialog.showConfirm(
-                                title = clearFontTitle,
-                                content = context.getString(R.string.settings_clear_font_confirm)
-                            )
-                        }
-                    )
-                }
+                Spacer(Modifier.height(8.dp))
             }
         }
-    }
 
-    // --- 二级折叠菜单：外观 - 主题 ---
-    if (showThemeCategory) {
-        SettingsCategory(
-            icon = Icons.Filled.ShoppingCart,
-            title = themeCategoryTitle,
-            summary = themeCategorySummary,
-            isSearching = searchText.isNotEmpty()
-        ) {
-            // Theme Store
-            if (showThemeStore) {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(text = themeStoreTitle) },
-                    leadingContent = { Icon(Icons.Filled.ShoppingCart, null) },
-                    modifier = Modifier.clickable {
-                        onNavigateToThemeStore()
-                    }
-                )
-            }
-            
-            if (showSaveTheme) {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(text = saveThemeTitle) },
-                    leadingContent = { Icon(Icons.Filled.Save, null) },
-                    modifier = Modifier.clickable {
-                        showExportDialog.value = true
-                    }
-                )
-            }
-            
-            if (showImportTheme) {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(text = importThemeTitle) },
-                    leadingContent = { Icon(Icons.Filled.Folder, null) },
-                    modifier = Modifier.clickable {
-                        showFilePicker.value = true
-                    }
-                )
-            }
+        Spacer(Modifier.height(16.dp))
+        SectionHeader(text = stringResource(R.string.settings_appearance_font))
+        Spacer(Modifier.height(8.dp))
 
-            if (showResetTheme) {
-                val resetThemeDialog = rememberConfirmDialog(
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.settings_custom_font),
+            description = if (customFontEnabled) {
+                if (FontConfig.customFontFilename != null) stringResource(id = R.string.settings_font_selected) else stringResource(id = R.string.settings_custom_font_enabled)
+            } else {
+                stringResource(id = R.string.settings_custom_font_summary)
+            },
+            checked = customFontEnabled,
+            onCheckedChange = {
+                customFontEnabled = it
+                FontConfig.setCustomFontEnabledState(it)
+                FontConfig.save(context)
+                refreshTheme.value = true
+            },
+        )
+        Spacer(Modifier.height(8.dp))
+
+        if (FontConfig.isCustomFontEnabled) {
+            ExpressiveCard(
+                flat = flat,
+                onClick = {
+                    try {
+                        pickFontLauncher.launch("*/*")
+                    } catch (e: ActivityNotFoundException) {
+                        Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(text = stringResource(id = R.string.settings_select_font_file), style = MaterialTheme.typography.titleMedium)
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            if (FontConfig.customFontFilename != null) {
+                val clearFontDialog = rememberConfirmDialog(
                     onConfirm = {
+                        FontConfig.clearFont(context)
+                        refreshTheme.value = true
                         scope.launch {
-                            loadingDialog.show()
-                            val success = ThemeManager.resetTheme(context)
-                            loadingDialog.hide()
-                            snackBarHost.showSnackbar(
-                                message = if (success) context.getString(R.string.settings_theme_reset) else context.getString(R.string.settings_theme_reset_failed)
-                            )
+                            snackBarHost.showSnackbar(message = context.getString(R.string.settings_font_cleared))
                         }
                     }
                 )
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(text = resetThemeTitle) },
-                    leadingContent = { Icon(Icons.Filled.Restore, null) },
-                    modifier = Modifier.clickable {
-                        resetThemeDialog.showConfirm(
-                            title = resetThemeTitle,
-                            content = context.getString(R.string.settings_reset_theme_confirm)
+                val clearFontTitle = stringResource(id = R.string.settings_clear_font)
+                val clearFontConfirm = context.getString(R.string.settings_clear_font_confirm)
+                ExpressiveCard(
+                    flat = flat,
+                    onClick = {
+                        clearFontDialog.showConfirm(
+                            title = clearFontTitle,
+                            content = clearFontConfirm,
                         )
                     }
-                )
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(text = clearFontTitle, style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
             }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        SectionHeader(text = stringResource(R.string.settings_appearance_theme))
+        Spacer(Modifier.height(8.dp))
+
+        ExpressiveCard(flat = flat, onClick = { onNavigateToThemeStore() }) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(text = stringResource(id = R.string.theme_store_title), style = MaterialTheme.typography.titleMedium)
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+
+        ExpressiveCard(flat = flat, onClick = { showExportDialog.value = true }) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(text = stringResource(id = R.string.settings_save_theme), style = MaterialTheme.typography.titleMedium)
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+
+        ExpressiveCard(flat = flat, onClick = { showFilePicker.value = true }) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(text = stringResource(id = R.string.settings_import_theme), style = MaterialTheme.typography.titleMedium)
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+
+        val resetThemeDialog = rememberConfirmDialog(
+            onConfirm = {
+                scope.launch {
+                    loadingDialog.show()
+                    val success = ThemeManager.resetTheme(context)
+                    loadingDialog.hide()
+                    snackBarHost.showSnackbar(
+                        message = if (success) context.getString(R.string.settings_theme_reset) else context.getString(R.string.settings_theme_reset_failed)
+                    )
                 }
             }
-
+        )
+        val resetThemeTitle = stringResource(id = R.string.settings_reset_theme)
+        val resetThemeConfirm = context.getString(R.string.settings_reset_theme_confirm)
+        ExpressiveCard(
+            flat = flat,
+            onClick = {
+                resetThemeDialog.showConfirm(
+                    title = resetThemeTitle,
+                    content = resetThemeConfirm,
+                )
+            }
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(text = resetThemeTitle, style = MaterialTheme.typography.titleMedium)
+            }
         }
-    }
-    
-    // Dialogs
-    if (showThemeChooseDialog.value) {
-        ThemeChooseDialog(showThemeChooseDialog)
+        Spacer(Modifier.height(8.dp))
     }
 
     if (showHomeLayoutChooseDialog.value) {
         HomeLayoutChooseDialog(showHomeLayoutChooseDialog)
     }
-    
+
     if (showNavSchemeDialog) {
         NavModeChooseDialog(
             showDialog = remember { mutableStateOf(true) }.apply { value = showNavSchemeDialog },
@@ -1858,9 +1579,7 @@ fun AppearanceSettings(
                         val fileName = "$safeName.fpt"
                         val file = java.io.File(exportDir, fileName)
                         val uri = Uri.fromFile(file)
-                        
                         val success = ThemeManager.exportTheme(context, uri, metadata)
-                        
                         loadingDialog.hide()
                         snackBarHost.showSnackbar(
                             message = if (success) context.getString(R.string.settings_theme_saved) + ": ${file.absolutePath}" else context.getString(R.string.settings_theme_save_failed)
@@ -1874,7 +1593,7 @@ fun AppearanceSettings(
             }
         )
     }
-    
+
     if (showImportDialog.value && pendingImportMetadata != null) {
         ThemeImportDialog(
             showDialog = showImportDialog,
@@ -1895,7 +1614,7 @@ fun AppearanceSettings(
             }
         )
     }
-    
+
     if (showFilePicker.value) {
         FilePickerDialog(
             onDismissRequest = { showFilePicker.value = false },
@@ -1906,7 +1625,6 @@ fun AppearanceSettings(
                     loadingDialog.show()
                     val metadata = ThemeManager.readThemeMetadata(context, uri)
                     loadingDialog.hide()
-                    
                     if (metadata != null) {
                         pendingImportUri = uri
                         pendingImportMetadata = metadata
@@ -1924,8 +1642,6 @@ fun AppearanceSettings(
         )
     }
 }
-
-// ==================== 辅助函数 ====================
 
 @Composable
 private fun colorNameToString(colorName: String): Int {
@@ -1974,13 +1690,10 @@ private fun homeLayoutStyleToString(style: String): Int {
     }
 }
 
-// ==================== 对话框组件 ====================
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeChooseDialog(showDialog: MutableState<Boolean>) {
     val prefs = APApplication.sharedPreferences
-
     BasicAlertDialog(
         onDismissRequest = { showDialog.value = false }, properties = DialogProperties(
             decorFitsSystemWindows = true,
@@ -2005,9 +1718,7 @@ fun ThemeChooseDialog(showDialog: MutableState<Boolean>) {
                             refreshTheme.value = true
                         })
                 }
-
             }
-
             val dialogWindowProvider = LocalView.current.parent as DialogWindowProvider
             APDialogBlurBehindUtils.setupWindowBlurListener(dialogWindowProvider.window)
         }

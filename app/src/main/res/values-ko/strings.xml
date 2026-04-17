@@ -402,6 +402,8 @@
     <string name="teal_theme">틸</string>
     <string name="yellow_theme">옐로</string>
     <string name="ink_wash_theme">잉크 워시</string>
+    <string name="theme_color">테마 색상</string>
+    <string name="theme_system">시스템</string>
 
     <string name="about_app_desc">KernelPatch를 기반으로 한 Root 구현체로, 커널을 다시 컴파일할 필요 없이 커널 함수 후킹을 허용합니다.</string>
     <string name="about_powered_by">%1$s 제공</string>
@@ -482,6 +484,7 @@
     <string name="settings_custom_background_blur">배경 블러</string>
     <string name="settings_custom_background_dim">배경 어둡게</string>
     <string name="settings_custom_background_dual_dim">주야간 이중 어둡게 적용 활성화</string>
+    <string name="settings_custom_background_dual_dim_desc">라이트 및 다크 테마에 맞게 배경 어둡기를 자동 조정</string>
     <string name="settings_custom_background_day_dim">주간 모드 배경 어둡게</string>
     <string name="settings_custom_background_night_dim">야간 모드 배경 어둡게</string>
     <string name="settings_multi_background_mode">다중 배경 모드</string>
@@ -769,6 +772,14 @@
     <string name="settings_music_save_error">음악 파일 저장 실패</string>
     <string name="settings_music_cleared">음악 삭제됨</string>
     <string name="settings_category_multimedia">멀티미디어</string>
+    <string name="settings_category_general_summary">언어, 업데이트, SELinux, 시스템 조정</string>
+    <string name="settings_category_appearance_summary">테마, 색상, 레이아웃, 배경, 글꼴</string>
+    <string name="settings_category_behavior_summary">웹 디버깅, 설치 동작, 홈 표시</string>
+    <string name="settings_category_security_summary">생체 인식, 슈퍼키 관리</string>
+    <string name="settings_category_backup_summary">로컬 백업, 클라우드 백업, WebDAV</string>
+    <string name="settings_category_module_summary">모듈 정보, 정렬, 일괄 설치</string>
+    <string name="settings_category_function_summary">FolkPatch 숨기기, Umount 서비스</string>
+    <string name="settings_category_multimedia_summary">배경 음악, 소리, 진동</string>
     <string name="settings_use_legacy_su_page">단일 페이지 Superuser 인증</string>
     <string name="settings_use_legacy_su_page_summary">Superuser 페이지를 단일 페이지 인증 디자인으로 전환합니다.</string>
     <string name="settings_music_playback_control">재생 제어</string>

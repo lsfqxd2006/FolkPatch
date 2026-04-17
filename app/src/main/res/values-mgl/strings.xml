@@ -404,6 +404,8 @@
     <string name="sakura_theme">樱花飞舞</string>
     <string name="teal_theme">蓝绿之韵</string>
     <string name="yellow_theme">阳光之黄</string>
+    <string name="theme_color">Ариун цагаан сүнс</string>
+    <string name="theme_system">Систем</string>
 
     <string name="about_app_desc">一个基于心之核心的魔法变身解决方案，支持心之结晶和心之函数hook，无需重新锻造心之核心。</string>
     <string name="about_powered_by">由%1$s提供魔力</string>
@@ -513,6 +515,7 @@
     <string name="settings_custom_badge_text">自选魔力印记文字</string>
     <string name="settings_custom_badge_text_summary">修改魔力印记的文字显示，仅供魔法少女娱乐</string>
     <string name="settings_custom_background_dual_dim">双向契约</string>
+    <string name="settings_custom_background_dual_dim_desc">Гэгээлэг ба харанхуй загварын дагуу дэвсгэр харанхуйлалтыг автоматаар тохируулах</string>
     <string name="settings_custom_background_day_dim">星之契约魔力</string>
     <string name="settings_custom_background_night_dim">月之契约魔力</string>
     <string name="settings_grid_working_card_dual_opacity">双向契约透明</string>
@@ -734,6 +737,14 @@
     <string name="settings_music_save_error">魔法旋律水晶封存失败</string>
     <string name="settings_music_cleared">魔法颂歌已清空</string>
     <string name="settings_category_multimedia">魔法幻音</string>
+    <string name="settings_category_general_summary">魔法语韵、魔法更新、结界律令、魔法世界调整</string>
+    <string name="settings_category_appearance_summary">魔法主题、星光色彩、魔法阵布局、梦境背景、魔法符文字体</string>
+    <string name="settings_category_behavior_summary">万维除错、魔法植入、魔法殿堂展示</string>
+    <string name="settings_category_security_summary">魔法印记、万法密钥管理</string>
+    <string name="settings_category_backup_summary">本地魔法书、云端魔法书、WebDAV</string>
+    <string name="settings_category_module_summary">魔法信息、星序排列、批量施法</string>
+    <string name="settings_category_function_summary">FolkPatch隐匿、卸载魔法侍从</string>
+    <string name="settings_category_multimedia_summary">背景魔法颂歌、魔法音效、魔力振动</string>
     <string name="settings_music_playback_control">颂歌控法阵</string>
     <string name="settings_music_looping">无限吟唱</string>
     <string name="settings_music_looping_summary">无限循环的魔法咏唱</string>

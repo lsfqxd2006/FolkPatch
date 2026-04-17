@@ -399,6 +399,9 @@
     <string name="yellow_theme">黄色</string>
     <string name="ink_wash_theme">水墨风</string>
 
+    <string name="theme_color">主题颜色</string>
+    <string name="theme_system">系统</string>
+
     <string name="about_app_desc">基于 KernelPatch 的 Root 实现，无需重新编译内核的同时，允许 Hook 内核函数。</string>
     <string name="about_powered_by">由 %1$s 提供支持</string>
     <string name="about_telegram_group">Telegram 群组</string>
@@ -449,6 +452,7 @@
     <string name="settings_custom_background_blur">背景模糊</string>
     <string name="settings_custom_background_dim">背景暗度</string>
     <string name="settings_custom_background_dual_dim">启用双切暗色适配</string>
+    <string name="settings_custom_background_dual_dim_desc">根据亮色和暗色主题自动调整背景暗度</string>
     <string name="settings_custom_background_day_dim">白天模式暗度</string>
     <string name="settings_custom_background_night_dim">夜间模式暗度</string>
     <string name="settings_multi_background_mode">启用多背景模式</string>
@@ -737,6 +741,14 @@
     <string name="settings_music_save_error">保存音乐文件失败</string>
     <string name="settings_music_cleared">音乐已清除</string>
     <string name="settings_category_multimedia">多媒体</string>
+    <string name="settings_category_general_summary">语言、更新、SELinux、系统调整</string>
+    <string name="settings_category_appearance_summary">主题、颜色、布局、背景、字体</string>
+    <string name="settings_category_behavior_summary">Web调试、安装行为、首页显示</string>
+    <string name="settings_category_security_summary">生物识别、超级密钥管理</string>
+    <string name="settings_category_backup_summary">本地备份、云端备份、WebDAV</string>
+    <string name="settings_category_module_summary">模块信息、排序、批量安装</string>
+    <string name="settings_category_function_summary">FolkPatch隐藏、Umount服务</string>
+    <string name="settings_category_multimedia_summary">背景音乐、音效、振动</string>
     <string name="settings_music_playback_control">播放控制</string>
 
     <!-- Theme Store Filter -->

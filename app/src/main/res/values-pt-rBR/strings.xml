@@ -406,6 +406,8 @@ Aqui estão algumas possíveis razões para a falha de autenticação—verifiqu
     <string name="sakura_theme">Sakura</string>
     <string name="teal_theme">Verde-azulado (Teal)</string>
     <string name="yellow_theme">Amarelo</string>
+    <string name="theme_color">Cor do tema</string>
+    <string name="theme_system">Sistema</string>
 
     <string name="about_app_desc">Uma implementação Root baseada em KernelPatch, permitindo hooks de função do kernel sem recompilar o kernel.</string>
     <string name="about_powered_by">Desenvolvido por %1$s</string>
@@ -459,6 +461,7 @@ Aqui estão algumas possíveis razões para a falha de autenticação—verifiqu
     <string name="settings_custom_background_blur">Desfoque do fundo</string>
     <string name="settings_custom_background_dim">Escurecimento do fundo</string>
     <string name="settings_custom_background_dual_dim">Escurecimento duplo (dia/noite)</string>
+    <string name="settings_custom_background_dual_dim_desc">Ajustar automaticamente o escurecimento do fundo para temas claros e escuros</string>
     <string name="settings_custom_background_day_dim">Escurecimento modo dia</string>
     <string name="settings_custom_background_night_dim">Escurecimento modo noite</string>
     <string name="settings_multi_background_mode">Modo Multi-Fundo</string>
@@ -733,6 +736,14 @@ Por favor, certifique-se de fechar completamente o app e reabri-lo para que os c
     <string name="settings_music_save_error">Falha ao salvar arquivo de música</string>
     <string name="settings_music_cleared">Música limpa</string>
     <string name="settings_category_multimedia">Multimídia</string>
+    <string name="settings_category_general_summary">Idioma, atualizações, SELinux, ajustes do sistema</string>
+    <string name="settings_category_appearance_summary">Tema, cores, layout, fundo, fontes</string>
+    <string name="settings_category_behavior_summary">Depuração Web, comportamento de instalação, exibição inicial</string>
+    <string name="settings_category_security_summary">Biometria, gerenciamento de superchave</string>
+    <string name="settings_category_backup_summary">Backup local, backup na nuvem, WebDAV</string>
+    <string name="settings_category_module_summary">Informações do módulo, classificação, instalação em lote</string>
+    <string name="settings_category_function_summary">Ocultar FolkPatch, serviço Umount</string>
+    <string name="settings_category_multimedia_summary">Música de fundo, sons, vibração</string>
     <string name="settings_music_playback_control">Controle de Reprodução</string>
 
     <!-- Theme Store Filter -->

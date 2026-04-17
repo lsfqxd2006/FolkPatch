@@ -357,6 +357,8 @@
     <string name="teal_theme">ティール</string>
     <string name="yellow_theme">イエロー</string>
     <string name="ink_wash_theme">インクウォッシュ</string>
+    <string name="theme_color">テーマカラー</string>
+    <string name="theme_system">システム</string>
     <string name="about_app_desc">KernelPatch ベースの root 実装、カーネルをリコンパイルせずにカーネル関数フックを可能にします。</string>
     <string name="about_powered_by">Powered by %1$s</string>
     <string name="about_telegram_group">Telegram グループ</string>
@@ -429,6 +431,7 @@
     <string name="settings_custom_background_blur">背景のぼかし</string>
     <string name="settings_custom_background_dim">背景を暗転させる</string>
     <string name="settings_custom_background_dual_dim">日中/夜間のデュアル調光を有効化する</string>
+    <string name="settings_custom_background_dual_dim_desc">ライトテーマとダークテーマに合わせて背景の暗さを自動調整</string>
     <string name="settings_custom_background_day_dim">日中時に背景を暗転</string>
     <string name="settings_custom_background_night_dim">夜間時に背景を暗転</string>
     <string name="settings_multi_background_mode">マルチ背景モード</string>
@@ -684,6 +687,14 @@
     <string name="settings_music_save_error">音楽の保存に失敗しました。</string>
     <string name="settings_music_cleared">音楽を消去しました。</string>
     <string name="settings_category_multimedia">マルチメディア</string>
+    <string name="settings_category_general_summary">言語、アップデート、SELinux、システム調整</string>
+    <string name="settings_category_appearance_summary">テーマ、色、レイアウト、背景、フォント</string>
+    <string name="settings_category_behavior_summary">Webデバッグ、インストール動作、ホーム表示</string>
+    <string name="settings_category_security_summary">生体認証、スーパーキー管理</string>
+    <string name="settings_category_backup_summary">ローカルバックアップ、クラウドバックアップ、WebDAV</string>
+    <string name="settings_category_module_summary">モジュール情報、並べ替え、一括インストール</string>
+    <string name="settings_category_function_summary">FolkPatch非表示、Umountサービス</string>
+    <string name="settings_category_multimedia_summary">BGM、効果音、バイブレーション</string>
     <string name="settings_use_legacy_su_page">単一ページのスーパーユーザー認証</string>
     <string name="settings_use_legacy_su_page_summary">スーパーユーザーページを単一ページな認証に切り替えます。</string>
     <string name="settings_music_playback_control">再生のコントロール</string>

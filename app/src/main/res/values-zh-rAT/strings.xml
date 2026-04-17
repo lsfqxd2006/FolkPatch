@@ -396,6 +396,8 @@
     <string name="sakura_theme">圣樱飞舞</string>
     <string name="teal_theme">青蓝之韵</string>
     <string name="yellow_theme">阳光黄</string>
+    <string name="theme_color">主题颜色</string>
+    <string name="theme_system">系统</string>
 
     <string name="about_app_desc">一个基于灵魂核心的圣光化身解决方案，支持灵魂晶石和灵魂函数hook，无需重新锻造灵魂核心。</string>
     <string name="about_powered_by">由%1$s提供圣光力量</string>
@@ -504,6 +506,7 @@
     <string name="settings_custom_badge_text">自选神恩印记文字</string>
     <string name="settings_custom_badge_text_summary">修改神恩印记之文字显示，仅供契约者娱乐</string>
     <string name="settings_custom_background_dual_dim">启用白天/夜晚双模式祝福</string>
+    <string name="settings_custom_background_dual_dim_desc">根据亮色和暗色主题自动调整背景暗度</string>
     <string name="settings_custom_background_day_dim">白天模式祝福暗度</string>
     <string name="settings_custom_background_night_dim">夜晚模式祝福暗度</string>
     <string name="settings_grid_working_card_dual_opacity">双向祝福透明</string>
@@ -715,6 +718,14 @@
     
     <!-- Multimedia Category Strings -->
     <string name="settings_category_multimedia">天使幻音</string>
+    <string name="settings_category_general_summary">天使语韵、圣光更新、结界律令、神域调整</string>
+    <string name="settings_category_appearance_summary">圣光主题、天使色彩、神殿布局、圣域背景、神文字体</string>
+    <string name="settings_category_behavior_summary">万维除错、降临仪式、圣殿展示</string>
+    <string name="settings_category_security_summary">天使印记、圣光密钥管理</string>
+    <string name="settings_category_backup_summary">本地圣典、云端圣典、WebDAV</string>
+    <string name="settings_category_module_summary">魔法信息、天使排列、批量降临</string>
+    <string name="settings_category_function_summary">FolkPatch隐匿、卸载圣侍</string>
+    <string name="settings_category_multimedia_summary">背景圣歌、天使音效、圣光振动</string>
     
     <!-- Background Music Strings -->
     <string name="settings_background_music">背景音乐</string>

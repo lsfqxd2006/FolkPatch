@@ -442,6 +442,7 @@
     <string name="settings_custom_badge_text">Niestandardowy tekst odznaki</string>
     <string name="settings_custom_badge_text_summary">Zmodyfikuj wyświetlanie tekstu odznaki, tylko dla zabawy</string>
     <string name="settings_custom_background_dual_dim">Włącz podwójne przyciemnienie dzienne/nocne</string>
+    <string name="settings_custom_background_dual_dim_desc">Automatyczne dostosowanie przyciemnienia tła dla jasnych i ciemnych motywów</string>
     <string name="settings_custom_background_day_dim">Przyciemnienie tła w trybie dziennym</string>
     <string name="settings_custom_background_night_dim">Przyciemnienie tła w trybie nocnym</string>
     <string name="settings_grid_working_card_dual_opacity">Włącz podwójną przezroczystość dzienną/nocną</string>
@@ -658,6 +659,14 @@ Upewnij się, że aplikacja jest całkowicie zamknięta i ponownie otwarta, aby 
     <string name="settings_music_save_error">Nie udało się zapisać pliku muzycznego</string>
     <string name="settings_music_cleared">Muzyka wyczyszczona</string>
     <string name="settings_category_multimedia">Multimedia</string>
+    <string name="settings_category_general_summary">Język, aktualizacje, SELinux, dostosowania systemu</string>
+    <string name="settings_category_appearance_summary">Motyw, kolory, układ, tło, czcionki</string>
+    <string name="settings_category_behavior_summary">Debugowanie WWW, zachowanie instalacji, ekran główny</string>
+    <string name="settings_category_security_summary">Biometria, zarządzanie superkluczami</string>
+    <string name="settings_category_backup_summary">Lokalna kopia zapasowa, kopia w chmurze, WebDAV</string>
+    <string name="settings_category_module_summary">Informacje o modułach, sortowanie, instalacja wsadowa</string>
+    <string name="settings_category_function_summary">Ukryj FolkPatch, usługa Umount</string>
+    <string name="settings_category_multimedia_summary">Muzyka w tle, dźwięki, wibracje</string>
     <string name="settings_music_playback_control">Sterowanie odtwarzaniem</string>
     <string name="settings_music_looping">Odtwarzanie w pętli</string>
     <string name="settings_music_looping_summary">Powtarzaj bieżący utwór</string>
@@ -857,6 +866,8 @@ Upewnij się, że aplikacja jest całkowicie zamknięta i ponownie otwarta, aby 
     <string name="app_title_apatch">APatch</string>
     <string name="patch_mode_restore">Tryb: Przywracanie</string>
     <string name="ink_wash_theme">Malarstwo tuszowe</string>
+    <string name="theme_color">Kolor motywu</string>
+    <string name="theme_system">System</string>
     <string name="app_title_fpatch">FPatch</string>
     <string name="app_title_folkpatch">FolkPatch</string>
     <string name="app_title_kernelpatch">KernelPatch</string>

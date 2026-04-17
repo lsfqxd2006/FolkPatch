@@ -406,6 +406,8 @@
     <string name="sakura_theme">Сакура</string>
     <string name="teal_theme">Бирюзовая</string>
     <string name="yellow_theme">Жёлтая</string>
+    <string name="theme_color">Цвет темы</string>
+    <string name="theme_system">Система</string>
 
     <string name="about_app_desc">Реализация Root на основе KernelPatch, позволяющая перехватывать функции ядра без перекомпиляции ядра.</string>
     <string name="about_powered_by">Работает на %1$s</string>
@@ -501,6 +503,7 @@
     <string name="settings_custom_badge_text">Пользовательский текст бейджа</string>
     <string name="settings_custom_badge_text_summary">Изменить текстовое отображение бейджа, только для развлечения</string>
     <string name="settings_custom_background_dual_dim">Включить двойную дневную/ночную затемненность</string>
+    <string name="settings_custom_background_dual_dim_desc">Автоматическая регулировка затемнения фона для светлой и тёмной темы</string>
     <string name="settings_custom_background_day_dim">Затемненность фона в дневном режиме</string>
     <string name="settings_custom_background_night_dim">Затемненность фона в ночном режиме</string>
     <string name="settings_grid_working_card_dual_opacity">Включить двойную дневную/ночную прозрачность</string>
@@ -734,6 +737,14 @@
     <string name="settings_music_save_error">Не удалось сохранить музыкальный файл</string>
     <string name="settings_music_cleared">Музыка очищена</string>
     <string name="settings_category_multimedia">Мультимедиа</string>
+    <string name="settings_category_general_summary">Язык, обновления, SELinux, системные настройки</string>
+    <string name="settings_category_appearance_summary">Тема, цвета, макет, фон, шрифты</string>
+    <string name="settings_category_behavior_summary">Отладка Web, поведение установки, отображение на главном</string>
+    <string name="settings_category_security_summary">Биометрия, управление суперключами</string>
+    <string name="settings_category_backup_summary">Локальное резервное копирование, облачное, WebDAV</string>
+    <string name="settings_category_module_summary">Информация о модулях, сортировка, пакетная установка</string>
+    <string name="settings_category_function_summary">Скрытие FolkPatch, служба Umount</string>
+    <string name="settings_category_multimedia_summary">Фоновая музыка, звуки, вибрация</string>
     <string name="settings_music_playback_control">Управление воспроизведением</string>
     <string name="settings_music_looping">Зациклить</string>
     <string name="settings_music_looping_summary">Повторять текущую композицию</string>

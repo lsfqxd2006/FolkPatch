@@ -396,6 +396,8 @@
     <string name="sakura_theme">樱粉仙霞</string>
     <string name="teal_theme">苍绿仙光</string>
     <string name="yellow_theme">金阳仙光</string>
+    <string name="theme_color">主题颜色</string>
+    <string name="theme_system">系统</string>
 
     <string name="about_app_desc">基于 KernelPatch 仙法之 Root 实现，毋需重编道核的同时，允许钩道核仙函。</string>
     <string name="about_powered_by">赖%s仙门以辅</string>
@@ -508,6 +510,7 @@
     <string name="settings_custom_badge_text">自选仙域印记文字</string>
     <string name="settings_custom_badge_text_summary">修改仙域印记之文字显示，仅供道友娱乐</string>
     <string name="settings_custom_background_dual_dim">启昼夜双修仙法</string>
+    <string name="settings_custom_background_dual_dim_desc">根据亮色和暗色主题自动调整背景暗度</string>
     <string name="settings_custom_background_day_dim">白昼仙法暗度</string>
     <string name="settings_custom_background_night_dim">夜晚仙法暗度</string>
     <string name="settings_grid_working_card_dual_opacity">启昼夜双透仙法</string>
@@ -731,6 +734,14 @@
     <string name="settings_music_save_error">仙音玉简封存失败</string>
     <string name="settings_music_cleared">仙音已涤除</string>
     <string name="settings_category_multimedia">仙音幻阁</string>
+    <string name="settings_category_general_summary">凡尘语韵、天道更新、仙界禁令、乾坤调整</string>
+    <string name="settings_category_appearance_summary">道韵主题、灵光色彩、仙阵布局、虚幻背景、符文字体</string>
+    <string name="settings_category_behavior_summary">万维除错、阵法植入、仙府显影</string>
+    <string name="settings_category_security_summary">仙灵印记、万法密钥管理</string>
+    <string name="settings_category_backup_summary">本地拓印、云端仙录、WebDAV传功</string>
+    <string name="settings_category_module_summary">悟道信息、仙序排列、批量灌顶</string>
+    <string name="settings_category_function_summary">FolkPatch隐匿、卸载仙侍</string>
+    <string name="settings_category_multimedia_summary">背景仙音、法术音效、灵力振动</string>
     <string name="settings_music_playback_control">仙音法阵</string>
     <!-- Theme Store Filter -->
     <string name="theme_store_filter_title">筛选仙法</string>

@@ -1,56 +1,101 @@
 package me.bmax.apatch.ui.screen.settings
 
-import android.os.Build
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.PlaylistAddCheck
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
-import me.bmax.apatch.ui.component.SettingsCategory
-import me.bmax.apatch.ui.component.SwitchItem
+import me.bmax.apatch.ui.component.CheckboxItem
+import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.ToggleSettingCard
 
 @Composable
-fun BehaviorSettings(
-    searchText: String,
+fun BehaviorSettingsContent(
     kPatchReady: Boolean,
     aPatchReady: Boolean,
+    flat: Boolean = false,
 ) {
     val prefs = APApplication.sharedPreferences
-    val context = LocalContext.current
-    
-    // Behavior Category
-    val behaviorTitle = stringResource(R.string.settings_category_behavior)
-    val matchBehavior = shouldShow(searchText, behaviorTitle)
 
-    val webDebuggingTitle = stringResource(id = R.string.enable_web_debugging)
-    val webDebuggingSummary = stringResource(id = R.string.enable_web_debugging_summary)
-    val showWebDebugging = matchBehavior || shouldShow(searchText, webDebuggingTitle, webDebuggingSummary)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
-    val installConfirmTitle = stringResource(id = R.string.settings_apm_install_confirm)
-    val installConfirmSummary = stringResource(id = R.string.settings_apm_install_confirm_summary)
-    val showInstallConfirm = aPatchReady && (matchBehavior || shouldShow(searchText, installConfirmTitle, installConfirmSummary))
+    var enableWebDebugging by remember { mutableStateOf(prefs.getBoolean("enable_web_debugging", false)) }
+    ToggleSettingCard(
+            flat = flat,
+        title = stringResource(id = R.string.enable_web_debugging),
+        description = stringResource(id = R.string.enable_web_debugging_summary),
+        checked = enableWebDebugging,
+        onCheckedChange = {
+            enableWebDebugging = it
+            prefs.edit().putBoolean("enable_web_debugging", it).apply()
+        }
+    )
 
-    val enableModuleShortcutAddTitle = stringResource(id = R.string.settings_enable_module_shortcut_add)
-    val enableModuleShortcutAddSummary = stringResource(id = R.string.settings_enable_module_shortcut_add_summary)
-    val showEnableModuleShortcutAdd = aPatchReady && (matchBehavior || shouldShow(searchText, enableModuleShortcutAddTitle, enableModuleShortcutAddSummary))
+    if (aPatchReady) {
+        var installConfirm by remember { mutableStateOf(prefs.getBoolean("apm_install_confirm_enabled", true)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.settings_apm_install_confirm),
+            description = stringResource(id = R.string.settings_apm_install_confirm_summary),
+            checked = installConfirm,
+            onCheckedChange = {
+                installConfirm = it
+                prefs.edit().putBoolean("apm_install_confirm_enabled", it).apply()
+            }
+        )
+    }
 
-    val stayOnPageTitle = stringResource(id = R.string.settings_apm_stay_on_page)
-    val stayOnPageSummary = stringResource(id = R.string.settings_apm_stay_on_page_summary)
-    val showStayOnPage = aPatchReady && (matchBehavior || shouldShow(searchText, stayOnPageTitle, stayOnPageSummary))
+    if (aPatchReady) {
+        var enableModuleShortcutAdd by remember { mutableStateOf(prefs.getBoolean("enable_module_shortcut_add", true)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.settings_enable_module_shortcut_add),
+            description = stringResource(id = R.string.settings_enable_module_shortcut_add_summary),
+            checked = enableModuleShortcutAdd,
+            onCheckedChange = {
+                enableModuleShortcutAdd = it
+                prefs.edit().putBoolean("enable_module_shortcut_add", it).apply()
+            }
+        )
+    }
+
+    if (aPatchReady) {
+        var stayOnPage by remember { mutableStateOf(prefs.getBoolean("apm_action_stay_on_page", true)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.settings_apm_stay_on_page),
+            description = stringResource(id = R.string.settings_apm_stay_on_page_summary),
+            checked = stayOnPage,
+            onCheckedChange = {
+                stayOnPage = it
+                prefs.edit().putBoolean("apm_action_stay_on_page", it).apply()
+            }
+        )
+    }
 
     var currentStyle by remember { mutableStateOf(prefs.getString("home_layout_style", "stats")) }
-    
     DisposableEffect(Unit) {
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
             if (key == "home_layout_style") {
@@ -63,289 +108,185 @@ fun BehaviorSettings(
         }
     }
 
-    val hideApatchTitle = stringResource(id = R.string.settings_hide_apatch_card)
-    val hideApatchSummary = stringResource(id = R.string.settings_hide_apatch_card_summary)
-    val showHideApatch = currentStyle != "focus" && (matchBehavior || shouldShow(searchText, hideApatchTitle, hideApatchSummary))
-
-    val hideSuTitle = stringResource(id = R.string.home_hide_su_path)
-    val hideSuSummary = stringResource(id = R.string.home_hide_su_path_summary)
-    val showHideSu = kPatchReady && (matchBehavior || shouldShow(searchText, hideSuTitle, hideSuSummary))
-
-    val hideKpatchTitle = stringResource(id = R.string.home_hide_kpatch_version)
-    val hideKpatchSummary = stringResource(id = R.string.home_hide_kpatch_version_summary)
-    val showHideKpatch = kPatchReady && (matchBehavior || shouldShow(searchText, hideKpatchTitle, hideKpatchSummary))
-
-    val hideFingerprintTitle = stringResource(id = R.string.home_hide_fingerprint)
-    val hideFingerprintSummary = stringResource(id = R.string.home_hide_fingerprint_summary)
-    val showHideFingerprint = kPatchReady && (matchBehavior || shouldShow(searchText, hideFingerprintTitle, hideFingerprintSummary))
-
-    val hideZygiskTitle = stringResource(id = R.string.home_hide_zygisk)
-    val hideZygiskSummary = stringResource(id = R.string.home_hide_zygisk_summary)
-    val showHideZygisk = kPatchReady && (matchBehavior || shouldShow(searchText, hideZygiskTitle, hideZygiskSummary))
-
-    val hideMountTitle = stringResource(id = R.string.home_hide_mount)
-    val hideMountSummary = stringResource(id = R.string.home_hide_mount_summary)
-    val showHideMount = kPatchReady && (matchBehavior || shouldShow(searchText, hideMountTitle, hideMountSummary))
-
-    val useLegacySuPageTitle = stringResource(id = R.string.settings_use_legacy_su_page)
-    val useLegacySuPageSummary = stringResource(id = R.string.settings_use_legacy_su_page_summary)
-    val showUseLegacySuPage = kPatchReady && (matchBehavior || shouldShow(searchText, useLegacySuPageTitle, useLegacySuPageSummary))
-
-    // Badge Count Settings
-    val badgeCountTitle = stringResource(id = R.string.enable_badge_count)
-    val badgeCountSummary = stringResource(id = R.string.enable_badge_count_summary)
-    val showSuperUserBadgeTitle = stringResource(id = R.string.badge_superuser)
-    val showApmBadgeTitle = stringResource(id = R.string.badge_apm)
-    val showKernelBadgeTitle = stringResource(id = R.string.badge_kernel)
-    
-    val showBadgeSettings = kPatchReady && (matchBehavior || shouldShow(searchText, badgeCountTitle, badgeCountSummary, showSuperUserBadgeTitle, showApmBadgeTitle, showKernelBadgeTitle))
-
-    val showBehaviorCategory = showWebDebugging || showInstallConfirm || showEnableModuleShortcutAdd || showStayOnPage || showHideApatch || showHideSu || showHideKpatch || showHideFingerprint || showHideZygisk || showHideMount || showUseLegacySuPage || showBadgeSettings
-
-    if (showBehaviorCategory) {
-        SettingsCategory(icon = Icons.Filled.Visibility, title = behaviorTitle, isSearching = searchText.isNotEmpty()) {
-            
-            // Web Debugging
-            if (showWebDebugging) {
-                var enableWebDebugging by remember { mutableStateOf(prefs.getBoolean("enable_web_debugging", false)) }
-                SwitchItem(
-                    icon = Icons.Filled.BugReport,
-                    title = webDebuggingTitle,
-                    summary = webDebuggingSummary,
-                    checked = enableWebDebugging,
-                    onCheckedChange = {
-                        enableWebDebugging = it
-                        prefs.edit().putBoolean("enable_web_debugging", it).apply()
-                    }
-                )
+    if (currentStyle != "focus") {
+        var hideApatchCard by remember { mutableStateOf(prefs.getBoolean("hide_apatch_card", false)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.settings_hide_apatch_card),
+            description = stringResource(id = R.string.settings_hide_apatch_card_summary),
+            checked = hideApatchCard,
+            onCheckedChange = {
+                hideApatchCard = it
+                prefs.edit().putBoolean("hide_apatch_card", it).apply()
             }
+        )
+    }
 
-            // Install Confirm
-            if (showInstallConfirm) {
-                var installConfirm by remember { mutableStateOf(prefs.getBoolean("apm_install_confirm_enabled", true)) }
-                SwitchItem(
-                    icon = Icons.Filled.Check,
-                    title = installConfirmTitle,
-                    summary = installConfirmSummary,
-                    checked = installConfirm,
-                    onCheckedChange = {
-                        installConfirm = it
-                        prefs.edit().putBoolean("apm_install_confirm_enabled", it).apply()
-                    }
-                )
+    if (kPatchReady) {
+        var hideSuPath by remember { mutableStateOf(prefs.getBoolean("hide_su_path", false)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.home_hide_su_path),
+            description = stringResource(id = R.string.home_hide_su_path_summary),
+            checked = hideSuPath,
+            onCheckedChange = {
+                hideSuPath = it
+                prefs.edit().putBoolean("hide_su_path", it).apply()
             }
+        )
+    }
 
-            // Enable Module Shortcut Add
-            if (showEnableModuleShortcutAdd) {
-                var enableModuleShortcutAdd by remember { mutableStateOf(prefs.getBoolean("enable_module_shortcut_add", true)) }
-                SwitchItem(
-                    icon = Icons.Filled.AddCircleOutline,
-                    title = enableModuleShortcutAddTitle,
-                    summary = enableModuleShortcutAddSummary,
-                    checked = enableModuleShortcutAdd,
-                    onCheckedChange = {
-                        enableModuleShortcutAdd = it
-                        prefs.edit().putBoolean("enable_module_shortcut_add", it).apply()
-                    }
-                )
+    if (kPatchReady) {
+        var hideKpatchVersion by remember { mutableStateOf(prefs.getBoolean("hide_kpatch_version", false)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.home_hide_kpatch_version),
+            description = stringResource(id = R.string.home_hide_kpatch_version_summary),
+            checked = hideKpatchVersion,
+            onCheckedChange = {
+                hideKpatchVersion = it
+                prefs.edit().putBoolean("hide_kpatch_version", it).apply()
             }
+        )
+    }
 
-            // Stay On Page
-            if (showStayOnPage) {
-                var stayOnPage by remember { mutableStateOf(prefs.getBoolean("apm_action_stay_on_page", true)) }
-                SwitchItem(
-                    icon = Icons.Filled.RemoveFromQueue,
-                    title = stayOnPageTitle,
-                    summary = stayOnPageSummary,
-                    checked = stayOnPage,
-                    onCheckedChange = {
-                        stayOnPage = it
-                        prefs.edit().putBoolean("apm_action_stay_on_page", it).apply()
-                    }
-                )
+    if (kPatchReady) {
+        var hideFingerprint by remember { mutableStateOf(prefs.getBoolean("hide_fingerprint", false)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.home_hide_fingerprint),
+            description = stringResource(id = R.string.home_hide_fingerprint_summary),
+            checked = hideFingerprint,
+            onCheckedChange = {
+                hideFingerprint = it
+                prefs.edit().putBoolean("hide_fingerprint", it).apply()
             }
+        )
+    }
 
-            // Hide APatch
-            if (showHideApatch) {
-                var hideApatchCard by remember { mutableStateOf(prefs.getBoolean("hide_apatch_card", false)) }
-                SwitchItem(
-                    icon = Icons.Filled.VisibilityOff,
-                    title = hideApatchTitle,
-                    summary = hideApatchSummary,
-                    checked = hideApatchCard,
-                    onCheckedChange = {
-                        hideApatchCard = it
-                        prefs.edit().putBoolean("hide_apatch_card", it).apply()
-                    }
-                )
+    if (kPatchReady) {
+        var hideZygisk by remember { mutableStateOf(prefs.getBoolean("hide_zygisk", false)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.home_hide_zygisk),
+            description = stringResource(id = R.string.home_hide_zygisk_summary),
+            checked = hideZygisk,
+            onCheckedChange = {
+                hideZygisk = it
+                prefs.edit().putBoolean("hide_zygisk", it).apply()
             }
+        )
+    }
 
-            // Hide SU Path
-            if (showHideSu) {
-                var hideSuPath by remember { mutableStateOf(prefs.getBoolean("hide_su_path", false)) }
-                SwitchItem(
-                    icon = Icons.Filled.VisibilityOff,
-                    title = hideSuTitle,
-                    summary = hideSuSummary,
-                    checked = hideSuPath,
-                    onCheckedChange = {
-                        hideSuPath = it
-                        prefs.edit().putBoolean("hide_su_path", it).apply()
-                    }
-                )
+    if (kPatchReady) {
+        var hideMount by remember { mutableStateOf(prefs.getBoolean("hide_mount", false)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.home_hide_mount),
+            description = stringResource(id = R.string.home_hide_mount_summary),
+            checked = hideMount,
+            onCheckedChange = {
+                hideMount = it
+                prefs.edit().putBoolean("hide_mount", it).apply()
             }
+        )
+    }
 
-            // Hide KPatch Version
-            if (showHideKpatch) {
-                var hideKpatchVersion by remember { mutableStateOf(prefs.getBoolean("hide_kpatch_version", false)) }
-                SwitchItem(
-                    icon = Icons.Filled.VisibilityOff,
-                    title = hideKpatchTitle,
-                    summary = hideKpatchSummary,
-                    checked = hideKpatchVersion,
-                    onCheckedChange = {
-                        hideKpatchVersion = it
-                        prefs.edit().putBoolean("hide_kpatch_version", it).apply()
-                    }
-                )
+    if (kPatchReady) {
+        var useLegacySuPage by remember { mutableStateOf(prefs.getBoolean("use_legacy_su_page", false)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.settings_use_legacy_su_page),
+            description = stringResource(id = R.string.settings_use_legacy_su_page_summary),
+            checked = useLegacySuPage,
+            onCheckedChange = {
+                useLegacySuPage = it
+                prefs.edit().putBoolean("use_legacy_su_page", it).apply()
             }
+        )
+    }
 
-            // Hide Fingerprint
-            if (showHideFingerprint) {
-                var hideFingerprint by remember { mutableStateOf(prefs.getBoolean("hide_fingerprint", false)) }
-                SwitchItem(
-                    icon = Icons.Filled.VisibilityOff,
-                    title = hideFingerprintTitle,
-                    summary = hideFingerprintSummary,
-                    checked = hideFingerprint,
-                    onCheckedChange = {
-                        hideFingerprint = it
-                        prefs.edit().putBoolean("hide_fingerprint", it).apply()
-                    }
-                )
-            }
+    if (kPatchReady) {
+        var enableSuperUserBadge by remember { mutableStateOf(prefs.getBoolean("badge_superuser", true)) }
+        var enableApmBadge by remember { mutableStateOf(prefs.getBoolean("badge_apm", true)) }
+        var enableKernelBadge by remember { mutableStateOf(prefs.getBoolean("badge_kernel", true)) }
+        var expanded by remember { mutableStateOf(false) }
+        val rotationState by animateFloatAsState(
+            targetValue = if (expanded) 180f else 0f,
+            label = "ArrowRotation"
+        )
+        val badgeCountTitle = stringResource(id = R.string.enable_badge_count)
+        val badgeCountSummary = stringResource(id = R.string.enable_badge_count_summary)
 
-            // Hide Zygisk
-            if (showHideZygisk) {
-                var hideZygisk by remember { mutableStateOf(prefs.getBoolean("hide_zygisk", false)) }
-                SwitchItem(
-                    icon = Icons.Filled.VisibilityOff,
-                    title = hideZygiskTitle,
-                    summary = hideZygiskSummary,
-                    checked = hideZygisk,
-                    onCheckedChange = {
-                        hideZygisk = it
-                        prefs.edit().putBoolean("hide_zygisk", it).apply()
-                    }
-                )
-            }
-
-            // Hide Mount
-            if (showHideMount) {
-                var hideMount by remember { mutableStateOf(prefs.getBoolean("hide_mount", false)) }
-                SwitchItem(
-                    icon = Icons.Filled.VisibilityOff,
-                    title = hideMountTitle,
-                    summary = hideMountSummary,
-                    checked = hideMount,
-                    onCheckedChange = {
-                        hideMount = it
-                        prefs.edit().putBoolean("hide_mount", it).apply()
-                    }
-                )
-            }
-
-            // Use Legacy SU Page
-            if (showUseLegacySuPage) {
-                var useLegacySuPage by remember { mutableStateOf(prefs.getBoolean("use_legacy_su_page", false)) }
-                @Suppress("DEPRECATION")
-                SwitchItem(
-                    icon = Icons.Filled.ViewList,
-                    title = useLegacySuPageTitle,
-                    summary = useLegacySuPageSummary,
-                    checked = useLegacySuPage,
-                    onCheckedChange = {
-                        useLegacySuPage = it
-                        prefs.edit().putBoolean("use_legacy_su_page", it).apply()
-                    }
-                )
-            }
-
-            // Badges
-            if (showBadgeSettings) {
-                var enableSuperUserBadge by remember { mutableStateOf(prefs.getBoolean("badge_superuser", true)) }
-                var enableApmBadge by remember { mutableStateOf(prefs.getBoolean("badge_apm", true)) }
-                var enableKernelBadge by remember { mutableStateOf(prefs.getBoolean("badge_kernel", true)) }
-                var expanded by remember { mutableStateOf(false) }
-                val rotationState by androidx.compose.animation.core.animateFloatAsState(
-                    targetValue = if (expanded) 180f else 0f,
-                    label = "ArrowRotation"
-                )
-
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(text = badgeCountTitle) },
-                    modifier = Modifier.clickable { expanded = !expanded },
-                    supportingContent = {
-                        Text(
-                            text = badgeCountSummary,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                    },
-                    leadingContent = { Icon(Icons.Filled.Notifications, null) },
-                    trailingContent = {
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null,
-                            modifier = Modifier.rotate(rotationState)
-                        )
-                    }
-                )
-
-                androidx.compose.animation.AnimatedVisibility(visible = expanded) {
-                    Column(modifier = Modifier.padding(start = 16.dp)) {
-                        if (matchBehavior || shouldShow(searchText, showSuperUserBadgeTitle)) {
-                            me.bmax.apatch.ui.component.CheckboxItem(
-                                icon = null,
-                                title = showSuperUserBadgeTitle,
-                                summary = null,
-                                checked = enableSuperUserBadge,
-                                onCheckedChange = {
-                                    enableSuperUserBadge = it
-                                    prefs.edit().putBoolean("badge_superuser", it).apply()
-                                }
-                            )
-                        }
-                        
-                        if (matchBehavior || shouldShow(searchText, showApmBadgeTitle)) {
-                            me.bmax.apatch.ui.component.CheckboxItem(
-                                icon = null,
-                                title = showApmBadgeTitle,
-                                summary = null,
-                                checked = enableApmBadge,
-                                onCheckedChange = {
-                                    enableApmBadge = it
-                                    prefs.edit().putBoolean("badge_apm", it).apply()
-                                }
-                            )
-                        }
-                        
-                        if (matchBehavior || shouldShow(searchText, showKernelBadgeTitle)) {
-                            me.bmax.apatch.ui.component.CheckboxItem(
-                                icon = null,
-                                title = showKernelBadgeTitle,
-                                summary = null,
-                                checked = enableKernelBadge,
-                                onCheckedChange = {
-                                    enableKernelBadge = it
-                                    prefs.edit().putBoolean("badge_kernel", it).apply()
-                                }
-                            )
-                        }
-                    }
+        ExpressiveCard(
+            flat = flat,
+            onClick = { expanded = !expanded }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = badgeCountTitle,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = badgeCountSummary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
+                Icon(
+                    imageVector = Icons.Filled.KeyboardArrowDown,
+                    contentDescription = null,
+                    modifier = Modifier.rotate(rotationState)
+                )
             }
         }
+
+        AnimatedVisibility(visible = expanded) {
+            Column(modifier = Modifier.padding(start = 16.dp)) {
+                CheckboxItem(
+                    icon = null,
+                    title = stringResource(id = R.string.badge_superuser),
+                    summary = null,
+                    checked = enableSuperUserBadge,
+                    onCheckedChange = {
+                        enableSuperUserBadge = it
+                        prefs.edit().putBoolean("badge_superuser", it).apply()
+                    }
+                )
+
+                CheckboxItem(
+                    icon = null,
+                    title = stringResource(id = R.string.badge_apm),
+                    summary = null,
+                    checked = enableApmBadge,
+                    onCheckedChange = {
+                        enableApmBadge = it
+                        prefs.edit().putBoolean("badge_apm", it).apply()
+                    }
+                )
+
+                CheckboxItem(
+                    icon = null,
+                    title = stringResource(id = R.string.badge_kernel),
+                    summary = null,
+                    checked = enableKernelBadge,
+                    onCheckedChange = {
+                        enableKernelBadge = it
+                        prefs.edit().putBoolean("badge_kernel", it).apply()
+                    }
+                )
+            }
+        }
+    }
+
     }
 }
