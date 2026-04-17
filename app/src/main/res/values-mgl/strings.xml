@@ -411,6 +411,7 @@
     <string name="loading_modules">Модуль ачааллаж байна…</string>
     <string name="loading_scripts">Скрипт хайж байна…</string>
     <string name="loading_themes">Загвар ачааллаж байна…</string>
+    <string name="loading_apis">API эх сурвалжууд ачааллаж байна…</string>
 
     <string name="about_app_desc">一个基于心之核心的魔法变身解决方案，支持心之结晶和心之函数hook，无需重新锻造心之核心。</string>
     <string name="about_powered_by">由%1$s提供魔力</string>

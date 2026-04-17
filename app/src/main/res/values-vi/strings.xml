@@ -409,6 +409,7 @@ Dưới đây là một số nguyên nhân có thể gây ra thất bại xác t
     <string name="loading_modules">Đang tải mô-đun…</string>
     <string name="loading_scripts">Đang tìm kiếm tập lệnh…</string>
     <string name="loading_themes">Đang tải chủ đề…</string>
+    <string name="loading_apis">Đang tải nguồn API…</string>
 
     <string name="about_app_desc">Cài đặt Root dựa trên KernelPatch, cho phép hook hàm nhân mà không cần biên dịch lại nhân.</string>
     <string name="about_powered_by">Được hỗ trợ bởi %1$s</string>

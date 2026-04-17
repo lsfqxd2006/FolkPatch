@@ -107,7 +107,9 @@ fun ApiMarketplaceScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    AppLoadingIndicator()
+                    AppLoadingIndicator(
+                        text = stringResource(R.string.loading_apis)
+                    )
                 }
             }
             viewModel.errorMessage != null -> {
@@ -123,9 +125,8 @@ fun ApiMarketplaceScreen(
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(16.dp)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
                     Button(onClick = { viewModel.retry() }) {
-                        Text(stringResource(R.string.apm_api_retry))
+                        Text(stringResource(R.string.retry))
                     }
                 }
             }

@@ -874,6 +874,7 @@ Upewnij się, że aplikacja jest całkowicie zamknięta i ponownie otwarta, aby 
     <string name="loading_modules">Ładowanie modułów…</string>
     <string name="loading_scripts">Wyszukiwanie skryptów…</string>
     <string name="loading_themes">Ładowanie motywów…</string>
+    <string name="loading_apis">Ładowanie źródeł API…</string>
     <string name="app_title_fpatch">FPatch</string>
     <string name="app_title_folkpatch">FolkPatch</string>
     <string name="app_title_kernelpatch">KernelPatch</string>

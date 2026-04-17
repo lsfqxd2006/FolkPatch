@@ -416,6 +416,7 @@
     <string name="loading_modules">جارٍ تحميل الوحدات…</string>
     <string name="loading_scripts">جارٍ البحث عن البرامج النصية…</string>
     <string name="loading_themes">جارٍ تحميل السمات…</string>
+    <string name="loading_apis">جارٍ تحميل مصادر واجهة برمجة التطبيقات…</string>
 
     <string name="about_app_desc">تطبيق Root مبني على KernelPatch، يسمح بخطاف وظائف النواة دون إعادة تجميع النواة.</string>
     <string name="about_powered_by">مدعوم من %1$s</string>

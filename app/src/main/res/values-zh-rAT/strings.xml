@@ -403,6 +403,7 @@
     <string name="loading_modules">正在获取模块…</string>
     <string name="loading_scripts">正在查找脚本…</string>
     <string name="loading_themes">正在加载主题…</string>
+    <string name="loading_apis">正在加载 API 法门…</string>
 
     <string name="about_app_desc">一个基于灵魂核心的圣光化身解决方案，支持灵魂晶石和灵魂函数hook，无需重新锻造灵魂核心。</string>
     <string name="about_powered_by">由%1$s提供圣光力量</string>

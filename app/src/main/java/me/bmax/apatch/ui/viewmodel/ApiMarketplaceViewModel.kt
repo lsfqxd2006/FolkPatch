@@ -84,15 +84,11 @@ class ApiMarketplaceViewModel : ViewModel() {
                     Log.d(TAG, "Fetched ${list.size} marketplace items")
                 } else {
                     Log.e(TAG, "Failed to fetch marketplace: ${response.code}")
-                    errorMessage = "HTTP ${response.code}: ${response.message}"
+                    errorMessage = "Failed to fetch API sources: HTTP ${response.code}"
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching marketplace", e)
-                errorMessage = when (e) {
-                    is UnknownHostException -> "Network error: Unable to reach server"
-                    is SocketTimeoutException -> "Connection timeout"
-                    else -> "Error: ${e.message}"
-                }
+                errorMessage = "Error: ${e.message}"
             } finally {
                 isLoading = false
             }

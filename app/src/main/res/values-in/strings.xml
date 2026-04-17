@@ -412,6 +412,7 @@ Berikut adalah beberapa kemungkinan penyebab kegagalan autentikasi—silakan cek
     <string name="loading_modules">Memuat modul…</string>
     <string name="loading_scripts">Mencari skrip…</string>
     <string name="loading_themes">Memuat tema…</string>
+    <string name="loading_apis">Memuat sumber API…</string>
 
     <string name="about_app_desc">Implementasi Root berbasis KernelPatch, memungkinkan *hook* fungsi kernel tanpa kompilasi ulang kernel.</string>
     <string name="about_powered_by">Didukung oleh %1$s</string>

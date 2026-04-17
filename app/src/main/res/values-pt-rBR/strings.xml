@@ -413,6 +413,7 @@ Aqui estão algumas possíveis razões para a falha de autenticação—verifiqu
     <string name="loading_modules">Carregando módulos…</string>
     <string name="loading_scripts">Procurando scripts…</string>
     <string name="loading_themes">Carregando temas…</string>
+    <string name="loading_apis">Carregando fontes de API…</string>
 
     <string name="about_app_desc">Uma implementação Root baseada em KernelPatch, permitindo hooks de função do kernel sem recompilar o kernel.</string>
     <string name="about_powered_by">Desenvolvido por %1$s</string>

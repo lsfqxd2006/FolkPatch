@@ -415,6 +415,7 @@ Aquí hay algunas posibles razones para el fallo de autenticación—por favor v
     <string name="loading_modules">Cargando módulos…</string>
     <string name="loading_scripts">Buscando scripts…</string>
     <string name="loading_themes">Cargando temas…</string>
+    <string name="loading_apis">Cargando fuentes de API…</string>
 
     <string name="about_app_desc">Una implementación Root basada en KernelPatch, permitiendo hooks de funciones del kernel sin recompilar el kernel.</string>
     <string name="about_powered_by">Impulsado por %1$s</string>

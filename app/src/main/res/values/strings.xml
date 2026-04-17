@@ -418,6 +418,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="loading_modules">Loading modules…</string>
     <string name="loading_scripts">Finding scripts…</string>
     <string name="loading_themes">Loading themes…</string>
+    <string name="loading_apis">Loading API sources…</string>
     <string name="retry">Retry</string>
 
     <!-- Online Module Strings -->

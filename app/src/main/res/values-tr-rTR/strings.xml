@@ -315,6 +315,16 @@
     <string name="apm_banner_api_config_desc">Rastgele görsel API URL veya yerel dizin yolu girin. Her modüle özel bir banner görseli verilecektir.</string>
     <string name="apm_banner_api_examples_title">Örnekler:</string>
     <string name="apm_banner_api_examples">API: https://picsum.photos/800/400\nYerel: /sdcard/Pictures/Banners</string>
+    <string name="apm_api_marketplace_title">API Pazarı</string>
+    <string name="apm_api_preview">Önizleme</string>
+    <string name="apm_api_apply">Uygula</string>
+    <string name="apm_api_preview_title">API Önizleme</string>
+    <string name="apm_api_preview_failed">Önizleme yüklenemedi</string>
+    <string name="apm_api_url_label">API URL:</string>
+    <string name="apm_api_apply_success">API kaynağı başarıyla uygulandı</string>
+    <string name="apm_api_verifying">Doğrulanıyor…</string>
+    <string name="apm_api_retry">Yeniden Dene</string>
+    <string name="apm_api_empty">Kullanılabilir API kaynağı yok</string>
     <string name="settings_banner_custom_opacity">Banner Opaklığı</string>
     <string name="settings_banner_custom_opacity_summary">Duvar kağıdı modunu takip etmek yerine banner’lar için özel opaklık kullan</string>
     <string name="settings_banner_opacity">Banner şeffaflığı</string>
@@ -400,6 +410,7 @@ Bol şans! Ayrıca, aşağıdaki belge butonuna tıklamak kesinlikle doğru!</st
     <string name="loading_modules">Modüller yükleniyor…</string>
     <string name="loading_scripts">Betikler aranıyor…</string>
     <string name="loading_themes">Temalar yükleniyor…</string>
+    <string name="loading_apis">API kaynakları yükleniyor…</string>
 
     <string name="about_app_desc">Çekirdeği yeniden derlemeden kernel modüllerini ve kernel fonksiyon hook’larını destekleyen, kernel tabanlı bir root çözümü.</string>
     <string name="about_powered_by">%1$s tarafından desteklenmektedir</string>
