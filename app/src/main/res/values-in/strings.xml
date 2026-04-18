@@ -713,6 +713,8 @@ Pastikan aplikasi ditutup sepenuhnya dan dimulai ulang untuk menjalankan perinta
     <string name="settings_appearance_background_summary">Latar belakang kustom, video, dan multi-latar belakang</string>
     <string name="settings_appearance_night_mode">Pengaturan mode malam</string>
     <string name="settings_appearance_night_mode_summary">Tema gelap dan konfigurasi warna</string>
+    <string name="settings_amoled_theme">Tema Hitam AMOLED</string>
+    <string name="settings_amoled_theme_desc">Latar belakang hitam penuh untuk mode gelap</string>
     <string name="settings_category_behavior">Perilaku</string>
     <string name="settings_category_function">Fungsi</string>
     <string name="settings_use_legacy_su_page">Otorisasi superuser satu halaman</string>

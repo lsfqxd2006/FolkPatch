@@ -683,6 +683,8 @@
     <string name="settings_appearance_background_summary">カスタム背景、動画、マルチ背景</string>
     <string name="settings_appearance_night_mode">ナイトモード設定</string>
     <string name="settings_appearance_night_mode_summary">ダークテーマと色設定</string>
+    <string name="settings_amoled_theme">AMOLEDブラックテーマ</string>
+    <string name="settings_amoled_theme_desc">ダークモードで完全な黒い背景を使用</string>
     <string name="settings_category_behavior">動作</string>
     <string name="settings_category_function">機能</string>
     <string name="settings_category_module">モジュール</string>

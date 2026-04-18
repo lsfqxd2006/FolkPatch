@@ -320,6 +320,30 @@ fun AppearanceSettingsContent(
         )
         Spacer(Modifier.height(8.dp))
 
+        if (isDarkTheme) {
+            var amoledTheme by remember { mutableStateOf(prefs.getBoolean("amoled_theme", false)) }
+            val isWallpaperEnabled = BackgroundConfig.isCustomBackgroundEnabled
+
+            val amoledRefreshObserver by refreshTheme.observeAsState(false)
+            if (amoledRefreshObserver) {
+                amoledTheme = prefs.getBoolean("amoled_theme", false)
+            }
+
+            ToggleSettingCard(
+                title = stringResource(R.string.settings_amoled_theme),
+                description = stringResource(R.string.settings_amoled_theme_desc),
+                checked = amoledTheme,
+                enabled = !isWallpaperEnabled,
+                flat = flat,
+                onCheckedChange = { enabled ->
+                    amoledTheme = enabled
+                    prefs.edit().putBoolean("amoled_theme", enabled).apply()
+                    refreshTheme.value = true
+                },
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+
         Spacer(Modifier.height(16.dp))
         SectionHeader(text = stringResource(R.string.settings_appearance_layout))
         Spacer(Modifier.height(8.dp))

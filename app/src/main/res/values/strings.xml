@@ -773,6 +773,8 @@ Please ensure the app is completely closed and reopened for the commands to exec
     <string name="settings_appearance_background_summary">Custom background, video and multi-background</string>
     <string name="settings_appearance_night_mode">Night Mode Settings</string>
     <string name="settings_appearance_night_mode_summary">Dark theme and color configuration</string>
+    <string name="settings_amoled_theme">AMOLED Black Theme</string>
+    <string name="settings_amoled_theme_desc">Pure black background for dark mode</string>
     <string name="settings_category_module">Modules</string>
     <string name="settings_category_security">Security</string>
     <string name="settings_category_function">Function</string>

@@ -741,6 +741,8 @@
     <string name="settings_appearance_background_summary">自定义背景、视频和多背景喵</string>
     <string name="settings_appearance_night_mode">夜间模式设置喵</string>
     <string name="settings_appearance_night_mode_summary">深色主题和颜色配置喵</string>
+    <string name="settings_amoled_theme">AMOLED 纯黑主题喵</string>
+    <string name="settings_amoled_theme_desc">为深色模式使用纯黑背景喵</string>
     <string name="settings_category_behavior">行为喵</string>
     <string name="settings_category_function">功能喵</string>
     <string name="settings_category_module">模块喵</string>

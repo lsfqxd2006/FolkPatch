@@ -733,6 +733,8 @@ Por ejemplo, los KPM que previenen la modificación de particiones solo pueden u
     <string name="settings_appearance_background_summary">Fondo personalizado, video y multi-fondo</string>
     <string name="settings_appearance_night_mode">Configuración de modo nocturno</string>
     <string name="settings_appearance_night_mode_summary">Tema oscuro y configuración de color</string>
+    <string name="settings_amoled_theme">Tema Negro AMOLED</string>
+    <string name="settings_amoled_theme_desc">Fondo negro puro para el modo oscuro</string>
     <string name="settings_category_behavior">Comportamiento</string>
     <string name="settings_category_function">Función</string>
     <string name="settings_use_legacy_su_page">Autorización de superusuario de página única</string>

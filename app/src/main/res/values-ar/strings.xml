@@ -740,6 +740,8 @@
     <string name="settings_appearance_background_summary">خلفية مخصصة وفيديو والعديد من الخلفيات</string>
     <string name="settings_appearance_night_mode">إعدادات الوضع الليلي</string>
     <string name="settings_appearance_night_mode_summary">السمة الداكنة وتكوين الألوان</string>
+    <string name="settings_amoled_theme">سمة AMOLED السوداء</string>
+    <string name="settings_amoled_theme_desc">خلفية سوداء بالكامل للوضع الداكن</string>
     <string name="settings_category_behavior">السلوك</string>
     <string name="settings_category_function">الوظيفة</string>
     <string name="settings_use_legacy_su_page">تفويض المستخدم المتميز لصفحة واحدة</string>

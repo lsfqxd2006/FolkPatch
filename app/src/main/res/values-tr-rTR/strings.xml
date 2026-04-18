@@ -749,6 +749,8 @@ Komutların çalışması için uygulamanın tamamen kapatılıp yeniden açıld
     <string name="settings_appearance_background_summary">Özel arka plan, video ve çoklu arka plan</string>
     <string name="settings_appearance_night_mode">Gece Modu Ayarları</string>
     <string name="settings_appearance_night_mode_summary">Koyu tema ve renk yapılandırması</string>
+    <string name="settings_amoled_theme">AMOLED Siyah Tema</string>
+    <string name="settings_amoled_theme_desc">Karanlık mod için tam siyah arka plan</string>
     <string name="settings_category_behavior">Davranış</string>
     <string name="settings_category_function">Fonksiyon</string>
     <string name="settings_category_module">Modüller</string>

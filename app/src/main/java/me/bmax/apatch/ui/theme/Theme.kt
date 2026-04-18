@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -72,6 +73,19 @@ private fun SystemBarStyle(
     }
 }
 
+fun ColorScheme.toAmoled(): ColorScheme = copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceContainerLowest = Color.Black,
+    surfaceContainerLow = Color(0xFF050505),
+    surfaceDim = Color(0xFF0D0D0D),
+    surfaceContainer = Color(0xFF0A0A0A),
+    surfaceVariant = Color(0xFF121212),
+    surfaceContainerHigh = Color(0xFF121212),
+    surfaceContainerHighest = Color(0xFF1A1A1A),
+    surfaceBright = Color(0xFF1F1F1F),
+)
+
 val refreshTheme = MutableLiveData(false)
 
 @Composable
@@ -109,6 +123,7 @@ fun APatchTheme(
         )
     }
     var customColorScheme by remember { mutableStateOf(prefs.getString("custom_color", "indigo")) }
+    var amoledTheme by remember { mutableStateOf(prefs.getBoolean("amoled_theme", false)) }
 
     val refreshThemeObserver by refreshTheme.observeAsState(false)
     if (refreshThemeObserver == true) {
@@ -119,6 +134,7 @@ fun APatchTheme(
             false
         ) else false
         customColorScheme = prefs.getString("custom_color", "indigo")
+        amoledTheme = prefs.getBoolean("amoled_theme", false)
         refreshTheme.postValue(false)
     }
 
@@ -190,26 +206,30 @@ fun APatchTheme(
     }
     
     val useCustomBackground = allowCustomBackground && BackgroundConfig.isCustomBackgroundEnabled
-    val colorScheme = baseColorScheme.copy(
-        background = if (useCustomBackground) Color.Transparent else baseColorScheme.background,
-        surface = if (useCustomBackground) {
-            baseColorScheme.surface.copy(alpha = BackgroundConfig.customBackgroundOpacity)
-        } else {
-            baseColorScheme.surface
-        },
-        primary = baseColorScheme.primary,
-        secondary = baseColorScheme.secondary,
-        secondaryContainer = if (useCustomBackground) {
-            baseColorScheme.secondaryContainer.copy(alpha = BackgroundConfig.customBackgroundOpacity)
-        } else {
-            baseColorScheme.secondaryContainer
-        },
-        surfaceContainer = if (useCustomBackground) {
-            baseColorScheme.surfaceContainer.copy(alpha = BackgroundConfig.customBackgroundOpacity)
-        } else {
-            baseColorScheme.surfaceContainer
-        }
-    )
+    val colorScheme = if (darkTheme && amoledTheme && !useCustomBackground) {
+        baseColorScheme.toAmoled()
+    } else {
+        baseColorScheme.copy(
+            background = if (useCustomBackground) Color.Transparent else baseColorScheme.background,
+            surface = if (useCustomBackground) {
+                baseColorScheme.surface.copy(alpha = BackgroundConfig.customBackgroundOpacity)
+            } else {
+                baseColorScheme.surface
+            },
+            primary = baseColorScheme.primary,
+            secondary = baseColorScheme.secondary,
+            secondaryContainer = if (useCustomBackground) {
+                baseColorScheme.secondaryContainer.copy(alpha = BackgroundConfig.customBackgroundOpacity)
+            } else {
+                baseColorScheme.secondaryContainer
+            },
+            surfaceContainer = if (useCustomBackground) {
+                baseColorScheme.surfaceContainer.copy(alpha = BackgroundConfig.customBackgroundOpacity)
+            } else {
+                baseColorScheme.surfaceContainer
+            }
+        )
+    }
 
     SystemBarStyle(
         darkMode = darkTheme

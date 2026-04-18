@@ -732,6 +732,8 @@
     <string name="settings_appearance_background_summary">Пользовательский фон, видео и многофоновый режим</string>
     <string name="settings_appearance_night_mode">Настройки ночного режима</string>
     <string name="settings_appearance_night_mode_summary">Темная тема и настройка цветов</string>
+    <string name="settings_amoled_theme">Чёрная тема AMOLED</string>
+    <string name="settings_amoled_theme_desc">Чисто чёрный фон для тёмного режима</string>
     <string name="settings_category_behavior">Поведение</string>
     <string name="settings_category_function">Функция</string>
     <string name="settings_use_legacy_su_page">Авторизация суперпользователя на одной странице</string>
