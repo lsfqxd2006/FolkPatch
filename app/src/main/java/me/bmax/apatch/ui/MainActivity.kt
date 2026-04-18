@@ -94,6 +94,8 @@ import com.ramcosta.composedestinations.generated.destinations.SecuritySettingsS
 import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
 import coil.Coil
 import coil.ImageLoader
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
 import com.ramcosta.composedestinations.generated.NavGraphs
@@ -823,7 +825,24 @@ class MainActivity : AppCompatActivity() {
                 .components {
                     add(AppIconKeyer())
                     add(AppIconFetcher.Factory(iconSize, false, this@MainActivity))
+                    if (Build.VERSION.SDK_INT >= 28) {
+                        add(coil.decode.ImageDecoderDecoder.Factory())
+                    } else {
+                        add(coil.decode.GifDecoder.Factory())
+                    }
                 }
+                .diskCache(
+                    DiskCache.Builder()
+                        .directory(cacheDir.resolve("image_cache"))
+                        .maxSizeBytes(100L * 1024 * 1024)
+                        .build()
+                )
+                .memoryCache(
+                    MemoryCache.Builder(this@MainActivity)
+                        .maxSizePercent(0.20)
+                        .build()
+                )
+                .crossfade(true)
                 .build()
         )
 
