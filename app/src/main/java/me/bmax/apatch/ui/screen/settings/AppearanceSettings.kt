@@ -72,11 +72,6 @@ fun AppearanceSettingsContent(
     val scope = rememberCoroutineScope()
     val loadingDialog = rememberLoadingDialog()
 
-    LaunchedEffect(Unit) {
-        FontConfig.load(context)
-        refreshTheme.value = true
-    }
-
     var pickingType by remember { mutableStateOf<String?>(null) }
 
     val pickImageLauncher = rememberLauncherForActivityResult(
@@ -224,9 +219,9 @@ fun AppearanceSettingsContent(
 
     val isDarkTheme = if (nightModeFollowSys) isSystemInDarkTheme() else nightModeEnabled
     val themeMode = if (nightModeFollowSys) ThemeMode.SYSTEM else if (nightModeEnabled) ThemeMode.DARK else ThemeMode.LIGHT
-    val customColorScheme = prefs.getString("custom_color", "indigo")
+    val customColorScheme = remember { prefs.getString("custom_color", "indigo") }
 
-    val currentStyle = prefs.getString("home_layout_style", "stats")
+    val currentStyle = remember { prefs.getString("home_layout_style", "stats") }
     val isStatsLayout = currentStyle == "stats"
     var statsTopLayout by remember { mutableStateOf(prefs.getString("stats_top_layout", "list") ?: "list") }
     val statsTopLayoutListLabel = stringResource(id = R.string.settings_stats_top_layout_list)
