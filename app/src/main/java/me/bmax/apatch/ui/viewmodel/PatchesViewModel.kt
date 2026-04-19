@@ -22,6 +22,7 @@ import com.topjohnwu.superuser.nio.ExtendedFile
 import com.topjohnwu.superuser.nio.FileSystemManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.BuildConfig
 import me.bmax.apatch.R
@@ -503,7 +504,12 @@ class PatchesViewModel : ViewModel() {
             // adapt for 0.10.7 and lower KP
             var isKpOld = false
 
-            val superkey = if (useKey && this@PatchesViewModel.superkey.isNotEmpty()) this@PatchesViewModel.superkey else "su"
+            val superkey = if (useKey && this@PatchesViewModel.superkey.isNotEmpty()) {
+                this@PatchesViewModel.superkey
+            } else {
+                val chars = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+                (1..16).map { chars.random() }.joinToString("")
+            }
 
             if (mode == PatchMode.PATCH_AND_INSTALL || mode == PatchMode.INSTALL_TO_NEXT_SLOT) {
 
@@ -590,6 +596,12 @@ class PatchesViewModel : ViewModel() {
                 patching = false
                 return@launch
             }
+
+            withContext(Dispatchers.Main) {
+                APApplication.superKey = superkey
+            }
+
+            shell.newJob().add("echo '$superkey' > /data/adb/folk_superkey", "chmod 600 /data/adb/folk_superkey", "chown root:root /data/adb/folk_superkey").exec()
 
             if (mode == PatchMode.PATCH_AND_INSTALL) {
                 logs.add("- Reboot to finish the installation...")

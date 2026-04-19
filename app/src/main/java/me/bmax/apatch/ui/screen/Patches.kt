@@ -105,7 +105,7 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
 
-    var needKey by rememberSaveable { mutableStateOf(true) }
+    var needKey by rememberSaveable { mutableStateOf(false) }
 
     val viewModel = viewModel<PatchesViewModel>()
     SideEffect {

@@ -332,7 +332,13 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
         APatchKeyHelper.setSharedPreferences(sharedPreferences)
         me.bmax.apatch.util.LauncherIconUtils.applySaved(this)
         Log.d(TAG, "Reading superKey...")
-        superKey = APatchKeyHelper.readSPSuperKey()
+        val savedKey = APatchKeyHelper.readSPSuperKey()
+        if (!savedKey.isNullOrEmpty()) {
+            superKey = savedKey
+        } else {
+            val keyFile = java.io.File("/data/adb/folk_superkey")
+            superKey = if (keyFile.exists()) keyFile.readText().trim() else "su"
+        }
         Log.d(TAG, "superKey read completed, length=${superKey.length}")
 
         Log.d(TAG, "Initializing OkHttpClient...")
