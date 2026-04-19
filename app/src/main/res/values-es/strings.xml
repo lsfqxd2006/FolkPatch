@@ -176,6 +176,8 @@
     <string name="patch_item_extra_args">Args:</string>
     <string name="patch_item_extra_event">Evento:</string>
     <string name="patch_item_skey">SuperKey</string>
+    <string name="patch_custom_superkey">SuperKey personalizado</string>
+    <string name="patch_custom_superkey_summary">Aún puedes configurar un SuperKey para gestionar Root y el kernel, el gestor está autorizado por la firma integrada del kernel</string>
     <string name="patch_item_set_skey_label">La SuperKey debe tener entre 8 y 63 caracteres e incluir números y letras, pero no caracteres especiales.</string>
     <string name="patch_confirm_superkey">Confirmar SuperKey</string>
     <string name="patch_skey_mismatch">SuperKey no coincide</string>

@@ -158,6 +158,8 @@
     <string name="patch_item_extra_args">参数喵：</string>
     <string name="patch_item_extra_event">事件喵：</string>
     <string name="patch_item_skey">超级密钥喵</string>
+    <string name="patch_custom_superkey">自定义超级密钥喵</string>
+    <string name="patch_custom_superkey_summary">你仍然可以设置超级密钥来管理Root和内核喵，管理器已经由内置签名授权了喵</string>
     <string name="patch_item_set_skey_label">超级密钥要是8-63个字符喵，只有数字字母哦，绝对不要加奇怪符号啦喵！</string>
     <string name="patch_confirm_superkey">再确认一次超级密钥喵</string>
     <string name="patch_skey_mismatch">两次超级密钥不一样喵</string>

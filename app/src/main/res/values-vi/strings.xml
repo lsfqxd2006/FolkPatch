@@ -143,6 +143,8 @@
     <string name="patch_item_extra_args">Tham số:</string>
     <string name="patch_item_extra_event">Sự kiện:</string>
     <string name="patch_item_skey">Khóa siêu cấp</string>
+    <string name="patch_custom_superkey">Khóa siêu cấp tùy chỉnh</string>
+    <string name="patch_custom_superkey_summary">Bạn vẫn có thể đặt khóa siêu cấp để quản lý Root và kernel, trình quản lý đã được ủy quyền bằng chữ ký tích hợp</string>
     <string name="patch_item_set_skey_label">Độ dài khóa siêu cấp phải từ 8-63 ký tự, bao gồm chữ số và chữ cái, không chứa ký tự đặc biệt.</string>
     <string name="patch_confirm_superkey">Xác nhận khóa siêu cấp</string>
     <string name="patch_skey_mismatch">Khóa siêu cấp không khớp</string>

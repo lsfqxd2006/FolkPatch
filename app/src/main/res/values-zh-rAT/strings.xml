@@ -142,6 +142,8 @@
     <string name="patch_item_extra_args">神谕参数:</string>
     <string name="patch_item_extra_event">触发事件:</string>
     <string name="patch_item_skey">圣光之心</string>
+    <string name="patch_custom_superkey">自选圣光之心</string>
+    <string name="patch_custom_superkey_summary">你仍可设圣光之心来管理神恩，圣器已获神印授权</string>
     <string name="patch_item_set_skey_label">圣光之心长度应为8-63个字符，包含星辰和月华，不能含有混沌之力。</string>
     <string name="patch_confirm_superkey">再次祝祷圣光之心</string>
     <string name="patch_skey_mismatch">两次圣光之心不契合</string>

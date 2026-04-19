@@ -149,6 +149,8 @@
     <string name="patch_item_extra_args">Argumen:</string>
     <string name="patch_item_extra_event">Acara:</string>
     <string name="patch_item_skey">SuperKey</string>
+    <string name="patch_custom_superkey">SuperKey kustom</string>
+    <string name="patch_custom_superkey_summary">Anda masih dapat mengatur SuperKey untuk mengelola Root dan kernel, manajer telah diotorisasi oleh tanda tangan bawaan kernel</string>
     <string name="patch_item_set_skey_label">SuperKey harus berisi 8-63 karakter dan menyertakan angka dan huruf, tetapi tanpa karakter khusus.</string>
     <string name="patch_confirm_superkey">Konfirmasi SuperKey</string>
     <string name="patch_skey_mismatch">SuperKey tidak cocok</string>

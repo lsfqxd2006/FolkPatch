@@ -143,6 +143,8 @@
     <string name="patch_item_extra_args">參數：</string>
     <string name="patch_item_extra_event">事件：</string>
     <string name="patch_item_skey">超級密鑰</string>
+    <string name="patch_custom_superkey">自訂超級密鑰</string>
+    <string name="patch_custom_superkey_summary">你仍可以設定超級密鑰來管理 Root 以及內核，管理器已由內建簽名授權</string>
     <string name="patch_item_set_skey_label">超級密鑰至少需要８個字元，並且同時包含數字和字母。</string>
     <string name="patch_confirm_superkey">確認超級密鑰</string>
     <string name="patch_skey_mismatch">兩次輸入的超級密鑰不一致</string>

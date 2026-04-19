@@ -149,6 +149,8 @@
     <string name="patch_item_extra_args">Аргументы:</string>
     <string name="patch_item_extra_event">Событие:</string>
     <string name="patch_item_skey">SuperKey</string>
+    <string name="patch_custom_superkey">Пользовательский SuperKey</string>
+    <string name="patch_custom_superkey_summary">Вы по-прежнему можете использовать SuperKey для управления Root и ядром, менеджер авторизован встроенной подписью ядра</string>
     <string name="patch_item_set_skey_label">SuperKey должен содержать 8-63 символа и включать цифры и буквы, но без специальных символов.</string>
     <string name="patch_confirm_superkey">Подтвердите SuperKey</string>
     <string name="patch_skey_mismatch">SuperKey не совпадает</string>
