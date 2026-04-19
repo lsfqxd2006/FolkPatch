@@ -110,8 +110,8 @@
     <string name="home_patch_next_step">Next step</string>
 
     <string name="home_not_installed">Not installed</string>
-    <string name="home_install_unknown">Not installed or authenticated</string>
-    <string name="home_install_unknown_summary">Click to install</string>
+    <string name="home_install_unknown">KernelPatch not installed</string>
+    <string name="home_install_unknown_summary">Root is unavailable. The kernel may not be patched or flashed yet.</string>
     <string name="home_click_to_install">Click to install</string>
     <string name="home_working">Working</string>
     <string name="home_version">Version: %s</string>
@@ -164,6 +164,8 @@
     <string name="patch_item_extra_args">Args:</string>
     <string name="patch_item_extra_event">Event:</string>
     <string name="patch_item_skey">SuperKey</string>
+    <string name="patch_custom_superkey">Custom SuperKey</string>
+    <string name="patch_custom_superkey_summary">still can use superkey manager root, now we are verify manager signature by kernel</string>
     <string name="patch_item_set_skey_label">The SuperKey should be 8-63 characters long and include numbers and letters, but no special characters.</string>
     <string name="patch_confirm_superkey">Confirm SuperKey</string>
     <string name="patch_skey_mismatch">SuperKey does not match</string>

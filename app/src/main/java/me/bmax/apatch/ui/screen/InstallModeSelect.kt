@@ -14,6 +14,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -59,6 +60,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.PatchesDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.bmax.apatch.R
+import me.bmax.apatch.ui.component.WarningCard
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.theme.BackgroundConfig
 import me.bmax.apatch.ui.viewmodel.PatchesViewModel
@@ -322,6 +324,14 @@ private fun SelectInstallMethod(
                         bottom = 16.dp
                     )
                 ) {
+                    if (!rootAvailable) {
+                        Box(Modifier.padding(12.dp)) {
+                            WarningCard(
+                                message = stringResource(R.string.home_install_unknown_summary),
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                            )
+                        }
+                    }
                     kpOptions.forEach { option ->
                         InstallMethodOption(
                             option = option,

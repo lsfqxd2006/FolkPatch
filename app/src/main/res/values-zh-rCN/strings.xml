@@ -104,8 +104,8 @@
     <string name="home_patch_next_step">下一步</string>
 
     <string name="home_not_installed">未安装</string>
-    <string name="home_install_unknown">未安装或未认证</string>
-    <string name="home_install_unknown_summary">点击安装</string>
+    <string name="home_install_unknown">内核补丁未安装</string>
+    <string name="home_install_unknown_summary">当前无法获取 Root，可能尚未修补或未刷入内核。</string>
     <string name="home_click_to_install">点击安装</string>
     <string name="home_working">工作中</string>
     <string name="home_version">版本: %s</string>
@@ -159,6 +159,8 @@
     <string name="patch_item_extra_args">参数:</string>
     <string name="patch_item_extra_event">事件:</string>
     <string name="patch_item_skey">超级密钥</string>
+    <string name="patch_custom_superkey">自定义超级密钥</string>
+    <string name="patch_custom_superkey_summary">你仍可以设置超级密钥来管理 Root 以及内核，管理器已由内置签名授权</string>
     <string name="patch_item_set_skey_label">超级密钥长度应为 8-63 个字符，包含数字和字母，不能包含特殊字符。</string>
     <string name="patch_confirm_superkey">确认超级密钥</string>
     <string name="patch_skey_mismatch">两次输入的超级密钥不一致</string>

@@ -985,7 +985,7 @@ private fun KStatusCard(
                     val onAction = {
                         when (kpState) {
                             APApplication.State.UNKNOWN_STATE -> {
-                                showAuthKeyDialog.value = true
+                                navigator.navigate(InstallModeSelectScreenDestination)
                             }
 
                             APApplication.State.KERNELPATCH_NEED_UPDATE -> {
@@ -1031,7 +1031,7 @@ private fun KStatusCard(
                     }, content = {
                         when (kpState) {
                             APApplication.State.UNKNOWN_STATE -> {
-                                Text(text = stringResource(id = R.string.super_key))
+                                Text(text = stringResource(id = R.string.home_ap_cando_install))
                             }
 
                             APApplication.State.KERNELPATCH_NEED_UPDATE -> {
