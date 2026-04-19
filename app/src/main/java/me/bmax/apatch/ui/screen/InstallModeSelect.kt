@@ -283,6 +283,15 @@ private fun SelectInstallMethod(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
     ) {
+        if (!rootAvailable) {
+            Box(Modifier.padding(vertical = 8.dp)) {
+                WarningCard(
+                    message = stringResource(R.string.home_install_unknown_summary),
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                )
+            }
+        }
+
         // KernelPatch Patching/Installing
         ElevatedCard(
             colors = cardColors,
@@ -323,14 +332,6 @@ private fun SelectInstallMethod(
                         bottom = 16.dp
                     )
                 ) {
-                    if (!rootAvailable) {
-                        Box(Modifier.padding(12.dp)) {
-                            WarningCard(
-                                message = stringResource(R.string.home_install_unknown_summary),
-                                color = MaterialTheme.colorScheme.outlineVariant,
-                            )
-                        }
-                    }
                     kpOptions.forEach { option ->
                         InstallMethodOption(
                             option = option,
