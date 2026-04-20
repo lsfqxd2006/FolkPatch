@@ -111,7 +111,7 @@ jobs:
       - name: Create keystore.properties
         run: |
           cat > keystore.properties << 'EOF'
-          KEYSTORE_FILE=FolkPatch.jks
+          KEYSTORE_FILE=../FolkPatch.jks
           KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS=${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
