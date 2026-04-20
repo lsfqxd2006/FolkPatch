@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Build
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -303,6 +305,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         installSplashScreen().setKeepOnScreenCondition { isLoading }
+
+        // Safety net: force dismiss splash after 15 seconds to prevent permanent hang
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (isLoading) {
+                android.util.Log.w("MainActivity", "Splash safety net triggered - force dismissing")
+                isLoading = false
+            }
+        }, 15_000)
 
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
