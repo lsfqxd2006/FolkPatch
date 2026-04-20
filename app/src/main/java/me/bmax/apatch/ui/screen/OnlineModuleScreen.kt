@@ -4,9 +4,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.items as gridItems
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -128,15 +126,38 @@ fun OnlineModuleScreen(navigator: DestinationsNavigator) {
                 val configuration = LocalConfiguration.current
                 val isWideScreen = configuration.screenWidthDp >= 600
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(if (isWideScreen) 2 else 1),
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    gridItems(viewModel.modules) { module ->
-                        OnlineModuleItem(module, context)
+                if (isWideScreen) {
+                    val chunkedModules = remember(viewModel.modules) { viewModel.modules.chunked(2) }
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(chunkedModules, key = { chunk -> chunk.joinToString("|") { it.name } }) { chunk ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                chunk.forEach { module ->
+                                    Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                                        OnlineModuleItem(module, context)
+                                    }
+                                }
+                                if (chunk.size == 1) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(viewModel.modules) { module ->
+                            OnlineModuleItem(module, context)
+                        }
                     }
                 }
             }
@@ -154,7 +175,7 @@ fun OnlineModuleItem(module: OnlineModuleViewModel.OnlineModule, context: Contex
     val downloadNotificationText = stringResource(R.string.online_module_download_notification, module.name)
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().fillMaxHeight(),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,
         shape = RoundedCornerShape(20.dp)
