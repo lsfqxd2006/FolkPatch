@@ -12,7 +12,7 @@ use log::{error, info, warn};
 use crate::package::{read_ap_package_config, synchronize_package_uid};
 
 const MAJOR: c_long = 0;
-const MINOR: c_long = 11;
+const MINOR: c_long = 13;
 const PATCH: c_long = 1;
 
 const KSTORAGE_EXCLUDE_LIST_GROUP: i32 = 1;
@@ -28,6 +28,9 @@ const SUPERCALL_SU_RESET_PATH: c_long = 0x1111;
 const SUPERCALL_SU_GET_SAFEMODE: c_long = 0x1112;
 
 const SUPERCALL_KPM_LOAD: c_long = 0x1020;
+
+const SUPERCALL_UTS_SET: c_long = 0x1050;
+const SUPERCALL_UTS_RESET: c_long = 0x1051;
 
 const SUPERCALL_SCONTEXT_LEN: usize = 0x60;
 
@@ -456,4 +459,120 @@ pub fn autoload_kpm_modules(superkey: &Option<String>, event_filter: &str) {
         }
     }
     info!("[kpm_autoload] done: success={}, fail={}", success, fail);
+}
+
+fn sc_uts_set(key: &CStr, release: Option<&CStr>, version: Option<&CStr>) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    let release_ptr = match release {
+        Some(r) => r.as_ptr(),
+        None => std::ptr::null(),
+    };
+    let version_ptr = match version {
+        Some(v) => v.as_ptr(),
+        None => std::ptr::null(),
+    };
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_UTS_SET),
+            release_ptr,
+            version_ptr,
+        ) as c_long
+    }
+}
+
+fn sc_uts_reset(key: &CStr) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_UTS_RESET),
+        ) as c_long
+    }
+}
+
+pub fn apply_uts_spoof(superkey: &Option<String>) {
+    if !std::path::Path::new(crate::defs::UTS_SPOOF_ENABLE_FILE).exists() {
+        info!("[uts_spoof] disabled, skipping");
+        return;
+    }
+
+    let config_content = match std::fs::read_to_string(crate::defs::UTS_SPOOF_CONFIG_FILE) {
+        Ok(c) => c,
+        Err(e) => {
+            warn!("[uts_spoof] failed to read config: {}", e);
+            return;
+        }
+    };
+
+    let config: serde_json::Value = match serde_json::from_str(&config_content) {
+        Ok(v) => v,
+        Err(e) => {
+            warn!("[uts_spoof] failed to parse config: {}", e);
+            return;
+        }
+    };
+
+    let release = config.get("release").and_then(|v| v.as_str()).unwrap_or("");
+    let version = config.get("version").and_then(|v| v.as_str()).unwrap_or("");
+
+    let key = convert_superkey(superkey);
+    let key = match key {
+        Some(k) => k,
+        None => {
+            warn!("[uts_spoof] no superkey available");
+            return;
+        }
+    };
+
+    // Reset first to ensure kernel has backed up originals
+    let reset_rc = sc_uts_reset(&key);
+    if reset_rc < 0 {
+        warn!("[uts_spoof] reset failed: {}", reset_rc);
+    }
+
+    // Only set if we have values to spoof
+    let release_cstr = if !release.is_empty() {
+        match CString::new(release) {
+            Ok(c) => Some(c),
+            Err(e) => {
+                warn!("[uts_spoof] invalid release string: {}", e);
+                None
+            }
+        }
+    } else {
+        None
+    };
+    let version_cstr = if !version.is_empty() {
+        match CString::new(version) {
+            Ok(c) => Some(c),
+            Err(e) => {
+                warn!("[uts_spoof] invalid version string: {}", e);
+                None
+            }
+        }
+    } else {
+        None
+    };
+
+    if release_cstr.is_some() || version_cstr.is_some() {
+        let rc = sc_uts_set(
+            &key,
+            release_cstr.as_deref(),
+            version_cstr.as_deref(),
+        );
+        if rc == 0 {
+            info!("[uts_spoof] applied: release='{}' version='{}'", release, version);
+        } else {
+            warn!("[uts_spoof] set failed: {}", rc);
+        }
+    } else {
+        info!("[uts_spoof] config has empty values, skipping set");
+    }
 }

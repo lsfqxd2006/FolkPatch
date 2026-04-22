@@ -128,6 +128,9 @@ pub fn on_post_data_fs(superkey: Option<String>) -> Result<()> {
     info!("Re-privilege apd profile after injecting sepolicy");
     supercall::privilege_apd_profile(&superkey);
 
+    // Apply UTS namespace spoofing if configured
+    supercall::apply_uts_spoof(&superkey);
+
     // Clear all temporary module configs early
     if let Err(e) = crate::module_config::clear_all_temp_configs() {
         warn!("clear temp configs failed: {e}");
