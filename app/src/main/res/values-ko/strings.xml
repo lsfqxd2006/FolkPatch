@@ -453,7 +453,7 @@
     <string name="crash_handle_copy">복사</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">앱 버전</string>
+    <string name="about_app_version">앱 버전: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">텔레그램 채널</string>
 

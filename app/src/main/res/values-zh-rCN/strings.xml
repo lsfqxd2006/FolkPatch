@@ -451,7 +451,7 @@
     <string name="crash_handle_copy">复制</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">应用版本</string>
+    <string name="about_app_version">应用版本: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Telegram 频道</string>
 

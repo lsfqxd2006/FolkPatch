@@ -450,7 +450,7 @@
     <string name="crash_handle_copy">複製</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">應用程式版本</string>
+    <string name="about_app_version">應用程式版本: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Telegram 頻道</string>
 

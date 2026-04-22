@@ -458,7 +458,7 @@
     <string name="crash_handle_copy">نسخ</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">إصدار التطبيق</string>
+    <string name="about_app_version">إصدار التطبيق: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">قناة تيليجرام</string>
 

@@ -450,7 +450,7 @@ Berikut adalah beberapa kemungkinan penyebab kegagalan autentikasi—silakan cek
     <string name="crash_handle_title">Laporan *Crash*</string>
     <string name="crash_handle_copy">Salin</string>
 
-    <string name="about_app_version">Versi Aplikasi</string>
+    <string name="about_app_version">Versi Aplikasi: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Saluran Telegram</string>
 

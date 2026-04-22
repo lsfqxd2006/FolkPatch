@@ -457,7 +457,7 @@ Aquí hay algunas posibles razones para el fallo de autenticación—por favor v
     <string name="crash_handle_copy">Copiar</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">Versión de la App</string>
+    <string name="about_app_version">Versión de la App: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Canal de Telegram</string>
 

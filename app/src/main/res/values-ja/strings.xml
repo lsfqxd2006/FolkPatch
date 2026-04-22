@@ -402,7 +402,7 @@
     <string name="crash_handle_title">クラッシュレポート</string>
     <string name="crash_handle_copy">コピー</string>
     <!-- About Screen Strings -->
-    <string name="about_app_version">アプリのバージョン</string>
+    <string name="about_app_version">アプリのバージョン: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Telegram チャンネル</string>
     <!-- App Title Strings -->

@@ -451,7 +451,7 @@ Dưới đây là một số nguyên nhân có thể gây ra thất bại xác t
     <string name="crash_handle_copy">Sao chép</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">Phiên bản ứng dụng</string>
+    <string name="about_app_version">Phiên bản ứng dụng: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Kênh Telegram</string>
 

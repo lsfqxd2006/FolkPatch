@@ -455,7 +455,7 @@
     <string name="crash_handle_copy">Копировать</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">Версия приложения</string>
+    <string name="about_app_version">Версия приложения: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Канал в Telegram</string>
 

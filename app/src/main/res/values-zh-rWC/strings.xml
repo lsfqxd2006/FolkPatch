@@ -445,7 +445,7 @@
     <string name="crash_handle_copy">誊录渡劫残卷</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">仙法篇次</string>
+    <string name="about_app_version">仙法篇次: %s</string>
     <string name="about_github">GitHub仙府</string>
     <string name="about_telegram_channel">Telegram仙音频道</string>
 

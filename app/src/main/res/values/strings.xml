@@ -457,7 +457,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="crash_handle_copy">Copy</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">App Version</string>
+    <string name="about_app_version">App Version: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Telegram Channel</string>
 

@@ -455,7 +455,7 @@ Aqui estão algumas possíveis razões para a falha de autenticação—verifiqu
     <string name="crash_handle_copy">Copiar</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">Versão do App</string>
+    <string name="about_app_version">Versão do App: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Canal do Telegram</string>
 

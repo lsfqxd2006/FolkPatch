@@ -458,7 +458,7 @@
     <string name="crash_handle_copy">复制一下喵！</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">应用版本哒</string>
+    <string name="about_app_version">应用版本哒: %s</string>
     <string name="about_github">GitHub哒</string>
     <string name="about_telegram_channel">Telegram频道哒</string>
 

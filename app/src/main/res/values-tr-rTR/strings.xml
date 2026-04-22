@@ -452,7 +452,7 @@ Bol şans! Ayrıca, aşağıdaki belge butonuna tıklamak kesinlikle doğru!</st
     <string name="crash_handle_copy">Kopyala</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">Uygulama Sürümü</string>
+    <string name="about_app_version">Uygulama Sürümü: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Telegram Kanalı</string>
 

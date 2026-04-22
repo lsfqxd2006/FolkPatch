@@ -388,7 +388,7 @@
     <string name="crash_handle_title">Aplikacja się wysypała…</string>
     <string name="crash_handle_copy">Kopiuj</string>
     <!-- About Screen Strings -->
-    <string name="about_app_version">Wersja aplikacji</string>
+    <string name="about_app_version">Wersja aplikacji: %s</string>
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Kanał na Telegramie</string>
     <string name="settings_app_dpi">DPI aplikacji</string>

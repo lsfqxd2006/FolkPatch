@@ -445,7 +445,7 @@
     <string name="crash_handle_copy">复制</string>
 
     <!-- About Screen Strings -->
-    <string name="about_app_version">应用魔法等级</string>
+    <string name="about_app_version">应用魔法等级: %s</string>
     <string name="about_github">天使书仓库</string>
     <string name="about_telegram_channel">天使圣堂频道</string>
 
