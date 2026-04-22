@@ -252,6 +252,32 @@ jboolean nativeResetSuPath(JNIEnv *env, jobject /* this */, jstring super_key_js
     return sc_su_reset_path(super_key.get(), su_path.get()) == 0;
 }
 
+jlong nativeUtsSet(JNIEnv *env, jobject /* this */, jstring super_key_jstr,
+                   jstring release_jstr, jstring version_jstr) {
+    ensureSuperKeyNonNull(super_key_jstr);
+
+    const auto super_key = JUTFString(env, super_key_jstr);
+    const auto release_str = JUTFString(env, release_jstr);
+    const auto version_str = JUTFString(env, version_jstr);
+
+    long rc = sc_uts_set(super_key.get(), release_str.get(), version_str.get());
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativeUtsSet error: %ld", rc);
+    }
+    return rc;
+}
+
+jlong nativeUtsReset(JNIEnv *env, jobject /* this */, jstring super_key_jstr) {
+    ensureSuperKeyNonNull(super_key_jstr);
+
+    const auto super_key = JUTFString(env, super_key_jstr);
+    long rc = sc_uts_reset(super_key.get());
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativeUtsReset error: %ld", rc);
+    }
+    return rc;
+}
+
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void * /*reserved*/) {
     LOGI("Enter OnLoad");
 
@@ -286,6 +312,8 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void * /*reserved*/) {
         {"nativeRevokeSu", "(Ljava/lang/String;I)J", reinterpret_cast<void *>(&nativeRevokeSu)},
         {"nativeSuPath", "(Ljava/lang/String;)Ljava/lang/String;", reinterpret_cast<void *>(&nativeSuPath)},
         {"nativeResetSuPath", "(Ljava/lang/String;Ljava/lang/String;)Z", reinterpret_cast<void *>(&nativeResetSuPath)},
+        {"nativeUtsSet", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J", reinterpret_cast<void *>(&nativeUtsSet)},
+        {"nativeUtsReset", "(Ljava/lang/String;)J", reinterpret_cast<void *>(&nativeUtsReset)},
         {"nativeGetApiToken", "(Landroid/content/Context;)Ljava/lang/String;", reinterpret_cast<void *>(&nativeGetApiToken)},
     };
 
