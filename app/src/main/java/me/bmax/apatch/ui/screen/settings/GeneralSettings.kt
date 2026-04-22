@@ -87,9 +87,6 @@ fun GeneralSettingsContent(
 
     val resetSuPathTitle = stringResource(id = R.string.setting_reset_su_path)
 
-    val launcherIconTitle = stringResource(id = R.string.settings_alt_icon)
-    val launcherIconSummary = stringResource(id = R.string.alt_icon_summary)
-
     val appTitleTitle = stringResource(id = R.string.settings_app_title)
     val currentAppTitle = remember { prefs.getString("app_title", "folkpatch") }
     val appTitleLabel = when (currentAppTitle) {
@@ -148,7 +145,6 @@ fun GeneralSettingsContent(
     val showAppListLoadingSchemeDialog = remember { mutableStateOf(false) }
     val showSELinuxModeDialog = remember { mutableStateOf(false) }
 
-    val useAltIcon = remember { mutableStateOf(prefs.getBoolean("use_alt_icon", false)) }
     var autoUpdateCheck by remember { mutableStateOf(prefs.getBoolean("auto_update_check", true)) }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -369,17 +365,6 @@ fun GeneralSettingsContent(
                 onCheckedChange = {
                     setGlobalNamespaceEnabled(if (isGlobalNamespaceEnabled) "0" else "1")
                     onGlobalNamespaceChange(it)
-                }
-            )
-
-            ToggleSettingCard(
-            flat = flat,
-                title = magicMountTitle,
-                description = magicMountSummary,
-                checked = isMagicMountEnabled,
-                onCheckedChange = {
-                    setMagicMountEnabled(it)
-                    onMagicMountChange(it)
                 }
             )
         }
