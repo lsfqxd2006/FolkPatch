@@ -254,7 +254,7 @@ fun installModule(
     } catch (e: Exception) {
         Log.e(TAG, "Failed to open input stream", e)
         Handler(Looper.getMainLooper()).post {
-            Toast.makeText(apApp, permissionMessage, Toast.LENGTH_SHORT).show()
+            me.bmax.apatch.util.ui.showToast(apApp, permissionMessage)
         }
         onStderr("$permissionMessage\n")
         onFinish(false)
