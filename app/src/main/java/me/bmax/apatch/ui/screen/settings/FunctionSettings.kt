@@ -27,6 +27,9 @@ import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
 import me.bmax.apatch.ui.component.ToggleSettingCard
 import me.bmax.apatch.util.setHideServiceEnabled
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardType
 
 @Composable
 fun FunctionSettingsContent(
@@ -43,7 +46,11 @@ fun FunctionSettingsContent(
     onKernelSpoofSave: () -> Unit,
     onKernelSpoofRestore: () -> Unit,
     snackBarHost: SnackbarHostState,
-    onNavigateToUmountConfig: () -> Unit = {},
+    isUmountEnabled: Boolean,
+    onUmountEnabledChange: (Boolean) -> Unit,
+    umountPaths: String,
+    onUmountPathsChange: (String) -> Unit,
+    onUmountSave: () -> Unit,
     flat: Boolean = false,
 ) {
     val context = LocalContext.current
@@ -68,25 +75,64 @@ fun FunctionSettingsContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        ExpressiveCard(flat = flat, onClick = { onNavigateToUmountConfig() }) {
-            Row(
+        val umountPathsLabel = stringResource(id = R.string.umount_config_paths_label)
+        val umountPathsPlaceholder = stringResource(id = R.string.umount_config_paths_placeholder)
+        val umountPathsHelper = stringResource(id = R.string.umount_config_paths_helper)
+
+        ExpressiveCard(flat = flat) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = umountServiceTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = umountServiceTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = umountServiceSummary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = isUmountEnabled,
+                        onCheckedChange = onUmountEnabledChange,
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = umountServiceSummary,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                }
+
+                AnimatedVisibility(visible = isUmountEnabled) {
+                    Column(modifier = Modifier.padding(top = 12.dp)) {
+                        OutlinedTextField(
+                            value = umountPaths,
+                            onValueChange = onUmountPathsChange,
+                            modifier = Modifier.fillMaxWidth().height(160.dp),
+                            label = { Text(umountPathsLabel) },
+                            placeholder = { Text(umountPathsPlaceholder) },
+                            supportingText = { Text(umountPathsHelper) },
+                            minLines = 4,
+                            maxLines = Int.MAX_VALUE,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Button(
+                            onClick = onUmountSave,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(R.string.umount_config_save))
+                        }
+                    }
                 }
             }
         }

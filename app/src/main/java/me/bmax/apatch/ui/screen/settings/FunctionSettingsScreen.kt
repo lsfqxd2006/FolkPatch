@@ -34,13 +34,14 @@ import android.system.Os
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.generated.destinations.UmountConfigScreenDestination
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.Natives
 import me.bmax.apatch.R
+import me.bmax.apatch.ui.component.UmountConfig
+import me.bmax.apatch.ui.component.UmountConfigManager
 import me.bmax.apatch.ui.theme.BackgroundConfig
 import me.bmax.apatch.util.isHideServiceEnabled as checkHideServiceEnabled
 import me.bmax.apatch.util.isUtsSpoofEnabled as checkUtsSpoofEnabled
@@ -49,6 +50,8 @@ import me.bmax.apatch.util.writeUtsSpoofConfig
 import me.bmax.apatch.util.removeUtsSpoofConfig
 import me.bmax.apatch.util.ui.LocalSnackbarHost
 import me.bmax.apatch.util.ui.NavigationBarsSpacer
+import androidx.compose.ui.platform.LocalContext
+import me.bmax.apatch.util.ui.showToast
 
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,8 +65,11 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
     var isKernelSpoofEnabled by rememberSaveable { mutableStateOf(false) }
     var kernelSpoofVersion by rememberSaveable { mutableStateOf("") }
     var kernelSpoofBuildTime by rememberSaveable { mutableStateOf("") }
+    var isUmountEnabled by rememberSaveable { mutableStateOf(false) }
+    var umountPaths by rememberSaveable { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     LaunchedEffect(kPatchReady, aPatchReady) {
         if (kPatchReady && aPatchReady) {
@@ -74,6 +80,9 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                     && checkUtsSpoofEnabled()
                 kernelSpoofVersion = prefs.getString(APApplication.PREF_UTS_SPOOF_RELEASE, "") ?: ""
                 kernelSpoofBuildTime = prefs.getString(APApplication.PREF_UTS_SPOOF_VERSION, "") ?: ""
+                val umountConfig = UmountConfigManager.loadConfig(context)
+                isUmountEnabled = umountConfig.enabled
+                umountPaths = umountConfig.paths
             }
         }
     }
@@ -174,7 +183,25 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                         }
                     },
                     snackBarHost = snackBarHost,
-                    onNavigateToUmountConfig = { navigator.navigate(UmountConfigScreenDestination) },
+                    isUmountEnabled = isUmountEnabled,
+                    onUmountEnabledChange = { isUmountEnabled = it },
+                    umountPaths = umountPaths,
+                    onUmountPathsChange = { umountPaths = it },
+                    onUmountSave = {
+                        val currentEnabled = isUmountEnabled
+                        val currentPaths = umountPaths
+                        scope.launch(Dispatchers.IO) {
+                            val config = UmountConfig(enabled = currentEnabled, paths = currentPaths)
+                            val success = UmountConfigManager.saveConfig(context, config)
+                            withContext(Dispatchers.Main) {
+                                if (success) {
+                                    showToast(context, context.getString(R.string.umount_config_save_success))
+                                } else {
+                                    showToast(context, context.getString(R.string.umount_config_save_failed))
+                                }
+                            }
+                        }
+                    },
                     flat = flat,
                 )
             }
