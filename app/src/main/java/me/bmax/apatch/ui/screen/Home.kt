@@ -544,7 +544,7 @@ fun AuthSuperKey(showDialog: MutableState<Boolean>, showFailedDialog: MutableSta
 
                         val preVerifyKey = Natives.nativeReady(key)
                         if (preVerifyKey) {
-                            APApplication.superKey = key
+                            APApplication.setSuperKeyAndRefresh(key)
                         } else {
                             showFailedDialog.value = true
                         }

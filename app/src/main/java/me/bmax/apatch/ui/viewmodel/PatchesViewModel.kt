@@ -598,7 +598,7 @@ class PatchesViewModel : ViewModel() {
             }
 
             withContext(Dispatchers.Main) {
-                APApplication.superKey = superkey
+                APApplication.updateSuperKeyQuietly(superkey)
             }
 
             shell.newJob().add("echo '$superkey' > /data/adb/folk_superkey", "chmod 600 /data/adb/folk_superkey", "chown root:root /data/adb/folk_superkey").exec()

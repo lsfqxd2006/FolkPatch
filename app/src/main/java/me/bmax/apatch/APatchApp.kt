@@ -223,81 +223,101 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
         }
 
 
-        var superKey: String = ""
-            set(value) {
-                field = value
-                // Run entire init chain on a background thread to avoid blocking main thread
-                thread(name = "superkey-init") {
-                    val ready = BuildConfig.DEBUG_FAKE_ROOT || Natives.nativeReady(value)
-                    _kpStateLiveData.postValue(
-                        if (ready) State.KERNELPATCH_INSTALLED else State.UNKNOWN_STATE
-                    )
-                    _apStateLiveData.postValue(
-                        if (ready) State.ANDROIDPATCH_NOT_INSTALLED else State.UNKNOWN_STATE
-                    )
-                    Log.d(TAG, "state: " + _kpStateLiveData.value)
-                    if (!ready) return@thread
+        private var _superKey: String = ""
 
-                    APatchKeyHelper.writeSPSuperKey(value)
+        var superKey: String
+            get() = _superKey
+            private set(value) {
+                _superKey = value
+            }
 
-                    val rc = BuildConfig.DEBUG_FAKE_ROOT || Natives.su(0, null)
-                    if (!rc) {
-                        Log.e(TAG, "Native.su failed")
-                        return@thread
+        /**
+         * Update superKey without triggering the full init chain.
+         * Use for PATCH_ONLY mode to keep the home status card unchanged.
+         */
+        fun updateSuperKeyQuietly(key: String) {
+            _superKey = key
+            APatchKeyHelper.writeSPSuperKey(key)
+        }
+
+        /**
+         * Set superKey and refresh the entire state detection chain.
+         * Use when KernelPatch is actually installed or the app starts up.
+         */
+        fun setSuperKeyAndRefresh(value: String) {
+            _superKey = value
+            // Run entire init chain on a background thread to avoid blocking main thread
+            thread(name = "superkey-init") {
+                val ready = BuildConfig.DEBUG_FAKE_ROOT || Natives.nativeReady(value)
+                _kpStateLiveData.postValue(
+                    if (ready) State.KERNELPATCH_INSTALLED else State.UNKNOWN_STATE
+                )
+                _apStateLiveData.postValue(
+                    if (ready) State.ANDROIDPATCH_NOT_INSTALLED else State.UNKNOWN_STATE
+                )
+                Log.d(TAG, "state: " + _kpStateLiveData.value)
+                if (!ready) return@thread
+
+                APatchKeyHelper.writeSPSuperKey(value)
+
+                val rc = BuildConfig.DEBUG_FAKE_ROOT || Natives.su(0, null)
+                if (!rc) {
+                    Log.e(TAG, "Native.su failed")
+                    return@thread
+                }
+
+                // Refresh shell after becoming root
+                APatchCli.refresh()
+
+                // KernelPatch version
+                //use build time to check update
+                val buildV = Version.getKpImg()
+                val installedV = Version.installedKPTime()
+
+
+                Log.d(TAG, "kp installed version: ${installedV}, build version: $buildV")
+
+                // use != instead of > to enable downgrade,
+                // Check if update notification is blocked
+                val isBlocked = apApp.isKernelPatchUpdateBlocked()
+
+                if (buildV != installedV) {
+                    if (isBlocked) {
+                        _kpStateLiveData.postValue(State.KERNELPATCH_INSTALLED)
+                    } else {
+                        _kpStateLiveData.postValue(State.KERNELPATCH_NEED_UPDATE)
                     }
+                }
+                Log.d(TAG, "kp state: " + _kpStateLiveData.value)
 
-                    // Refresh shell after becoming root
-                    APatchCli.refresh()
+                if (File(NEED_REBOOT_FILE).exists()) {
+                    _kpStateLiveData.postValue(State.KERNELPATCH_NEED_REBOOT)
+                }
+                Log.d(TAG, "kp state: " + _kpStateLiveData.value)
 
-                    // KernelPatch version
-                    //use build time to check update
-                    val buildV = Version.getKpImg()
-                    val installedV = Version.installedKPTime()
+                // AndroidPatch version
+                val bundledHash = Version.getBundledApdSha256()
+                val installedHash = Version.getInstalledApdSha256()
+                Log.d(TAG, "bundled apd sha256: $bundledHash, installed apd sha256: $installedHash")
 
+                val isApBlocked = apApp.isAndroidPatchUpdateBlocked()
 
-                    Log.d(TAG, "kp installed version: ${installedV}, build version: $buildV")
-
-                    // use != instead of > to enable downgrade,
-                    // Check if update notification is blocked
-                    val isBlocked = apApp.isKernelPatchUpdateBlocked()
-
-                    if (buildV != installedV) {
-                        if (isBlocked) {
-                            _kpStateLiveData.postValue(State.KERNELPATCH_INSTALLED)
-                        } else {
-                            _kpStateLiveData.postValue(State.KERNELPATCH_NEED_UPDATE)
-                        }
-                    }
-                    Log.d(TAG, "kp state: " + _kpStateLiveData.value)
-
-                    if (File(NEED_REBOOT_FILE).exists()) {
-                        _kpStateLiveData.postValue(State.KERNELPATCH_NEED_REBOOT)
-                    }
-                    Log.d(TAG, "kp state: " + _kpStateLiveData.value)
-
-                    // AndroidPatch version
-                    val bundledHash = Version.getBundledApdSha256()
-                    val installedHash = Version.getInstalledApdSha256()
-                    Log.d(TAG, "bundled apd sha256: $bundledHash, installed apd sha256: $installedHash")
-
-                    val isApBlocked = apApp.isAndroidPatchUpdateBlocked()
-
-                    if (BuildConfig.DEBUG_FAKE_ROOT || installedHash.isNotEmpty()) {
-                        if (bundledHash == installedHash) {
+                if (BuildConfig.DEBUG_FAKE_ROOT || installedHash.isNotEmpty()) {
+                    if (bundledHash == installedHash) {
+                        _apStateLiveData.postValue(State.ANDROIDPATCH_INSTALLED)
+                    } else {
+                        if (isApBlocked) {
                             _apStateLiveData.postValue(State.ANDROIDPATCH_INSTALLED)
                         } else {
-                            if (isApBlocked) {
-                                _apStateLiveData.postValue(State.ANDROIDPATCH_INSTALLED)
-                            } else {
-                                _apStateLiveData.postValue(State.ANDROIDPATCH_NEED_UPDATE)
-                            }
+                            _apStateLiveData.postValue(State.ANDROIDPATCH_NEED_UPDATE)
                         }
-                    } else {
-                        _apStateLiveData.postValue(State.ANDROIDPATCH_NOT_INSTALLED)
                     }
-                    Log.d(TAG, "ap state: " + _apStateLiveData.value)
+                } else {
+                    _apStateLiveData.postValue(State.ANDROIDPATCH_NOT_INSTALLED)
                 }
+                Log.d(TAG, "ap state: " + _apStateLiveData.value)
             }
+        }
 
         private fun bypassHiddenApiRestrictions() {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
@@ -361,10 +381,10 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
             null
         }
         if (!savedKey.isNullOrEmpty()) {
-            superKey = savedKey
+            setSuperKeyAndRefresh(savedKey)
         } else {
             val keyFile = java.io.File("/data/adb/folk_superkey")
-            superKey = if (keyFile.exists()) {
+            val key = if (keyFile.exists()) {
                 try {
                     keyFile.readText().trim()
                 } catch (e: Exception) {
@@ -374,6 +394,7 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
             } else {
                 "su"
             }
+            setSuperKeyAndRefresh(key)
         }
         Log.d(TAG, "superKey read completed, length=${superKey.length}")
 

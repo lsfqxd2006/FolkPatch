@@ -103,7 +103,7 @@ fun SecuritySettingsContent(
             val clearSuperKeyDialog = rememberConfirmDialog(
                 onConfirm = {
                     APatchKeyHelper.clearConfigKey()
-                    APApplication.superKey = ""
+                    APApplication.setSuperKeyAndRefresh("")
                 }
             )
             ExpressiveCard(
