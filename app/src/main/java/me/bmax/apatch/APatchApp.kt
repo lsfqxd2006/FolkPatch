@@ -385,22 +385,8 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
             Log.e(TAG, "Failed to read superKey from SharedPreferences", e)
             null
         }
-        if (!savedKey.isNullOrEmpty()) {
-            setSuperKeyAndRefresh(savedKey)
-        } else {
-            val keyFile = java.io.File("/data/adb/folk_superkey")
-            val key = if (keyFile.exists()) {
-                try {
-                    keyFile.readText().trim()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to read folk_superkey file", e)
-                    "su"
-                }
-            } else {
-                "su"
-            }
-            setSuperKeyAndRefresh(key)
-        }
+        val key = savedKey.takeUnless { it.isNullOrEmpty() } ?: "su"
+        setSuperKeyAndRefresh(key)
         Log.d(TAG, "superKey read completed, length=${superKey.length}")
 
         Log.d(TAG, "Initializing OkHttpClient...")
