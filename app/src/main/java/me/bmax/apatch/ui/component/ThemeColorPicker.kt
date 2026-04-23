@@ -84,8 +84,9 @@ fun ThemeColorPicker(
     isDynamicColorSupported: Boolean = false,
     isDynamicColorEnabled: Boolean = false,
     onDynamicColorSelected: () -> Unit = {},
+    bare: Boolean = false,
 ) {
-    ExpressiveCard(modifier = modifier, flat = flat) {
+    val content: @Composable () -> Unit = {
         Column(
             modifier = Modifier.padding(16.dp),
         ) {
@@ -126,6 +127,14 @@ fun ThemeColorPicker(
                     )
                 }
             }
+        }
+    }
+
+    if (bare) {
+        content()
+    } else {
+        ExpressiveCard(modifier = modifier, flat = flat) {
+            content()
         }
     }
 }

@@ -36,6 +36,7 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.BuildConfig
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.ToggleSettingCard
 import me.bmax.apatch.ui.component.UpdateDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
@@ -150,55 +151,66 @@ fun GeneralSettingsContent(
 
     val useAltIcon = remember { mutableStateOf(prefs.getBoolean("use_alt_icon", false)) }
     var autoUpdateCheck by remember { mutableStateOf(prefs.getBoolean("auto_update_check", true)) }
+    var blockUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_KERNELPATCH_UPDATE, false)) }
+    var blockApUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_ANDROIDPATCH_UPDATE, false)) }
+    var folkXEngineEnabled by remember { mutableStateOf(prefs.getBoolean("folkx_engine_enabled", true)) }
+    val currentType = remember { prefs.getString("folkx_animation_type", "linear") }
+    val currentSpeed = remember { prefs.getFloat("folkx_animation_speed", 1.0f) }
+    var predictiveBackEnabled by remember { mutableStateOf(prefs.getBoolean("predictive_back_enabled", true)) }
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    SplicedColumnGroup(flat = flat) {
 
-        ExpressiveCard(flat = flat, onClick = { showLanguageDialog.value = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
+        item {
+            ExpressiveCard(flat = flat, onClick = { showLanguageDialog.value = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = languageTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = languageValue,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            ExpressiveCard(flat = flat, onClick = {
+                scope.launch {
+                    loadingDialog.show()
+                    val hasUpdate = UpdateChecker.checkUpdate()
+                    loadingDialog.hide()
+                    if (hasUpdate) {
+                        showUpdateDialog.value = true
+                    } else {
+                        Toast.makeText(context, R.string.update_latest, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = languageTitle,
+                        text = updateTitle,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = languageValue,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
         }
 
-        ExpressiveCard(flat = flat, onClick = {
-            scope.launch {
-                loadingDialog.show()
-                val hasUpdate = UpdateChecker.checkUpdate()
-                loadingDialog.hide()
-                if (hasUpdate) {
-                    showUpdateDialog.value = true
-                } else {
-                    Toast.makeText(context, R.string.update_latest, Toast.LENGTH_SHORT).show()
-                }
-            }
-        }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = updateTitle,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
-
-        ToggleSettingCard(
+        item {
+            ToggleSettingCard(
             flat = flat,
             title = autoUpdateTitle,
             description = autoUpdateSummary,
@@ -208,9 +220,10 @@ fun GeneralSettingsContent(
                 prefs.edit { putBoolean("auto_update_check", it) }
             }
         )
+        }
 
-        var blockUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_KERNELPATCH_UPDATE, false)) }
-        ToggleSettingCard(
+        item {
+            ToggleSettingCard(
             flat = flat,
             title = blockUpdateTitle,
             description = blockUpdateSummary,
@@ -220,9 +233,10 @@ fun GeneralSettingsContent(
                 prefs.edit { putBoolean(APApplication.PREF_BLOCK_KERNELPATCH_UPDATE, it) }
             }
         )
+        }
 
-        var blockApUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_ANDROIDPATCH_UPDATE, false)) }
-        ToggleSettingCard(
+        item {
+            ToggleSettingCard(
             flat = flat,
             title = blockApUpdateTitle,
             description = blockApUpdateSummary,
@@ -232,9 +246,10 @@ fun GeneralSettingsContent(
                 prefs.edit { putBoolean(APApplication.PREF_BLOCK_ANDROIDPATCH_UPDATE, it) }
             }
         )
+        }
 
-        var folkXEngineEnabled by remember { mutableStateOf(prefs.getBoolean("folkx_engine_enabled", true)) }
-        ToggleSettingCard(
+        item {
+            ToggleSettingCard(
             flat = flat,
             title = folkXEngineTitle,
             description = folkXEngineSummary,
@@ -244,11 +259,9 @@ fun GeneralSettingsContent(
                 prefs.edit().putBoolean("folkx_engine_enabled", it).apply()
             }
         )
+        }
 
-        if (folkXEngineEnabled) {
-            val currentType = remember { prefs.getString("folkx_animation_type", "linear") }
-            val currentSpeed = remember { prefs.getFloat("folkx_animation_speed", 1.0f) }
-
+        item(visible = folkXEngineEnabled) {
             val animationTypeLabel = when (currentType) {
                 "linear" -> R.string.settings_folkx_animation_linear
                 "spatial" -> R.string.settings_folkx_animation_spatial
@@ -278,7 +291,9 @@ fun GeneralSettingsContent(
                     }
                 }
             }
+        }
 
+        item(visible = folkXEngineEnabled) {
             ExpressiveCard(flat = flat, onClick = { showFolkXAnimationSpeedDialog.value = true }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -301,8 +316,7 @@ fun GeneralSettingsContent(
             }
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            var predictiveBackEnabled by remember { mutableStateOf(prefs.getBoolean("predictive_back_enabled", true)) }
+        item(visible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             ToggleSettingCard(
             flat = flat,
                 title = predictiveBackTitle,
@@ -316,7 +330,7 @@ fun GeneralSettingsContent(
             )
         }
 
-        if (kPatchReady) {
+        item(visible = kPatchReady) {
             ExpressiveCard(flat = flat, onClick = { showAppListLoadingSchemeDialog.value = true }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -339,7 +353,7 @@ fun GeneralSettingsContent(
             }
         }
 
-        if (kPatchReady && aPatchReady) {
+        item(visible = kPatchReady && aPatchReady) {
             ExpressiveCard(flat = flat, onClick = { showSELinuxModeDialog.value = true }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -360,7 +374,9 @@ fun GeneralSettingsContent(
                     }
                 }
             }
+        }
 
+        item(visible = kPatchReady && aPatchReady) {
             ToggleSettingCard(
             flat = flat,
                 title = globalNamespaceTitle,
@@ -371,7 +387,9 @@ fun GeneralSettingsContent(
                     onGlobalNamespaceChange(it)
                 }
             )
+        }
 
+        item(visible = kPatchReady && aPatchReady) {
             ToggleSettingCard(
             flat = flat,
                 title = magicMountTitle,
@@ -384,7 +402,8 @@ fun GeneralSettingsContent(
             )
         }
 
-        ToggleSettingCard(
+        item {
+            ToggleSettingCard(
             flat = flat,
             title = launcherIconTitle,
             description = launcherIconSummary,
@@ -395,8 +414,9 @@ fun GeneralSettingsContent(
                 useAltIcon.value = it
             }
         )
+        }
 
-        if (kPatchReady) {
+        item(visible = kPatchReady) {
             ExpressiveCard(flat = flat, onClick = { showResetSuPathDialog.value = true }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -411,28 +431,30 @@ fun GeneralSettingsContent(
             }
         }
 
-        ExpressiveCard(flat = flat, onClick = { showAppTitleDialog.value = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = appTitleTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = appTitleLabel,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+        item {
+            ExpressiveCard(flat = flat, onClick = { showAppTitleDialog.value = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = appTitleTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = appTitleLabel,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
 
-        if (currentAppTitle == "custom") {
+        item(visible = currentAppTitle == "custom") {
             ExpressiveCard(flat = flat, onClick = { showCustomAppTitleDialog.value = true }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -455,86 +477,92 @@ fun GeneralSettingsContent(
             }
         }
 
-        ExpressiveCard(flat = flat, onClick = { showDesktopAppNameDialog.value = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = desktopAppNameTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = currentDesktopAppName.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        ExpressiveCard(flat = flat, onClick = { showDpiDialog.value = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = dpiTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = dpiValue,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        ExpressiveCard(flat = flat, onClick = {
-            scope.launch {
-                val bugreport = loadingDialog.withLoading {
-                    withContext(Dispatchers.IO) {
-                        getBugreportFile(context)
+        item {
+            ExpressiveCard(flat = flat, onClick = { showDesktopAppNameDialog.value = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = desktopAppNameTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = currentDesktopAppName.toString(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
-
-                val uri: Uri = FileProvider.getUriForFile(
-                    context,
-                    "${BuildConfig.APPLICATION_ID}.fileprovider",
-                    bugreport
-                )
-
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    type = "application/gzip"
-                    clipData = android.content.ClipData.newRawUri(null, uri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-
-                context.startActivity(
-                    Intent.createChooser(
-                        shareIntent,
-                        context.getString(R.string.send_log)
-                    )
-                )
             }
-        }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = logTitle,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+        }
+
+        item {
+            ExpressiveCard(flat = flat, onClick = { showDpiDialog.value = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = dpiTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = dpiValue,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            ExpressiveCard(flat = flat, onClick = {
+                scope.launch {
+                    val bugreport = loadingDialog.withLoading {
+                        withContext(Dispatchers.IO) {
+                            getBugreportFile(context)
+                        }
+                    }
+
+                    val uri: Uri = FileProvider.getUriForFile(
+                        context,
+                        "${BuildConfig.APPLICATION_ID}.fileprovider",
+                        bugreport
+                    )
+
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        type = "application/gzip"
+                        clipData = android.content.ClipData.newRawUri(null, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+
+                    context.startActivity(
+                        Intent.createChooser(
+                            shareIntent,
+                            context.getString(R.string.send_log)
+                        )
+                    )
+                }
+            }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = logTitle,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
     }

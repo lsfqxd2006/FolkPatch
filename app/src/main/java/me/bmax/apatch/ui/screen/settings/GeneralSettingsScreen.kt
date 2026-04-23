@@ -85,7 +85,7 @@ fun GeneralSettingsScreen(navigator: DestinationsNavigator) {
         snackbarHost = { SnackbarHost(snackBarHost) },
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.padding(paddingValues).padding(horizontal = 16.dp).nestedScroll(scrollBehavior.nestedScrollConnection),
+            modifier = Modifier.padding(paddingValues).nestedScroll(scrollBehavior.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item { Spacer(Modifier.height(8.dp)) }

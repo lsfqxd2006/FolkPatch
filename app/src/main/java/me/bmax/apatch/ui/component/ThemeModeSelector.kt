@@ -40,8 +40,9 @@ fun ThemeModeSelector(
     onModeSelected: (ThemeMode) -> Unit,
     modifier: Modifier = Modifier,
     flat: Boolean = false,
+    bare: Boolean = false,
 ) {
-    ExpressiveCard(modifier = modifier, flat = flat) {
+    val content: @Composable () -> Unit = {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,6 +76,14 @@ fun ThemeModeSelector(
                 flat = flat,
                 modifier = Modifier.weight(1f),
             )
+        }
+    }
+
+    if (bare) {
+        content()
+    } else {
+        ExpressiveCard(modifier = modifier, flat = flat) {
+            content()
         }
     }
 }

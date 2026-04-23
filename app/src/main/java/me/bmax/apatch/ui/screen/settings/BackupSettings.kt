@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.ToggleSettingCard
 import me.bmax.apatch.ui.theme.BackupConfig
 import me.bmax.apatch.util.BackupLogManager
@@ -38,33 +39,35 @@ fun BackupSettingsContent(
 
     val showWebDavDialog = remember { mutableStateOf(false) }
 
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_enable_local_backup),
-            description = stringResource(id = R.string.settings_enable_local_backup_summary),
-            checked = autoBackupModule,
-            onCheckedChange = {
-                onAutoBackupModuleChange(it)
-                prefs.edit().putBoolean("auto_backup_module", it).apply()
-            }
-        )
+    SplicedColumnGroup(flat = flat) {
+        item {
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_enable_local_backup),
+                description = stringResource(id = R.string.settings_enable_local_backup_summary),
+                checked = autoBackupModule,
+                onCheckedChange = {
+                    onAutoBackupModuleChange(it)
+                    prefs.edit().putBoolean("auto_backup_module", it).apply()
+                }
+            )
+        }
 
-        var autoBackupBoot by remember { mutableStateOf(prefs.getBoolean("auto_backup_boot", false)) }
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_auto_backup_boot),
-            description = stringResource(id = R.string.settings_auto_backup_boot_summary),
-            checked = autoBackupBoot,
-            onCheckedChange = {
-                autoBackupBoot = it
-                prefs.edit().putBoolean("auto_backup_boot", it).apply()
-            }
-        )
+        item {
+            var autoBackupBoot by remember { mutableStateOf(prefs.getBoolean("auto_backup_boot", false)) }
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_auto_backup_boot),
+                description = stringResource(id = R.string.settings_auto_backup_boot_summary),
+                checked = autoBackupBoot,
+                onCheckedChange = {
+                    autoBackupBoot = it
+                    prefs.edit().putBoolean("auto_backup_boot", it).apply()
+                }
+            )
+        }
 
-        if (autoBackupModule) {
+        item(visible = autoBackupModule) {
             val openBackupDirTitle = stringResource(id = R.string.settings_open_backup_dir)
             ExpressiveCard(
                 flat = flat,
@@ -115,18 +118,20 @@ fun BackupSettingsContent(
             }
         }
 
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_enable_cloud_backup),
-            description = stringResource(id = R.string.settings_enable_cloud_backup_summary),
-            checked = BackupConfig.isBackupEnabled,
-            onCheckedChange = {
-                BackupConfig.isBackupEnabled = it
-                BackupConfig.save(context)
-            }
-        )
+        item {
+            ToggleSettingCard(
+                flat = flat,
+                title = stringResource(id = R.string.settings_enable_cloud_backup),
+                description = stringResource(id = R.string.settings_enable_cloud_backup_summary),
+                checked = BackupConfig.isBackupEnabled,
+                onCheckedChange = {
+                    BackupConfig.isBackupEnabled = it
+                    BackupConfig.save(context)
+                }
+            )
+        }
 
-        if (BackupConfig.isBackupEnabled) {
+        item(visible = BackupConfig.isBackupEnabled) {
             val configureWebDavTitle = stringResource(id = R.string.settings_configure_webdav)
             ExpressiveCard(
                 flat = flat,

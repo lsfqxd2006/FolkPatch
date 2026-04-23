@@ -29,6 +29,7 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.CheckboxItem
 import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.ToggleSettingCard
 
 @Composable
@@ -38,62 +39,6 @@ fun BehaviorSettingsContent(
     flat: Boolean = false,
 ) {
     val prefs = APApplication.sharedPreferences
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-
-    var enableWebDebugging by remember { mutableStateOf(prefs.getBoolean("enable_web_debugging", false)) }
-    ToggleSettingCard(
-            flat = flat,
-        title = stringResource(id = R.string.enable_web_debugging),
-        description = stringResource(id = R.string.enable_web_debugging_summary),
-        checked = enableWebDebugging,
-        onCheckedChange = {
-            enableWebDebugging = it
-            prefs.edit().putBoolean("enable_web_debugging", it).apply()
-        }
-    )
-
-    if (aPatchReady) {
-        var installConfirm by remember { mutableStateOf(prefs.getBoolean("apm_install_confirm_enabled", true)) }
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_apm_install_confirm),
-            description = stringResource(id = R.string.settings_apm_install_confirm_summary),
-            checked = installConfirm,
-            onCheckedChange = {
-                installConfirm = it
-                prefs.edit().putBoolean("apm_install_confirm_enabled", it).apply()
-            }
-        )
-    }
-
-    if (aPatchReady) {
-        var enableModuleShortcutAdd by remember { mutableStateOf(prefs.getBoolean("enable_module_shortcut_add", true)) }
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_enable_module_shortcut_add),
-            description = stringResource(id = R.string.settings_enable_module_shortcut_add_summary),
-            checked = enableModuleShortcutAdd,
-            onCheckedChange = {
-                enableModuleShortcutAdd = it
-                prefs.edit().putBoolean("enable_module_shortcut_add", it).apply()
-            }
-        )
-    }
-
-    if (aPatchReady) {
-        var stayOnPage by remember { mutableStateOf(prefs.getBoolean("apm_action_stay_on_page", true)) }
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_apm_stay_on_page),
-            description = stringResource(id = R.string.settings_apm_stay_on_page_summary),
-            checked = stayOnPage,
-            onCheckedChange = {
-                stayOnPage = it
-                prefs.edit().putBoolean("apm_action_stay_on_page", it).apply()
-            }
-        )
-    }
 
     var currentStyle by remember { mutableStateOf(prefs.getString("home_layout_style", "stats")) }
     DisposableEffect(Unit) {
@@ -108,7 +53,65 @@ fun BehaviorSettingsContent(
         }
     }
 
-    if (currentStyle != "focus") {
+    SplicedColumnGroup(flat = flat) {
+
+    item {
+    var enableWebDebugging by remember { mutableStateOf(prefs.getBoolean("enable_web_debugging", false)) }
+    ToggleSettingCard(
+            flat = flat,
+        title = stringResource(id = R.string.enable_web_debugging),
+        description = stringResource(id = R.string.enable_web_debugging_summary),
+        checked = enableWebDebugging,
+        onCheckedChange = {
+            enableWebDebugging = it
+            prefs.edit().putBoolean("enable_web_debugging", it).apply()
+        }
+    )
+    }
+
+    item(visible = aPatchReady) {
+        var installConfirm by remember { mutableStateOf(prefs.getBoolean("apm_install_confirm_enabled", true)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.settings_apm_install_confirm),
+            description = stringResource(id = R.string.settings_apm_install_confirm_summary),
+            checked = installConfirm,
+            onCheckedChange = {
+                installConfirm = it
+                prefs.edit().putBoolean("apm_install_confirm_enabled", it).apply()
+            }
+        )
+    }
+
+    item(visible = aPatchReady) {
+        var enableModuleShortcutAdd by remember { mutableStateOf(prefs.getBoolean("enable_module_shortcut_add", true)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.settings_enable_module_shortcut_add),
+            description = stringResource(id = R.string.settings_enable_module_shortcut_add_summary),
+            checked = enableModuleShortcutAdd,
+            onCheckedChange = {
+                enableModuleShortcutAdd = it
+                prefs.edit().putBoolean("enable_module_shortcut_add", it).apply()
+            }
+        )
+    }
+
+    item(visible = aPatchReady) {
+        var stayOnPage by remember { mutableStateOf(prefs.getBoolean("apm_action_stay_on_page", true)) }
+        ToggleSettingCard(
+            flat = flat,
+            title = stringResource(id = R.string.settings_apm_stay_on_page),
+            description = stringResource(id = R.string.settings_apm_stay_on_page_summary),
+            checked = stayOnPage,
+            onCheckedChange = {
+                stayOnPage = it
+                prefs.edit().putBoolean("apm_action_stay_on_page", it).apply()
+            }
+        )
+    }
+
+    item(visible = currentStyle != "focus") {
         var hideApatchCard by remember { mutableStateOf(prefs.getBoolean("hide_apatch_card", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -122,7 +125,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var hideSuPath by remember { mutableStateOf(prefs.getBoolean("hide_su_path", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -136,7 +139,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var hideKpatchVersion by remember { mutableStateOf(prefs.getBoolean("hide_kpatch_version", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -150,7 +153,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var hideFingerprint by remember { mutableStateOf(prefs.getBoolean("hide_fingerprint", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -164,7 +167,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var hideZygisk by remember { mutableStateOf(prefs.getBoolean("hide_zygisk", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -178,7 +181,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var hideMount by remember { mutableStateOf(prefs.getBoolean("hide_mount", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -192,7 +195,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var useLegacySuPage by remember { mutableStateOf(prefs.getBoolean("use_legacy_su_page", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -206,7 +209,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var enableSuperUserBadge by remember { mutableStateOf(prefs.getBoolean("badge_superuser", true)) }
         var enableApmBadge by remember { mutableStateOf(prefs.getBoolean("badge_apm", true)) }
         var enableKernelBadge by remember { mutableStateOf(prefs.getBoolean("badge_kernel", true)) }

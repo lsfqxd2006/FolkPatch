@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.ToggleSettingCard
 import me.bmax.apatch.util.setHideServiceEnabled
 import androidx.compose.foundation.text.KeyboardOptions
@@ -61,156 +62,158 @@ fun FunctionSettingsContent(
     val umountServiceTitle = stringResource(id = R.string.settings_umount_service)
     val umountServiceSummary = stringResource(id = R.string.settings_umount_service_summary)
 
-    if (kPatchReady && aPatchReady) {
-        ToggleSettingCard(
-            flat = flat,
-            title = hideServiceTitle,
-            description = hideServiceSummary,
-            checked = isHideServiceEnabled,
-            onCheckedChange = {
-                setHideServiceEnabled(it)
-                onHideServiceChange(it)
-            }
-        )
+    SplicedColumnGroup(flat = flat) {
+        item(visible = kPatchReady && aPatchReady) {
+            ToggleSettingCard(
+                flat = flat,
+                title = hideServiceTitle,
+                description = hideServiceSummary,
+                checked = isHideServiceEnabled,
+                onCheckedChange = {
+                    setHideServiceEnabled(it)
+                    onHideServiceChange(it)
+                }
+            )
+        }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        item(visible = kPatchReady && aPatchReady) {
+            val umountPathsLabel = stringResource(id = R.string.umount_config_paths_label)
+            val umountPathsPlaceholder = stringResource(id = R.string.umount_config_paths_placeholder)
+            val umountPathsHelper = stringResource(id = R.string.umount_config_paths_helper)
 
-        val umountPathsLabel = stringResource(id = R.string.umount_config_paths_label)
-        val umountPathsPlaceholder = stringResource(id = R.string.umount_config_paths_placeholder)
-        val umountPathsHelper = stringResource(id = R.string.umount_config_paths_helper)
-
-        ExpressiveCard(flat = flat) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+            ExpressiveCard(flat = flat) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = umountServiceTitle,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = umountServiceSummary,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = umountServiceTitle,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = umountServiceSummary,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = isUmountEnabled,
+                            onCheckedChange = onUmountEnabledChange,
                         )
                     }
-                    Switch(
-                        checked = isUmountEnabled,
-                        onCheckedChange = onUmountEnabledChange,
-                    )
-                }
 
-                AnimatedVisibility(visible = isUmountEnabled) {
-                    Column(modifier = Modifier.padding(top = 12.dp)) {
-                        OutlinedTextField(
-                            value = umountPaths,
-                            onValueChange = onUmountPathsChange,
-                            modifier = Modifier.fillMaxWidth().height(160.dp),
-                            label = { Text(umountPathsLabel) },
-                            placeholder = { Text(umountPathsPlaceholder) },
-                            supportingText = { Text(umountPathsHelper) },
-                            minLines = 4,
-                            maxLines = Int.MAX_VALUE,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                            textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                        )
+                    AnimatedVisibility(visible = isUmountEnabled) {
+                        Column(modifier = Modifier.padding(top = 12.dp)) {
+                            OutlinedTextField(
+                                value = umountPaths,
+                                onValueChange = onUmountPathsChange,
+                                modifier = Modifier.fillMaxWidth().height(160.dp),
+                                label = { Text(umountPathsLabel) },
+                                placeholder = { Text(umountPathsPlaceholder) },
+                                supportingText = { Text(umountPathsHelper) },
+                                minLines = 4,
+                                maxLines = Int.MAX_VALUE,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                            )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
 
-                        Button(
-                            onClick = onUmountSave,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.umount_config_save))
+                            Button(
+                                onClick = onUmountSave,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(stringResource(R.string.umount_config_save))
+                            }
                         }
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        item(visible = kPatchReady && aPatchReady) {
+            val kernelSpoofTitle = stringResource(id = R.string.settings_kernel_spoof)
+            val kernelSpoofSummary = stringResource(id = R.string.settings_kernel_spoof_summary)
+            val versionLabel = stringResource(id = R.string.settings_kernel_spoof_version)
+            val buildTimeLabel = stringResource(id = R.string.settings_kernel_spoof_build_time)
 
-        val kernelSpoofTitle = stringResource(id = R.string.settings_kernel_spoof)
-        val kernelSpoofSummary = stringResource(id = R.string.settings_kernel_spoof_summary)
-        val versionLabel = stringResource(id = R.string.settings_kernel_spoof_version)
-        val buildTimeLabel = stringResource(id = R.string.settings_kernel_spoof_build_time)
-
-        ExpressiveCard(flat = flat) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+            ExpressiveCard(flat = flat) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = kernelSpoofTitle,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = kernelSpoofSummary,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = kernelSpoofTitle,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = kernelSpoofSummary,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = isKernelSpoofEnabled,
+                            onCheckedChange = onKernelSpoofChange,
                         )
                     }
-                    Switch(
-                        checked = isKernelSpoofEnabled,
-                        onCheckedChange = onKernelSpoofChange,
-                    )
-                }
 
-                AnimatedVisibility(visible = isKernelSpoofEnabled) {
-                    Column(modifier = Modifier.padding(top = 12.dp)) {
-                        OutlinedTextField(
-                            value = kernelSpoofVersion,
-                            onValueChange = onKernelSpoofVersionChange,
-                            modifier = Modifier.fillMaxWidth(),
-                            label = { Text(versionLabel) },
-                            singleLine = true,
-                        )
+                    AnimatedVisibility(visible = isKernelSpoofEnabled) {
+                        Column(modifier = Modifier.padding(top = 12.dp)) {
+                            OutlinedTextField(
+                                value = kernelSpoofVersion,
+                                onValueChange = onKernelSpoofVersionChange,
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text(versionLabel) },
+                                singleLine = true,
+                            )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
 
-                        OutlinedTextField(
-                            value = kernelSpoofBuildTime,
-                            onValueChange = onKernelSpoofBuildTimeChange,
-                            modifier = Modifier.fillMaxWidth(),
-                            label = { Text(buildTimeLabel) },
-                            singleLine = true,
-                        )
+                            OutlinedTextField(
+                                value = kernelSpoofBuildTime,
+                                onValueChange = onKernelSpoofBuildTimeChange,
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text(buildTimeLabel) },
+                                singleLine = true,
+                            )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Button(
-                                onClick = onKernelSpoofSave,
-                                modifier = Modifier.weight(1f),
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
-                                Text(stringResource(R.string.save))
-                            }
-                            OutlinedButton(
-                                onClick = onKernelSpoofRestore,
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                Text(stringResource(R.string.settings_kernel_spoof_restore))
+                                Button(
+                                    onClick = onKernelSpoofSave,
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(stringResource(R.string.save))
+                                }
+                                OutlinedButton(
+                                    onClick = onKernelSpoofRestore,
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(stringResource(R.string.settings_kernel_spoof_restore))
+                                }
                             }
                         }
                     }

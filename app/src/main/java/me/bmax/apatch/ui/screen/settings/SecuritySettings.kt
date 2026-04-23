@@ -1,8 +1,6 @@
 package me.bmax.apatch.ui.screen.settings
 
 import androidx.biometric.BiometricPrompt
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,6 +17,7 @@ import androidx.fragment.app.FragmentActivity
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.ToggleSettingCard
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.util.APatchKeyHelper
@@ -41,8 +40,8 @@ fun SecuritySettingsContent(
                 androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
     ) == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS
 
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (canAuthenticate) {
+    SplicedColumnGroup(flat = flat) {
+        item(visible = canAuthenticate) {
             ToggleSettingCard(
                 flat = flat,
                 title = stringResource(id = R.string.settings_biometric_login),
@@ -84,7 +83,7 @@ fun SecuritySettingsContent(
             )
         }
 
-        if (biometricLogin && canAuthenticate) {
+        item(visible = biometricLogin && canAuthenticate) {
             var strongBiometric by remember { mutableStateOf(prefs.getBoolean("strong_biometric", false)) }
             ToggleSettingCard(
                 flat = flat,
@@ -98,7 +97,7 @@ fun SecuritySettingsContent(
             )
         }
 
-        if (kPatchReady) {
+        item(visible = kPatchReady) {
             val clearSuperKeyTitle = stringResource(id = R.string.clear_super_key)
             val clearSuperKeyDialog = rememberConfirmDialog(
                 onConfirm = {
@@ -126,7 +125,7 @@ fun SecuritySettingsContent(
             }
         }
 
-        if (kPatchReady) {
+        item(visible = kPatchReady) {
             var noStoreKey by remember { mutableStateOf(APatchKeyHelper.shouldSkipStoreSuperKey()) }
             ToggleSettingCard(
                 flat = flat,
