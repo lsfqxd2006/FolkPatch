@@ -616,12 +616,6 @@ class PatchesViewModel : ViewModel() {
                 APApplication.updateSuperKeyQuietly(superkey)
             }
 
-            shell.newJob().add(
-                "printf '%s' '$superkey' > /data/adb/folk_superkey",
-                "chmod 600 /data/adb/folk_superkey",
-                "chown root:root /data/adb/folk_superkey"
-            ).exec()
-
             if (mode == PatchMode.PATCH_AND_INSTALL) {
                 logs.add("- Reboot to finish the installation...")
                 needReboot = true
