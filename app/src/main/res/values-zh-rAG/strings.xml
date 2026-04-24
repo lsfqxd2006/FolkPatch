@@ -756,6 +756,8 @@
     <string name="settings_appearance_night_mode_summary">深色主题和颜色配置喵</string>
     <string name="settings_amoled_theme">AMOLED 纯黑主题喵</string>
     <string name="settings_amoled_theme_desc">为深色模式使用纯黑背景喵</string>
+    <string name="settings_switch_icon">启用按钮指示器</string>
+    <string name="settings_switch_icon_desc">为开关按钮添加状态指示图标</string>
     <string name="settings_category_behavior">行为喵</string>
     <string name="settings_category_function">功能喵</string>
     <string name="settings_category_module">模块喵</string>
@@ -1007,4 +1009,20 @@
     <string name="settings_kernel_spoof_version">内核版本喵</string>
     <string name="settings_kernel_spoof_build_time">内核构建时间喵</string>
     <string name="settings_kernel_spoof_restore">恢复喵</string>
+
+    <string name="kernel_spoof_enabled">内核伪装已启用喵</string>
+    <string name="kernel_spoof_disabled_restored">内核伪装已停用并还原喵</string>
+    <string name="kernel_spoof_failed">内核伪装失败喵: %d</string>
+    <string name="kernel_spoof_applied">内核伪装已应用喵</string>
+
+    <string name="settings_path_hide">路径隐藏喵</string>
+    <string name="settings_path_hide_summary">在内核层面隐藏文件和目录不让应用看到喵</string>
+    <string name="path_hide_paths_label">隐藏路径（每行一个）喵</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">每行输入一个路径喵，匹配的路径会返回文件不存在喵</string>
+    <string name="path_hide_save">保存喵</string>
+    <string name="path_hide_enabled">路径隐藏已启用喵</string>
+    <string name="path_hide_disabled">路径隐藏已禁用喵</string>
+    <string name="path_hide_applied">路径隐藏配置已生效喵</string>
+    <string name="path_hide_failed">路径隐藏操作失败喵: %d</string>
 </resources>

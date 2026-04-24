@@ -280,6 +280,75 @@ jlong nativeUtsReset(JNIEnv *env, jobject /* this */, jstring super_key_jstr) {
     return rc;
 }
 
+jlong nativePathHideAdd(JNIEnv *env, jobject /* this */, jstring super_key_jstr, jstring path_jstr) {
+    ensureSuperKeyNonNull(super_key_jstr);
+
+    const auto super_key = JUTFString(env, super_key_jstr);
+    const auto path = JUTFString(env, path_jstr);
+    long rc = sc_pathhide_add(super_key.get(), path.get());
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativePathHideAdd error: %ld", rc);
+    }
+    return rc;
+}
+
+jlong nativePathHideRemove(JNIEnv *env, jobject /* this */, jstring super_key_jstr, jstring path_jstr) {
+    ensureSuperKeyNonNull(super_key_jstr);
+
+    const auto super_key = JUTFString(env, super_key_jstr);
+    const auto path = JUTFString(env, path_jstr);
+    long rc = sc_pathhide_remove(super_key.get(), path.get());
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativePathHideRemove error: %ld", rc);
+    }
+    return rc;
+}
+
+jstring nativePathHideList(JNIEnv *env, jobject /* this */, jstring super_key_jstr) {
+    ensureSuperKeyNonNull(super_key_jstr);
+
+    const auto super_key = JUTFString(env, super_key_jstr);
+    char buf[4096] = { '\0' };
+    long rc = sc_pathhide_list(super_key.get(), buf, sizeof(buf));
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativePathHideList error: %ld", rc);
+    }
+    return env->NewStringUTF(buf);
+}
+
+jlong nativePathHideClear(JNIEnv *env, jobject /* this */, jstring super_key_jstr) {
+    ensureSuperKeyNonNull(super_key_jstr);
+
+    const auto super_key = JUTFString(env, super_key_jstr);
+    long rc = sc_pathhide_clear(super_key.get());
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativePathHideClear error: %ld", rc);
+    }
+    return rc;
+}
+
+jlong nativePathHideEnable(JNIEnv *env, jobject /* this */, jstring super_key_jstr, jint enable) {
+    ensureSuperKeyNonNull(super_key_jstr);
+
+    const auto super_key = JUTFString(env, super_key_jstr);
+    long rc = sc_pathhide_enable(super_key.get(), enable);
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativePathHideEnable error: %ld", rc);
+    }
+    return rc;
+}
+
+jlong nativePathHideStatus(JNIEnv *env, jobject /* this */, jstring super_key_jstr) {
+    ensureSuperKeyNonNull(super_key_jstr);
+
+    const auto super_key = JUTFString(env, super_key_jstr);
+    long rc = sc_pathhide_status(super_key.get());
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativePathHideStatus error: %ld", rc);
+    }
+    return rc;
+}
+
 jstring nativeSuAuditList(JNIEnv *env, jobject /* this */, jstring super_key_jstr) {
     ensureSuperKeyNonNull(super_key_jstr);
 
@@ -370,6 +439,12 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void * /*reserved*/) {
         {"nativeResetSuPath", "(Ljava/lang/String;Ljava/lang/String;)Z", reinterpret_cast<void *>(&nativeResetSuPath)},
         {"nativeUtsSet", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J", reinterpret_cast<void *>(&nativeUtsSet)},
         {"nativeUtsReset", "(Ljava/lang/String;)J", reinterpret_cast<void *>(&nativeUtsReset)},
+        {"nativePathHideAdd", "(Ljava/lang/String;Ljava/lang/String;)J", reinterpret_cast<void *>(&nativePathHideAdd)},
+        {"nativePathHideRemove", "(Ljava/lang/String;Ljava/lang/String;)J", reinterpret_cast<void *>(&nativePathHideRemove)},
+        {"nativePathHideList", "(Ljava/lang/String;)Ljava/lang/String;", reinterpret_cast<void *>(&nativePathHideList)},
+        {"nativePathHideClear", "(Ljava/lang/String;)J", reinterpret_cast<void *>(&nativePathHideClear)},
+        {"nativePathHideEnable", "(Ljava/lang/String;I)J", reinterpret_cast<void *>(&nativePathHideEnable)},
+        {"nativePathHideStatus", "(Ljava/lang/String;)J", reinterpret_cast<void *>(&nativePathHideStatus)},
         {"nativeSuAuditList", "(Ljava/lang/String;)Ljava/lang/String;", reinterpret_cast<void *>(&nativeSuAuditList)},
         {"nativeSuAuditClear", "(Ljava/lang/String;)J", reinterpret_cast<void *>(&nativeSuAuditClear)},
         {"nativeGetApiToken", "(Landroid/content/Context;)Ljava/lang/String;", reinterpret_cast<void *>(&nativeGetApiToken)},

@@ -102,6 +102,9 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
         const val UMOUNT_BINARY_PATH = "/data/adb/fp/bin/fpd"
         const val UTS_SPOOF_ENABLE_FILE = "/data/adb/.uts_spoof_enable"
         const val UTS_SPOOF_CONFIG_FILE = "/data/adb/.uts_spoof_config"
+        const val PATHHIDE_DIR = "/data/adb/fp/pathhide/"
+        const val PATHHIDE_PATHS_FILE = "/data/adb/fp/pathhide/paths"
+        const val PATHHIDE_ENABLE_FILE = "/data/adb/fp/pathhide/enabled"
         const val KPMS_DIR = APATCH_FOLDER + "kpms/"
 
         @Deprecated("Use SHA256 comparison instead")

@@ -34,7 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
+import me.bmax.apatch.ui.component.ExpressiveSwitch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -190,7 +190,7 @@ fun KpmAutoLoadConfigScreen(navigator: DestinationsNavigator) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Switch(
+                    ExpressiveSwitch(
                         checked = isEnabled,
                         onCheckedChange = { 
                             isEnabled = it

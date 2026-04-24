@@ -747,6 +747,8 @@
     <string name="settings_appearance_night_mode_summary">Темная тема и настройка цветов</string>
     <string name="settings_amoled_theme">Чёрная тема AMOLED</string>
     <string name="settings_amoled_theme_desc">Чисто чёрный фон для тёмного режима</string>
+    <string name="settings_switch_icon">Индикатор кнопки</string>
+    <string name="settings_switch_icon_desc">Показать значки состояния на переключателях</string>
     <string name="settings_category_behavior">Поведение</string>
     <string name="settings_category_function">Функция</string>
     <string name="settings_use_legacy_su_page">Авторизация суперпользователя на одной странице</string>
@@ -1019,4 +1021,20 @@
     <string name="settings_kernel_spoof_version">Версия ядра</string>
     <string name="settings_kernel_spoof_build_time">Время сборки ядра</string>
     <string name="settings_kernel_spoof_restore">Восстановить</string>
+
+    <string name="kernel_spoof_enabled">Подмена ядра включена</string>
+    <string name="kernel_spoof_disabled_restored">Подмена ядра отключена и восстановлена</string>
+    <string name="kernel_spoof_failed">Ошибка подмены ядра: %d</string>
+    <string name="kernel_spoof_applied">Подмена ядра применена</string>
+
+    <string name="settings_path_hide">Скрытие путей</string>
+    <string name="settings_path_hide_summary">Скрывать файлы и каталоги от приложений на уровне ядра</string>
+    <string name="path_hide_paths_label">Скрытые пути (по одному на строку)</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">Введите по одному пути на строку. Совпадающие пути будут возвращать ENOENT.</string>
+    <string name="path_hide_save">Сохранить</string>
+    <string name="path_hide_enabled">Скрытие путей включено</string>
+    <string name="path_hide_disabled">Скрытие путей отключено</string>
+    <string name="path_hide_applied">Конфигурация скрытия путей применена</string>
+    <string name="path_hide_failed">Ошибка операции скрытия путей: %d</string>
 </resources>

@@ -8,6 +8,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,6 +33,10 @@ import me.bmax.apatch.ui.component.ToggleSettingCard
 import me.bmax.apatch.ui.theme.BackupConfig
 import me.bmax.apatch.util.BackupLogManager
 import me.bmax.apatch.util.WebDavUtils
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.vector.ImageVector
 
 @Composable
 fun BackupSettingsContent(
@@ -43,6 +53,7 @@ fun BackupSettingsContent(
         item {
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.Save,
                 title = stringResource(id = R.string.settings_enable_local_backup),
                 description = stringResource(id = R.string.settings_enable_local_backup_summary),
                 checked = autoBackupModule,
@@ -57,6 +68,7 @@ fun BackupSettingsContent(
             var autoBackupBoot by remember { mutableStateOf(prefs.getBoolean("auto_backup_boot", false)) }
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.RestartAlt,
                 title = stringResource(id = R.string.settings_auto_backup_boot),
                 description = stringResource(id = R.string.settings_auto_backup_boot_summary),
                 checked = autoBackupBoot,
@@ -107,10 +119,18 @@ fun BackupSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(
+                        imageVector = Icons.Filled.FolderOpen,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = openBackupDirTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                     }
@@ -121,6 +141,7 @@ fun BackupSettingsContent(
         item {
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.Cloud,
                 title = stringResource(id = R.string.settings_enable_cloud_backup),
                 description = stringResource(id = R.string.settings_enable_cloud_backup_summary),
                 checked = BackupConfig.isBackupEnabled,
@@ -145,10 +166,18 @@ fun BackupSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = configureWebDavTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                     }

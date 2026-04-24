@@ -744,6 +744,8 @@
     <string name="settings_appearance_night_mode_summary">深色主题和颜色配置</string>
     <string name="settings_amoled_theme">AMOLED 纯黑主题</string>
     <string name="settings_amoled_theme_desc">为深色模式使用纯黑背景</string>
+    <string name="settings_switch_icon">启用按钮指示器</string>
+    <string name="settings_switch_icon_desc">为开关按钮添加状态指示图标</string>
     <string name="settings_category_behavior">功法运转</string>
     <string name="settings_category_function">悟道功能</string>
     <string name="settings_category_module">悟道模块</string>
@@ -1003,4 +1005,21 @@
     <string name="settings_kernel_spoof_version">内核仙卷版本</string>
     <string name="settings_kernel_spoof_build_time">内核修炼时辰</string>
     <string name="settings_kernel_spoof_restore">恢复原状</string>
+
+    <string name="kernel_spoof_enabled">内核伪装术已施展</string>
+    <string name="kernel_spoof_disabled_restored">内核伪装术已解除并恢复原状</string>
+    <string name="kernel_spoof_failed">内核伪装术施展失败: %d</string>
+    <string name="kernel_spoof_applied">内核伪装术已生效</string>
+
+    <string name="settings_path_hide">路径隐遁术</string>
+    <string name="settings_path_hide_summary">于道核层面施展隐遁之术，令凡俗应用不得窥见文件与目录</string>
+    <string name="path_hide_paths_label">隐遁路径（每行一道）</string>
+    <string name="path_hide_paths_placeholder">/data/adb
+/system/bin/su</string>
+    <string name="path_hide_paths_helper">每行书写一个路径，匹配之路径将如入虚无，查无可寻</string>
+    <string name="path_hide_save">封印保存</string>
+    <string name="path_hide_enabled">路径隐遁术已施展</string>
+    <string name="path_hide_disabled">路径隐遁术已解除</string>
+    <string name="path_hide_applied">路径隐遁术已布阵生效</string>
+    <string name="path_hide_failed">路径隐遁术施展失败: %d</string>
 </resources>

@@ -224,6 +224,7 @@ fun MultimediaSettingsContent(
         item {
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.MusicNote,
                 title = musicTitle,
                 description = if (MusicConfig.isMusicEnabled) {
                     if (MusicConfig.musicFilename != null) {
@@ -261,10 +262,13 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.AudioFile, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = selectMusicTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                         if (MusicConfig.musicFilename != null) {
@@ -284,6 +288,7 @@ fun MultimediaSettingsContent(
         item(visible = MusicConfig.isMusicEnabled) {
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.PlayArrow,
                 title = autoPlayTitle,
                 description = autoPlaySummary,
                 checked = MusicConfig.isAutoPlayEnabled,
@@ -298,6 +303,7 @@ fun MultimediaSettingsContent(
         item(visible = MusicConfig.isMusicEnabled) {
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.Repeat,
                 title = loopingTitle,
                 description = loopingSummary,
                 checked = MusicConfig.isLoopingEnabled,
@@ -320,6 +326,7 @@ fun MultimediaSettingsContent(
                     Text(
                         text = musicVolumeTitle,
                         style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Spacer(Modifier.height(8.dp))
@@ -351,6 +358,7 @@ fun MultimediaSettingsContent(
                     Text(
                         text = playbackControlTitle,
                         style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Spacer(Modifier.height(8.dp))
@@ -372,7 +380,8 @@ fun MultimediaSettingsContent(
                     ) {
                         Text(
                             text = formatTime(currentPosition),
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         IconButton(onClick = { MusicManager.toggle() }) {
                             Icon(
@@ -382,7 +391,8 @@ fun MultimediaSettingsContent(
                         }
                         Text(
                             text = formatTime(duration),
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -406,9 +416,12 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Text(
                         text = clearMusicTitle,
                         style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
                     )
                 }
@@ -419,6 +432,7 @@ fun MultimediaSettingsContent(
         item {
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.SurroundSound,
                 title = soundEffectTitle,
                 description = if (SoundEffectConfig.isSoundEffectEnabled) {
                     if (SoundEffectConfig.soundEffectFilename != null) {
@@ -449,10 +463,13 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.Input, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = soundEffectSourceTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Spacer(Modifier.height(4.dp))
@@ -484,10 +501,13 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.AudioFile, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = selectSoundEffectTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                         if (SoundEffectConfig.soundEffectFilename != null) {
@@ -520,9 +540,12 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Text(
                         text = clearSoundEffectTitle,
                         style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
                     )
                 }
@@ -541,10 +564,13 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.MusicNote, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = soundEffectPresetTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Spacer(Modifier.height(4.dp))
@@ -572,10 +598,13 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = soundEffectScopeTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Spacer(Modifier.height(4.dp))
@@ -596,6 +625,7 @@ fun MultimediaSettingsContent(
         item {
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.Alarm,
                 title = startupSoundTitle,
                 description = if (SoundEffectConfig.isStartupSoundEnabled) {
                     if (SoundEffectConfig.startupSoundFilename != null) {
@@ -626,10 +656,13 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.Input, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = startupSourceTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Spacer(Modifier.height(4.dp))
@@ -661,10 +694,13 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.AudioFile, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = selectStartupSoundTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                         if (SoundEffectConfig.startupSoundFilename != null) {
@@ -697,9 +733,12 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Text(
                         text = clearStartupSoundTitle,
                         style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
                     )
                 }
@@ -718,10 +757,13 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.MusicNote, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = startupPresetTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Spacer(Modifier.height(4.dp))
@@ -739,6 +781,7 @@ fun MultimediaSettingsContent(
         item {
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.Vibration,
                 title = vibrationTitle,
                 description = if (VibrationConfig.isVibrationEnabled) vibrationEnabledText else vibrationSummary,
                 checked = VibrationConfig.isVibrationEnabled,
@@ -763,10 +806,13 @@ fun MultimediaSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(imageVector = Icons.Filled.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = vibrationScopeTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Spacer(Modifier.height(4.dp))
@@ -794,6 +840,7 @@ fun MultimediaSettingsContent(
                     Text(
                         text = vibrationIntensityTitle,
                         style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Spacer(Modifier.height(8.dp))

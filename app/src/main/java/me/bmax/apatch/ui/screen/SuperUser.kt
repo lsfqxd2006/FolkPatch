@@ -50,7 +50,8 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
+import me.bmax.apatch.ui.component.ExpressiveSwitch
+import me.bmax.apatch.ui.component.SwitchItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -96,7 +97,6 @@ import me.bmax.apatch.ui.LocalBottomBarVisible
 import me.bmax.apatch.ui.LocalIsFloatingNavMode
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import me.bmax.apatch.ui.component.SwitchItem
 import me.bmax.apatch.ui.viewmodel.SuperUserViewModel
 import me.bmax.apatch.util.PkgConfig
 import me.bmax.apatch.util.SuAuditLog
@@ -500,7 +500,7 @@ private fun AppItemLegacy(
             }
         },
         trailingContent = {
-            Switch(checked = rootGranted, onCheckedChange = {
+            ExpressiveSwitch(checked = rootGranted, onCheckedChange = {
                 rootGranted = !rootGranted
                 if (rootGranted) {
                     excludeApp = 0

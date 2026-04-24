@@ -732,6 +732,8 @@
     <string name="settings_appearance_night_mode_summary">深色主题和颜色配置</string>
     <string name="settings_amoled_theme">AMOLED 纯黑主题</string>
     <string name="settings_amoled_theme_desc">为深色模式使用纯黑背景</string>
+    <string name="settings_switch_icon">启用按钮指示器</string>
+    <string name="settings_switch_icon_desc">为开关按钮添加状态指示图标</string>
     <string name="settings_category_behavior">吃饭行为</string>
     <string name="settings_category_function">餐厅功能</string>
     <string name="settings_use_legacy_su_page">单页首席大厨授权</string>
@@ -1004,4 +1006,21 @@
     <string name="settings_kernel_spoof_version">内核版本</string>
     <string name="settings_kernel_spoof_build_time">内核出炉时间</string>
     <string name="settings_kernel_spoof_restore">重新出炉</string>
+
+    <string name="kernel_spoof_enabled">内核伪装配方已启用</string>
+    <string name="kernel_spoof_disabled_restored">内核伪装配方已停用并重新出炉</string>
+    <string name="kernel_spoof_failed">内核伪装配方失败: %d</string>
+    <string name="kernel_spoof_applied">内核伪装配方已上菜</string>
+
+    <string name="settings_path_hide">路径藏起来</string>
+    <string name="settings_path_hide_summary">在内核层面把文件和目录藏起来，不让别的应用看到</string>
+    <string name="path_hide_paths_label">要藏的路径（每行一个）</string>
+    <string name="path_hide_paths_placeholder">/data/adb
+/system/bin/su</string>
+    <string name="path_hide_paths_helper">每行写一个路径，匹配的路径就跟不存在一样</string>
+    <string name="path_hide_save">保存</string>
+    <string name="path_hide_enabled">路径隐藏已开火</string>
+    <string name="path_hide_disabled">路径隐藏已熄火</string>
+    <string name="path_hide_applied">路径隐藏已上菜</string>
+    <string name="path_hide_failed">路径隐藏翻车了: %d</string>
 </resources>

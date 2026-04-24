@@ -771,6 +771,8 @@
     <string name="settings_appearance_night_mode_summary">다크 테마 및 색상을 구성합니다.</string>
     <string name="settings_amoled_theme">AMOLED 블랙 테마</string>
     <string name="settings_amoled_theme_desc">다크 모드에서 순정 블랙 배경 사용</string>
+    <string name="settings_switch_icon">버튼 표시기 활성화</string>
+    <string name="settings_switch_icon_desc">스위치 버튼에 상태 아이콘 표시</string>
     <string name="settings_category_module">모듈</string>
     <string name="settings_category_security">보안</string>
     <string name="settings_category_function">기능</string>
@@ -1033,4 +1035,20 @@
     <string name="settings_kernel_spoof_version">커널 버전</string>
     <string name="settings_kernel_spoof_build_time">커널 빌드 시간</string>
     <string name="settings_kernel_spoof_restore">복원</string>
+
+    <string name="kernel_spoof_enabled">커널 스푸핑 활성화됨</string>
+    <string name="kernel_spoof_disabled_restored">커널 스푸핑 비활성화 및 복원됨</string>
+    <string name="kernel_spoof_failed">커널 스푸핑 실패: %d</string>
+    <string name="kernel_spoof_applied">커널 스푸핑 적용됨</string>
+
+    <string name="settings_path_hide">경로 숨기기</string>
+    <string name="settings_path_hide_summary">커널 수준에서 앱에 파일 및 디렉터리 숨기기</string>
+    <string name="path_hide_paths_label">숨길 경로 (한 줄에 하나씩)</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">한 줄에 하나의 경로를 입력하세요. 일치하는 경로는 ENOENT를 반환합니다.</string>
+    <string name="path_hide_save">저장</string>
+    <string name="path_hide_enabled">경로 숨기기 활성화됨</string>
+    <string name="path_hide_disabled">경로 숨기기 비활성화됨</string>
+    <string name="path_hide_applied">경로 숨기기 설정이 적용됨</string>
+    <string name="path_hide_failed">경로 숨기기 작업 실패: %d</string>
 </resources>

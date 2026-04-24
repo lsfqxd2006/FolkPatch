@@ -665,6 +665,8 @@ Upewnij się, że aplikacja jest całkowicie zamknięta i ponownie otwarta, aby 
     <string name="settings_appearance_night_mode_summary">Ciemny motyw i konfiguracja kolorów</string>
     <string name="settings_amoled_theme">Czarny motyw AMOLED</string>
     <string name="settings_amoled_theme_desc">Czysto czarne tło dla trybu ciemnego</string>
+    <string name="settings_switch_icon">Wskaźnik przycisku</string>
+    <string name="settings_switch_icon_desc">Pokaż ikony stanu na przełącznikach</string>
     <string name="settings_category_behavior">Zachowanie</string>
     <string name="settings_category_function">Funkcje</string>
     <string name="settings_use_legacy_su_page">Jednostronicowa autoryzacja superużytkownika</string>
@@ -937,4 +939,20 @@ Upewnij się, że aplikacja jest całkowicie zamknięta i ponownie otwarta, aby 
     <string name="settings_kernel_spoof_version">Wersja jądra</string>
     <string name="settings_kernel_spoof_build_time">Czas budowy jądra</string>
     <string name="settings_kernel_spoof_restore">Przywróć</string>
+
+    <string name="kernel_spoof_enabled">Fałszowanie jądra włączone</string>
+    <string name="kernel_spoof_disabled_restored">Fałszowanie jądra wyłączone i przywrócone</string>
+    <string name="kernel_spoof_failed">Błąd fałszowania jądra: %d</string>
+    <string name="kernel_spoof_applied">Fałszowanie jądra zastosowane</string>
+
+    <string name="settings_path_hide">Ukrywanie ścieżek</string>
+    <string name="settings_path_hide_summary">Ukrywaj pliki i katalogi przed aplikacjami na poziomie jądra</string>
+    <string name="path_hide_paths_label">Ukryte ścieżki (po jednej w linii)</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">Wprowadź jedną ścieżkę w każdej linii. Pasujące ścieżki zwrócą ENOENT.</string>
+    <string name="path_hide_save">Zapisz</string>
+    <string name="path_hide_enabled">Ukrywanie ścieżek włączone</string>
+    <string name="path_hide_disabled">Ukrywanie ścieżek wyłączone</string>
+    <string name="path_hide_applied">Konfiguracja ukrywania ścieżek zastosowana</string>
+    <string name="path_hide_failed">Błąd operacji ukrywania ścieżek: %d</string>
 </resources>

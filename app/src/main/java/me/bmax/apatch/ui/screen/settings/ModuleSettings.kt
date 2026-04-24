@@ -1,5 +1,13 @@
 package me.bmax.apatch.ui.screen.settings
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Dock
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.filled.Update
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringResource
 import me.bmax.apatch.APApplication
@@ -42,6 +50,7 @@ fun ModuleSettingsContent(
     SplicedColumnGroup(flat = flat) {
         item {
             ToggleSettingCard(
+                icon = Icons.Filled.Update,
                 flat = flat,
                 title = disableModuleUpdateCheckTitle,
                 description = disableModuleUpdateCheckSummary,
@@ -55,6 +64,7 @@ fun ModuleSettingsContent(
 
         item {
             ToggleSettingCard(
+                icon = Icons.Filled.Info,
                 flat = flat,
                 title = moreInfoTitle,
                 description = moreInfoSummary,
@@ -68,6 +78,7 @@ fun ModuleSettingsContent(
 
         item {
             ToggleSettingCard(
+                icon = Icons.Filled.Sort,
                 flat = flat,
                 title = moduleSortOptimizationTitle,
                 description = moduleSortOptimizationSummary,
@@ -81,6 +92,7 @@ fun ModuleSettingsContent(
 
         item {
             ToggleSettingCard(
+                icon = Icons.Filled.Folder,
                 flat = flat,
                 title = foldSystemModuleTitle,
                 description = foldSystemModuleSummary,
@@ -94,6 +106,7 @@ fun ModuleSettingsContent(
 
         item {
             ToggleSettingCard(
+                icon = Icons.Filled.Download,
                 flat = flat,
                 title = apmBatchInstallFullProcessTitle,
                 description = apmBatchInstallFullProcessSummary,
@@ -107,6 +120,7 @@ fun ModuleSettingsContent(
 
         item {
             ToggleSettingCard(
+                icon = Icons.Filled.Dock,
                 flat = flat,
                 title = simpleListBottomBarTitle,
                 description = simpleListBottomBarSummary,

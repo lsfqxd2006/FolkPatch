@@ -44,6 +44,8 @@ import kotlinx.coroutines.launch
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.ExpressiveSwitch
+import me.bmax.apatch.ui.component.SwitchIconState
 import me.bmax.apatch.ui.component.FilePickerDialog
 
 import me.bmax.apatch.ui.component.SplicedColumnGroup
@@ -353,6 +355,8 @@ fun AppearanceSettingsContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Icon(imageVector = Icons.Filled.DarkMode, contentDescription = null, tint = if (!isWallpaperEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f), modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                             Text(
                                 text = stringResource(R.string.settings_amoled_theme),
@@ -369,13 +373,29 @@ fun AppearanceSettingsContent(
                                 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
                             )
                         }
-                        Switch(
+                        ExpressiveSwitch(
                             checked = amoledTheme,
                             onCheckedChange = null,
                             enabled = !isWallpaperEnabled,
                         )
                     }
                 }
+            }
+
+            item {
+                var showSwitchIcon by remember { mutableStateOf(SwitchIconState.showIcon) }
+                ToggleSettingCard(
+                    icon = Icons.Filled.ToggleOn,
+                    flat = flat,
+                    title = stringResource(R.string.settings_switch_icon),
+                    description = stringResource(R.string.settings_switch_icon_desc),
+                    checked = showSwitchIcon,
+                    onCheckedChange = {
+                        showSwitchIcon = it
+                        SwitchIconState.showIcon = it
+                        prefs.edit().putBoolean("show_switch_icon", it).apply()
+                    },
+                )
             }
         }
 
@@ -387,10 +407,13 @@ fun AppearanceSettingsContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Icon(imageVector = Icons.Filled.Dashboard, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = stringResource(id = R.string.settings_home_layout_style),
                                 style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
                                 text = stringResource(homeLayoutStyleToString(currentStyle.toString())),
@@ -409,10 +432,13 @@ fun AppearanceSettingsContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Icon(imageVector = Icons.Filled.GridView, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = stringResource(id = R.string.settings_stats_top_layout),
                                 style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
                                 text = statsTopLayoutValue,
@@ -437,10 +463,13 @@ fun AppearanceSettingsContent(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
+                            Icon(imageVector = Icons.Filled.Navigation, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = stringResource(id = R.string.settings_nav_layout_title),
                                     style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Text(
                                     text = stringResource(id = R.string.settings_nav_layout_summary),
@@ -499,10 +528,13 @@ fun AppearanceSettingsContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Icon(imageVector = Icons.Filled.Menu, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = stringResource(id = R.string.settings_nav_scheme),
                                 style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
                                 text = navSchemeLabel,
@@ -518,6 +550,7 @@ fun AppearanceSettingsContent(
                 item {
                     ToggleSettingCard(
                         flat = flat,
+                        icon = Icons.Filled.AutoAwesome,
                         title = stringResource(id = R.string.settings_navbar_glass_effect),
                         description = stringResource(id = R.string.settings_navbar_glass_effect_summary),
                         checked = BackgroundConfig.isNavBarGlassEnabled,
@@ -534,7 +567,8 @@ fun AppearanceSettingsContent(
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                 Text(
                                     text = stringResource(id = R.string.settings_navbar_glass_blur_strength),
-                                    style = MaterialTheme.typography.titleMedium
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Slider(
                                     value = BackgroundConfig.navBarGlassBlurStrength,
@@ -555,7 +589,8 @@ fun AppearanceSettingsContent(
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                 Text(
                                     text = stringResource(id = R.string.settings_navbar_glass_transparency),
-                                    style = MaterialTheme.typography.titleMedium
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Slider(
                                     value = BackgroundConfig.navBarGlassTransparency,
@@ -576,7 +611,8 @@ fun AppearanceSettingsContent(
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                 Text(
                                     text = stringResource(id = R.string.settings_navbar_glass_highlight_strength),
-                                    style = MaterialTheme.typography.titleMedium
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Slider(
                                     value = BackgroundConfig.navBarGlassHighlightStrength,
@@ -595,6 +631,7 @@ fun AppearanceSettingsContent(
                     item {
                         ToggleSettingCard(
                             flat = flat,
+                            icon = Icons.Filled.LensBlur,
                             title = stringResource(id = R.string.settings_navbar_glass_specular),
                             description = stringResource(id = R.string.settings_navbar_glass_specular_summary),
                             checked = BackgroundConfig.isNavBarGlassSpecularEnabled,
@@ -608,6 +645,7 @@ fun AppearanceSettingsContent(
                     item {
                         ToggleSettingCard(
                             flat = flat,
+                            icon = Icons.Filled.Grain,
                             title = stringResource(id = R.string.settings_navbar_glass_inner_glow),
                             description = stringResource(id = R.string.settings_navbar_glass_inner_glow_summary),
                             checked = BackgroundConfig.isNavBarGlassInnerGlowEnabled,
@@ -621,6 +659,7 @@ fun AppearanceSettingsContent(
                     item {
                         ToggleSettingCard(
                             flat = flat,
+                            icon = Icons.Filled.BorderStyle,
                             title = stringResource(id = R.string.settings_navbar_glass_border),
                             description = stringResource(id = R.string.settings_navbar_glass_border_summary),
                             checked = BackgroundConfig.isNavBarGlassBorderEnabled,
@@ -635,6 +674,7 @@ fun AppearanceSettingsContent(
                 item {
                     ToggleSettingCard(
                         flat = flat,
+                        icon = Icons.Filled.VisibilityOff,
                         title = stringResource(id = R.string.settings_floating_auto_hide),
                         description = stringResource(id = R.string.settings_floating_auto_hide_summary),
                         checked = floatingAutoHide,
@@ -648,6 +688,7 @@ fun AppearanceSettingsContent(
                 item {
                     ToggleSettingCard(
                         flat = flat,
+                        icon = Icons.Filled.Swipe,
                         title = stringResource(id = R.string.settings_floating_swipe_hide),
                         description = stringResource(id = R.string.settings_floating_swipe_hide_summary),
                         checked = floatingSwipeHide,
@@ -662,6 +703,7 @@ fun AppearanceSettingsContent(
             item(visible = isListStyle) {
                 ToggleSettingCard(
                     flat = flat,
+                    icon = Icons.Filled.LabelOff,
                     title = stringResource(id = R.string.settings_list_card_hide_status_badge),
                     description = stringResource(id = R.string.settings_list_card_hide_status_badge_summary),
                     checked = BackgroundConfig.isListWorkingCardModeHidden,
@@ -679,10 +721,13 @@ fun AppearanceSettingsContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Icon(imageVector = Icons.Filled.Badge, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = stringResource(id = R.string.settings_custom_badge_text),
                                 style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
                                 text = currentBadgeTextMode,
@@ -697,6 +742,7 @@ fun AppearanceSettingsContent(
             item {
                 ToggleSettingCard(
                     flat = flat,
+                    icon = Icons.Filled.Title,
                     title = stringResource(id = R.string.settings_advanced_title_style),
                     description = if (BackgroundConfig.isAdvancedTitleStyleEnabled) stringResource(id = R.string.settings_advanced_title_style_enabled) else stringResource(id = R.string.settings_advanced_title_style_summary),
                     checked = BackgroundConfig.isAdvancedTitleStyleEnabled,
@@ -712,7 +758,7 @@ fun AppearanceSettingsContent(
                 item {
                     ExpressiveCard(flat = flat) {
                         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_title_image_day_opacity), style = MaterialTheme.typography.titleMedium)
+                            Text(text = stringResource(id = R.string.settings_title_image_day_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                             Slider(
                                 value = BackgroundConfig.titleImageDayOpacity,
                                 onValueChange = { BackgroundConfig.setTitleImageDayOpacityValue(it) },
@@ -730,7 +776,7 @@ fun AppearanceSettingsContent(
                 item {
                     ExpressiveCard(flat = flat) {
                         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_title_image_night_opacity), style = MaterialTheme.typography.titleMedium)
+                            Text(text = stringResource(id = R.string.settings_title_image_night_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                             Slider(
                                 value = BackgroundConfig.titleImageNightOpacity,
                                 onValueChange = { BackgroundConfig.setTitleImageNightOpacityValue(it) },
@@ -748,7 +794,7 @@ fun AppearanceSettingsContent(
                 item {
                     ExpressiveCard(flat = flat) {
                         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_title_image_dim), style = MaterialTheme.typography.titleMedium)
+                            Text(text = stringResource(id = R.string.settings_title_image_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                             Slider(
                                 value = BackgroundConfig.titleImageDim,
                                 onValueChange = { BackgroundConfig.setTitleImageDimValue(it) },
@@ -766,7 +812,7 @@ fun AppearanceSettingsContent(
                 item {
                     ExpressiveCard(flat = flat) {
                         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_title_image_offset_x), style = MaterialTheme.typography.titleMedium)
+                            Text(text = stringResource(id = R.string.settings_title_image_offset_x), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                             Slider(
                                 value = BackgroundConfig.titleImageOffsetX,
                                 onValueChange = { BackgroundConfig.setTitleImageOffsetXValue(it) },
@@ -801,8 +847,10 @@ fun AppearanceSettingsContent(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
+                            Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(text = stringResource(id = R.string.settings_select_title_image), style = MaterialTheme.typography.titleMedium)
+                                Text(text = stringResource(id = R.string.settings_select_title_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                 if (!BackgroundConfig.titleImageUri.isNullOrEmpty()) {
                                     Text(text = stringResource(id = R.string.settings_title_image_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
                                 }
@@ -838,7 +886,9 @@ fun AppearanceSettingsContent(
                                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text(text = stringResource(id = R.string.settings_clear_title_image), style = MaterialTheme.typography.titleMedium)
+                                Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                Spacer(Modifier.width(16.dp))
+                                Text(text = stringResource(id = R.string.settings_clear_title_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }
@@ -850,6 +900,7 @@ fun AppearanceSettingsContent(
             item {
                 ToggleSettingCard(
                     flat = flat,
+                    icon = Icons.Filled.Wallpaper,
                     title = stringResource(id = R.string.settings_custom_background),
                     description = if (BackgroundConfig.isCustomBackgroundEnabled) stringResource(id = R.string.settings_custom_background_enabled) else stringResource(id = R.string.settings_custom_background_summary),
                     checked = BackgroundConfig.isCustomBackgroundEnabled,
@@ -866,6 +917,7 @@ fun AppearanceSettingsContent(
                     item {
                         ToggleSettingCard(
                             flat = flat,
+                            icon = Icons.Filled.Contrast,
                             title = stringResource(id = R.string.settings_custom_background_dual_dim),
                             description = stringResource(id = R.string.settings_custom_background_dual_dim_desc),
                             checked = BackgroundConfig.isDualBackgroundDimEnabled,
@@ -880,7 +932,7 @@ fun AppearanceSettingsContent(
                     item {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium)
+                                Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                 Slider(
                                     value = BackgroundConfig.customBackgroundOpacity,
                                     onValueChange = { BackgroundConfig.setCustomBackgroundOpacityValue(it) },
@@ -898,7 +950,7 @@ fun AppearanceSettingsContent(
                     item {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(text = stringResource(id = R.string.settings_custom_background_blur), style = MaterialTheme.typography.titleMedium)
+                                Text(text = stringResource(id = R.string.settings_custom_background_blur), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                 Slider(
                                     value = BackgroundConfig.customBackgroundBlur,
                                     onValueChange = { BackgroundConfig.setCustomBackgroundBlurValue(it) },
@@ -917,7 +969,7 @@ fun AppearanceSettingsContent(
                         item {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium)
+                                    Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                     Slider(
                                         value = BackgroundConfig.customBackgroundDim,
                                         onValueChange = { BackgroundConfig.setCustomBackgroundDimValue(it) },
@@ -935,7 +987,7 @@ fun AppearanceSettingsContent(
                         item {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_custom_background_day_dim), style = MaterialTheme.typography.titleMedium)
+                                    Text(text = stringResource(id = R.string.settings_custom_background_day_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                     Slider(
                                         value = BackgroundConfig.customBackgroundDayDim,
                                         onValueChange = { BackgroundConfig.setCustomBackgroundDayDimValue(it) },
@@ -953,7 +1005,7 @@ fun AppearanceSettingsContent(
                         item {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_custom_background_night_dim), style = MaterialTheme.typography.titleMedium)
+                                    Text(text = stringResource(id = R.string.settings_custom_background_night_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                     Slider(
                                         value = BackgroundConfig.customBackgroundNightDim,
                                         onValueChange = { BackgroundConfig.setCustomBackgroundNightDimValue(it) },
@@ -973,6 +1025,7 @@ fun AppearanceSettingsContent(
                 item {
                     ToggleSettingCard(
                         flat = flat,
+                        icon = Icons.Filled.VideoFile,
                         title = stringResource(id = R.string.settings_video_background),
                         description = stringResource(id = R.string.settings_video_background_summary),
                         checked = BackgroundConfig.isVideoBackgroundEnabled,
@@ -1001,8 +1054,10 @@ fun AppearanceSettingsContent(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
+                                Icon(imageVector = Icons.Filled.VideoFile, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                Spacer(Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = stringResource(id = R.string.settings_select_video), style = MaterialTheme.typography.titleMedium)
+                                    Text(text = stringResource(id = R.string.settings_select_video), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                     if (!BackgroundConfig.videoBackgroundUri.isNullOrEmpty()) {
                                         Text(text = stringResource(id = R.string.settings_video_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
                                     }
@@ -1040,7 +1095,9 @@ fun AppearanceSettingsContent(
                                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Text(text = clearVideoTitle, style = MaterialTheme.typography.titleMedium)
+                                    Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                    Spacer(Modifier.width(16.dp))
+                                    Text(text = clearVideoTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                 }
                             }
                         }
@@ -1049,7 +1106,7 @@ fun AppearanceSettingsContent(
                     item {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(text = stringResource(id = R.string.settings_video_volume), style = MaterialTheme.typography.titleMedium)
+                                Text(text = stringResource(id = R.string.settings_video_volume), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                 Slider(
                                     value = BackgroundConfig.videoVolume,
                                     onValueChange = { BackgroundConfig.setVideoVolumeValue(it) },
@@ -1067,6 +1124,7 @@ fun AppearanceSettingsContent(
                     item {
                         ToggleSettingCard(
                             flat = flat,
+                            icon = Icons.Filled.GridView,
                             title = stringResource(id = R.string.settings_multi_background_mode),
                             description = stringResource(id = R.string.settings_multi_background_mode_summary),
                             checked = BackgroundConfig.isMultiBackgroundEnabled,
@@ -1110,8 +1168,10 @@ fun AppearanceSettingsContent(
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically,
                                         ) {
+                                            Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                            Spacer(Modifier.width(16.dp))
                                             Column(modifier = Modifier.weight(1f)) {
-                                                Text(text = stringResource(id = titleRes), style = MaterialTheme.typography.titleMedium)
+                                                Text(text = stringResource(id = titleRes), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                                 if (!uri.isNullOrEmpty()) {
                                                     Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
                                                 }
@@ -1144,8 +1204,10 @@ fun AppearanceSettingsContent(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
+                                    Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                    Spacer(Modifier.width(16.dp))
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium)
+                                        Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                         if (!BackgroundConfig.customBackgroundUri.isNullOrEmpty()) {
                                             Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
                                         }
@@ -1183,7 +1245,9 @@ fun AppearanceSettingsContent(
                                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
-                                        Text(text = clearBgTitle, style = MaterialTheme.typography.titleMedium)
+                                        Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                        Spacer(Modifier.width(16.dp))
+                                        Text(text = clearBgTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                     }
                                 }
                             }
@@ -1196,6 +1260,7 @@ fun AppearanceSettingsContent(
                 item {
                     ToggleSettingCard(
                         flat = flat,
+                        icon = Icons.Filled.GridView,
                         title = stringResource(id = R.string.settings_grid_working_card_background),
                         description = if (BackgroundConfig.isGridWorkingCardBackgroundEnabled) stringResource(id = R.string.settings_grid_working_card_background_enabled) else stringResource(id = R.string.settings_grid_working_card_background_summary),
                         checked = BackgroundConfig.isGridWorkingCardBackgroundEnabled,
@@ -1210,6 +1275,7 @@ fun AppearanceSettingsContent(
                     item {
                         ToggleSettingCard(
                             flat = flat,
+                            icon = Icons.Filled.Contrast,
                             title = stringResource(id = R.string.settings_grid_working_card_dual_opacity),
                             description = stringResource(id = R.string.settings_grid_working_card_dual_opacity_desc),
                             checked = BackgroundConfig.isGridDualOpacityEnabled,
@@ -1224,7 +1290,7 @@ fun AppearanceSettingsContent(
                         item {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium)
+                                    Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                     Slider(
                                         value = BackgroundConfig.gridWorkingCardBackgroundOpacity,
                                         onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundOpacityValue(it) },
@@ -1242,7 +1308,7 @@ fun AppearanceSettingsContent(
                         item {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_grid_working_card_day_opacity), style = MaterialTheme.typography.titleMedium)
+                                    Text(text = stringResource(id = R.string.settings_grid_working_card_day_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                     Slider(
                                         value = BackgroundConfig.gridWorkingCardBackgroundDayOpacity,
                                         onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDayOpacityValue(it) },
@@ -1260,7 +1326,7 @@ fun AppearanceSettingsContent(
                         item {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_grid_working_card_night_opacity), style = MaterialTheme.typography.titleMedium)
+                                    Text(text = stringResource(id = R.string.settings_grid_working_card_night_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                     Slider(
                                         value = BackgroundConfig.gridWorkingCardBackgroundNightOpacity,
                                         onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundNightOpacityValue(it) },
@@ -1279,7 +1345,7 @@ fun AppearanceSettingsContent(
                     item {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium)
+                                Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                 Slider(
                                     value = BackgroundConfig.gridWorkingCardBackgroundDim,
                                     onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDimValue(it) },
@@ -1314,8 +1380,10 @@ fun AppearanceSettingsContent(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
+                                Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                Spacer(Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium)
+                                    Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                     if (!BackgroundConfig.gridWorkingCardBackgroundUri.isNullOrEmpty()) {
                                         Text(text = stringResource(id = R.string.settings_grid_working_card_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
                                     }
@@ -1349,7 +1417,9 @@ fun AppearanceSettingsContent(
                                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text(text = stringResource(id = R.string.settings_clear_grid_working_card_background), style = MaterialTheme.typography.titleMedium)
+                                Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                Spacer(Modifier.width(16.dp))
+                                Text(text = stringResource(id = R.string.settings_clear_grid_working_card_background), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }
@@ -1358,6 +1428,7 @@ fun AppearanceSettingsContent(
                 item {
                     ToggleSettingCard(
                         flat = flat,
+                        icon = Icons.Filled.CheckCircle,
                         title = stringResource(id = R.string.settings_grid_working_card_hide_check),
                         description = stringResource(id = R.string.settings_grid_working_card_hide_check_summary),
                         checked = BackgroundConfig.isGridWorkingCardCheckHidden,
@@ -1371,6 +1442,7 @@ fun AppearanceSettingsContent(
                 item {
                     ToggleSettingCard(
                         flat = flat,
+                        icon = Icons.Filled.TextFields,
                         title = stringResource(id = R.string.settings_grid_working_card_hide_text),
                         description = stringResource(id = R.string.settings_grid_working_card_hide_text_summary),
                         checked = BackgroundConfig.isGridWorkingCardTextHidden,
@@ -1384,6 +1456,7 @@ fun AppearanceSettingsContent(
                 item {
                     ToggleSettingCard(
                         flat = flat,
+                        icon = Icons.Filled.Label,
                         title = stringResource(id = R.string.settings_grid_working_card_hide_mode),
                         description = stringResource(id = R.string.settings_grid_working_card_hide_mode_summary),
                         checked = BackgroundConfig.isGridWorkingCardModeHidden,
@@ -1401,10 +1474,13 @@ fun AppearanceSettingsContent(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
+                            Icon(imageVector = Icons.Filled.Badge, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = stringResource(id = R.string.settings_custom_badge_text),
                                     style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Text(
                                     text = currentBadgeTextMode,
@@ -1463,6 +1539,7 @@ fun AppearanceSettingsContent(
             item {
                 ToggleSettingCard(
                     flat = flat,
+                    icon = Icons.Filled.Campaign,
                     title = stringResource(id = R.string.apm_enable_module_banner),
                     description = stringResource(id = R.string.apm_enable_module_banner_summary),
                     checked = BackgroundConfig.isBannerEnabled,
@@ -1477,6 +1554,7 @@ fun AppearanceSettingsContent(
                 item {
                     ToggleSettingCard(
                         flat = flat,
+                        icon = Icons.Filled.Image,
                         title = stringResource(id = R.string.apm_enable_folk_banner),
                         description = stringResource(id = R.string.apm_enable_folk_banner_summary),
                         checked = BackgroundConfig.isFolkBannerEnabled,
@@ -1491,6 +1569,7 @@ fun AppearanceSettingsContent(
                     item {
                         ToggleSettingCard(
                             flat = flat,
+                            icon = Icons.Filled.Api,
                             title = stringResource(id = R.string.apm_banner_api_mode),
                             description = stringResource(id = R.string.apm_banner_api_mode_summary),
                             checked = BackgroundConfig.isBannerApiModeEnabled,
@@ -1521,10 +1600,13 @@ fun AppearanceSettingsContent(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
+                                        Icon(imageVector = Icons.Filled.Api, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                        Spacer(Modifier.width(16.dp))
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 text = stringResource(id = R.string.apm_banner_api_source),
                                                 style = MaterialTheme.typography.titleMedium,
+                                                color = MaterialTheme.colorScheme.onSurface,
                                             )
                                             Text(
                                                 text = apiSourceSummary,
@@ -1559,9 +1641,12 @@ fun AppearanceSettingsContent(
                                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
+                                        Icon(imageVector = Icons.Filled.Store, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                        Spacer(Modifier.width(16.dp))
                                         Text(
                                             text = stringResource(id = R.string.apm_api_marketplace_title),
                                             style = MaterialTheme.typography.titleMedium,
+                                            color = MaterialTheme.colorScheme.onSurface,
                                         )
                                     }
                                 }
@@ -1573,6 +1658,7 @@ fun AppearanceSettingsContent(
                 item {
                     ToggleSettingCard(
                         flat = flat,
+                        icon = Icons.Filled.Opacity,
                         title = stringResource(id = R.string.settings_banner_custom_opacity),
                         description = stringResource(id = R.string.settings_banner_custom_opacity_summary),
                         checked = BackgroundConfig.isBannerCustomOpacityEnabled,
@@ -1587,7 +1673,7 @@ fun AppearanceSettingsContent(
                     item {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(text = stringResource(id = R.string.settings_banner_opacity), style = MaterialTheme.typography.titleMedium)
+                                Text(text = stringResource(id = R.string.settings_banner_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                                 Slider(
                                     value = BackgroundConfig.bannerCustomOpacity,
                                     onValueChange = { BackgroundConfig.setBannerCustomOpacityValue(it) },
@@ -1609,6 +1695,7 @@ fun AppearanceSettingsContent(
             item {
                 ToggleSettingCard(
                     flat = flat,
+                    icon = Icons.Filled.FormatSize,
                     title = stringResource(id = R.string.settings_custom_font),
                     description = if (customFontEnabled) {
                         if (FontConfig.customFontFilename != null) stringResource(id = R.string.settings_font_selected) else stringResource(id = R.string.settings_custom_font_enabled)
@@ -1641,7 +1728,9 @@ fun AppearanceSettingsContent(
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(text = stringResource(id = R.string.settings_select_font_file), style = MaterialTheme.typography.titleMedium)
+                            Icon(imageVector = Icons.Filled.FontDownload, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(16.dp))
+                            Text(text = stringResource(id = R.string.settings_select_font_file), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }
@@ -1672,7 +1761,9 @@ fun AppearanceSettingsContent(
                                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text(text = clearFontTitle, style = MaterialTheme.typography.titleMedium)
+                                Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                Spacer(Modifier.width(16.dp))
+                                Text(text = clearFontTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }
@@ -1687,7 +1778,9 @@ fun AppearanceSettingsContent(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(text = stringResource(id = R.string.theme_store_title), style = MaterialTheme.typography.titleMedium)
+                        Icon(imageVector = Icons.Filled.Store, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Text(text = stringResource(id = R.string.theme_store_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
@@ -1698,7 +1791,9 @@ fun AppearanceSettingsContent(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(text = stringResource(id = R.string.settings_save_theme), style = MaterialTheme.typography.titleMedium)
+                        Icon(imageVector = Icons.Filled.FileDownload, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Text(text = stringResource(id = R.string.settings_save_theme), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
@@ -1709,7 +1804,9 @@ fun AppearanceSettingsContent(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(text = stringResource(id = R.string.settings_import_theme), style = MaterialTheme.typography.titleMedium)
+                        Icon(imageVector = Icons.Filled.FileUpload, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Text(text = stringResource(id = R.string.settings_import_theme), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
@@ -1742,7 +1839,9 @@ fun AppearanceSettingsContent(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(text = resetThemeTitle, style = MaterialTheme.typography.titleMedium)
+                        Icon(imageVector = Icons.Filled.RestartAlt, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Text(text = resetThemeTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }

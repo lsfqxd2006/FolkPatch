@@ -737,6 +737,8 @@
     <string name="settings_appearance_night_mode_summary">夜间主题和颜色配置</string>
     <string name="settings_amoled_theme">AMOLED 纯黑主题</string>
     <string name="settings_amoled_theme_desc">为深色模式使用纯黑背景</string>
+    <string name="settings_switch_icon">启用按钮指示器</string>
+    <string name="settings_switch_icon_desc">为开关按钮添加状态指示图标</string>
     <string name="settings_use_legacy_su_page">单页OP权限授权</string>
     <string name="settings_use_legacy_su_page_summary">OP权限页面改用单页授权设计</string>
     <string name="settings_category_module">模组</string>
@@ -994,4 +996,20 @@
     <string name="settings_kernel_spoof_version">内核版本（核心版本）</string>
     <string name="settings_kernel_spoof_build_time">内核构建时间（核心构建时间）</string>
     <string name="settings_kernel_spoof_restore">恢复（复原）</string>
+
+    <string name="kernel_spoof_enabled">内核伪装已启用</string>
+    <string name="kernel_spoof_disabled_restored">内核伪装已停用并还原</string>
+    <string name="kernel_spoof_failed">内核伪装失败: %d</string>
+    <string name="kernel_spoof_applied">内核伪装已应用</string>
+
+    <string name="settings_path_hide">路径隐藏（方块隐身）</string>
+    <string name="settings_path_hide_summary">在核心层面隐藏文件和目录（就像方块变透明）</string>
+    <string name="path_hide_paths_label">隐藏路径（每行一个，像列清单）</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">每行输入一个路径，匹配的路径会返回不存在（就像找不到方块）</string>
+    <string name="path_hide_save">保存（存档）</string>
+    <string name="path_hide_enabled">路径隐藏已启用（方块已隐身）</string>
+    <string name="path_hide_disabled">路径隐藏已禁用（方块恢复可见）</string>
+    <string name="path_hide_applied">路径隐藏配置已应用（隐身效果已生效）</string>
+    <string name="path_hide_failed">路径隐藏操作失败: %d</string>
 </resources>

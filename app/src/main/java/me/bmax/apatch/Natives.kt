@@ -167,6 +167,42 @@ object Natives {
     }
 
     @FastNative
+    private external fun nativePathHideAdd(superKey: String, path: String): Long
+    fun pathHideAdd(path: String): Long {
+        return nativePathHideAdd(APApplication.superKey, path)
+    }
+
+    @FastNative
+    private external fun nativePathHideRemove(superKey: String, path: String): Long
+    fun pathHideRemove(path: String): Long {
+        return nativePathHideRemove(APApplication.superKey, path)
+    }
+
+    @FastNative
+    private external fun nativePathHideList(superKey: String): String
+    fun pathHideList(): String {
+        return nativePathHideList(APApplication.superKey)
+    }
+
+    @FastNative
+    private external fun nativePathHideClear(superKey: String): Long
+    fun pathHideClear(): Long {
+        return nativePathHideClear(APApplication.superKey)
+    }
+
+    @FastNative
+    private external fun nativePathHideEnable(superKey: String, enable: Int): Long
+    fun pathHideEnable(enable: Boolean): Long {
+        return nativePathHideEnable(APApplication.superKey, if (enable) 1 else 0)
+    }
+
+    @FastNative
+    private external fun nativePathHideStatus(superKey: String): Long
+    fun pathHideStatus(): Long {
+        return nativePathHideStatus(APApplication.superKey)
+    }
+
+    @FastNative
     private external fun nativeSuAuditList(superKey: String): String
     fun suAuditList(): String {
         return nativeSuAuditList(APApplication.superKey)

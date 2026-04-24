@@ -166,10 +166,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.Translate, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = languageTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -200,10 +203,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.Update, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Text(
                         text = updateTitle,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -212,6 +218,7 @@ fun GeneralSettingsContent(
         item {
             ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Autorenew,
             title = autoUpdateTitle,
             description = autoUpdateSummary,
             checked = autoUpdateCheck,
@@ -225,6 +232,7 @@ fun GeneralSettingsContent(
         item {
             ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Block,
             title = blockUpdateTitle,
             description = blockUpdateSummary,
             checked = blockUpdateChecked,
@@ -238,6 +246,7 @@ fun GeneralSettingsContent(
         item {
             ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Block,
             title = blockApUpdateTitle,
             description = blockApUpdateSummary,
             checked = blockApUpdateChecked,
@@ -251,6 +260,7 @@ fun GeneralSettingsContent(
         item {
             ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.AutoAwesome,
             title = folkXEngineTitle,
             description = folkXEngineSummary,
             checked = folkXEngineEnabled,
@@ -276,10 +286,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.Animation, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = stringResource(R.string.settings_folkx_animation_type),
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -299,10 +312,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.Speed, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = stringResource(R.string.settings_folkx_animation_speed),
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -319,6 +335,7 @@ fun GeneralSettingsContent(
         item(visible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.ArrowBack,
                 title = predictiveBackTitle,
                 description = predictiveBackSummary,
                 checked = predictiveBackEnabled,
@@ -336,10 +353,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.List, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = appListLoadingSchemeTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -359,10 +379,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.Security, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = selinuxModeTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -379,6 +402,7 @@ fun GeneralSettingsContent(
         item(visible = kPatchReady && aPatchReady) {
             ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Public,
                 title = globalNamespaceTitle,
                 description = globalNamespaceSummary,
                 checked = isGlobalNamespaceEnabled,
@@ -392,6 +416,7 @@ fun GeneralSettingsContent(
         item(visible = kPatchReady && aPatchReady) {
             ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.FolderSpecial,
                 title = magicMountTitle,
                 description = magicMountSummary,
                 checked = isMagicMountEnabled,
@@ -405,6 +430,7 @@ fun GeneralSettingsContent(
         item {
             ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Android,
             title = launcherIconTitle,
             description = launcherIconSummary,
             checked = useAltIcon.value,
@@ -422,10 +448,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.LinkOff, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Text(
                         text = resetSuPathTitle,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -437,10 +466,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.Label, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = appTitleTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -460,10 +492,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = customAppTitleTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -483,10 +518,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.PhoneAndroid, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = desktopAppNameTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -506,10 +544,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.FormatSize, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = dpiTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -557,10 +598,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.BugReport, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Text(
                         text = logTitle,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

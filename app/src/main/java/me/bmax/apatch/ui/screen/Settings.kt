@@ -163,11 +163,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             onClick = { navigator.navigate(SecuritySettingsScreenDestination) },
                         )
                     }
-                }
-            }
-
-            item {
-                SplicedColumnGroup {
                     item(visible = aPatchReady) {
                         SplicedSettingsItem(
                             icon = Icons.Filled.Cloud,

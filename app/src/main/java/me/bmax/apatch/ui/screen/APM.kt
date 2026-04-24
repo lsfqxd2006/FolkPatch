@@ -92,7 +92,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
+import me.bmax.apatch.ui.component.ExpressiveSwitch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
@@ -1693,7 +1693,7 @@ private fun ModuleItem(
                         )
                     }
 
-                    Switch(
+                    ExpressiveSwitch(
                         enabled = !module.update,
                         checked = isChecked,
                         onCheckedChange = onCheckChanged

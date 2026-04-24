@@ -9,8 +9,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.AddToHomeScreen
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -59,6 +69,7 @@ fun BehaviorSettingsContent(
     var enableWebDebugging by remember { mutableStateOf(prefs.getBoolean("enable_web_debugging", false)) }
     ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.BugReport,
         title = stringResource(id = R.string.enable_web_debugging),
         description = stringResource(id = R.string.enable_web_debugging_summary),
         checked = enableWebDebugging,
@@ -73,6 +84,7 @@ fun BehaviorSettingsContent(
         var installConfirm by remember { mutableStateOf(prefs.getBoolean("apm_install_confirm_enabled", true)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Verified,
             title = stringResource(id = R.string.settings_apm_install_confirm),
             description = stringResource(id = R.string.settings_apm_install_confirm_summary),
             checked = installConfirm,
@@ -87,6 +99,7 @@ fun BehaviorSettingsContent(
         var enableModuleShortcutAdd by remember { mutableStateOf(prefs.getBoolean("enable_module_shortcut_add", true)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.AddToHomeScreen,
             title = stringResource(id = R.string.settings_enable_module_shortcut_add),
             description = stringResource(id = R.string.settings_enable_module_shortcut_add_summary),
             checked = enableModuleShortcutAdd,
@@ -101,6 +114,7 @@ fun BehaviorSettingsContent(
         var stayOnPage by remember { mutableStateOf(prefs.getBoolean("apm_action_stay_on_page", true)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.OpenInNew,
             title = stringResource(id = R.string.settings_apm_stay_on_page),
             description = stringResource(id = R.string.settings_apm_stay_on_page_summary),
             checked = stayOnPage,
@@ -115,6 +129,7 @@ fun BehaviorSettingsContent(
         var hideApatchCard by remember { mutableStateOf(prefs.getBoolean("hide_apatch_card", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.VisibilityOff,
             title = stringResource(id = R.string.settings_hide_apatch_card),
             description = stringResource(id = R.string.settings_hide_apatch_card_summary),
             checked = hideApatchCard,
@@ -129,6 +144,7 @@ fun BehaviorSettingsContent(
         var hideSuPath by remember { mutableStateOf(prefs.getBoolean("hide_su_path", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.VisibilityOff,
             title = stringResource(id = R.string.home_hide_su_path),
             description = stringResource(id = R.string.home_hide_su_path_summary),
             checked = hideSuPath,
@@ -143,6 +159,7 @@ fun BehaviorSettingsContent(
         var hideKpatchVersion by remember { mutableStateOf(prefs.getBoolean("hide_kpatch_version", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.VisibilityOff,
             title = stringResource(id = R.string.home_hide_kpatch_version),
             description = stringResource(id = R.string.home_hide_kpatch_version_summary),
             checked = hideKpatchVersion,
@@ -157,6 +174,7 @@ fun BehaviorSettingsContent(
         var hideFingerprint by remember { mutableStateOf(prefs.getBoolean("hide_fingerprint", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Fingerprint,
             title = stringResource(id = R.string.home_hide_fingerprint),
             description = stringResource(id = R.string.home_hide_fingerprint_summary),
             checked = hideFingerprint,
@@ -171,6 +189,7 @@ fun BehaviorSettingsContent(
         var hideZygisk by remember { mutableStateOf(prefs.getBoolean("hide_zygisk", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.VisibilityOff,
             title = stringResource(id = R.string.home_hide_zygisk),
             description = stringResource(id = R.string.home_hide_zygisk_summary),
             checked = hideZygisk,
@@ -185,6 +204,7 @@ fun BehaviorSettingsContent(
         var hideMount by remember { mutableStateOf(prefs.getBoolean("hide_mount", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.VisibilityOff,
             title = stringResource(id = R.string.home_hide_mount),
             description = stringResource(id = R.string.home_hide_mount_summary),
             checked = hideMount,
@@ -199,6 +219,7 @@ fun BehaviorSettingsContent(
         var useLegacySuPage by remember { mutableStateOf(prefs.getBoolean("use_legacy_su_page", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.History,
             title = stringResource(id = R.string.settings_use_legacy_su_page),
             description = stringResource(id = R.string.settings_use_legacy_su_page_summary),
             checked = useLegacySuPage,
@@ -232,6 +253,13 @@ fun BehaviorSettingsContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                Icon(
+                    imageVector = Icons.Filled.Badge,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp),
+                )
+                Spacer(Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = badgeCountTitle,
