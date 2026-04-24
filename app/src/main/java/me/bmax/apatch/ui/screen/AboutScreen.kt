@@ -1,6 +1,7 @@
 package me.bmax.apatch.ui.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,17 +13,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,10 +30,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
@@ -42,6 +43,8 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.bmax.apatch.BuildConfig
 import me.bmax.apatch.R
+import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.util.Version
 
 @Destination<RootGraph>
@@ -61,9 +64,13 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // App icon with elevated shadow
             Surface(
-                modifier = Modifier.size(95.dp),
+                modifier = Modifier
+                    .size(100.dp)
+                    .shadow(8.dp, CircleShape),
                 color = colorResource(id = R.color.about_icon_background),
                 shape = CircleShape
             ) {
@@ -75,10 +82,15 @@ fun AboutScreen(navigator: DestinationsNavigator) {
             }
 
             Spacer(modifier = Modifier.height(20.dp))
+
             Text(
                 text = stringResource(id = R.string.app_name),
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
             )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 text = stringResource(
                     id = R.string.about_app_version,
@@ -86,68 +98,120 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 5.dp)
             )
-            Text(
 
+            Text(
                 text = stringResource(
                     id = R.string.about_powered_by,
                     "KernelPatch (${Version.buildKPVString()})"
                 ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 5.dp)
+                modifier = Modifier.padding(top = 2.dp)
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                FilledTonalButton(
-                    onClick = { uriHandler.openUri("https://github.com/LyraVoid/FolkPatch") }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.github),
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                    Text(text = stringResource(id = R.string.about_github))
-                }
-
-                Spacer(modifier = Modifier.width(10.dp))
-
-                FilledTonalButton(
-                    onClick = { uriHandler.openUri("https://t.me/FolkPatch") }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.telegram),
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                    Text(text = stringResource(id = R.string.about_telegram_channel))
-                }
-            }
-
-            OutlinedCard(
-                modifier = Modifier.padding(vertical = 30.dp, horizontal = 20.dp),
-                shape = RoundedCornerShape(15.dp)
+            // Description card — M3E ExpressiveCard
+            ExpressiveCard(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                flat = true,
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(all = 12.dp)
+                        .padding(20.dp)
                 ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = stringResource(id = R.string.about),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = stringResource(id = R.string.about_app_desc),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Links — M3E SplicedColumnGroup
+            SplicedColumnGroup(
+                modifier = Modifier.padding(horizontal = 0.dp),
+            ) {
+                item {
+                    SplicedLinkItem(
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.github),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        title = stringResource(id = R.string.about_github),
+                        onClick = { uriHandler.openUri("https://github.com/LyraVoid/FolkPatch") }
+                    )
+                }
+                item {
+                    SplicedLinkItem(
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.telegram),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        title = stringResource(id = R.string.about_telegram_channel),
+                        onClick = { uriHandler.openUri("https://t.me/FolkPatch") }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+}
+
+@Composable
+private fun SplicedLinkItem(
+    icon: @Composable () -> Unit,
+    title: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        icon()
+        Spacer(modifier = Modifier.width(20.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f),
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(20.dp),
+        )
     }
 }
 
