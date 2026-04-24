@@ -2,10 +2,12 @@ package me.bmax.apatch.ui.screen.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -18,7 +20,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FolderOff
 import androidx.compose.material.icons.filled.Memory
@@ -29,15 +30,13 @@ import androidx.compose.material.icons.filled.PersonPin
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -49,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
@@ -57,11 +57,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
 import coil.compose.AsyncImage
-import coil.imageLoader
-import me.bmax.apatch.APApplication
+import coil.request.ImageRequest
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
 import me.bmax.apatch.ui.component.ExpressiveSwitch
@@ -102,8 +104,6 @@ fun FunctionSettingsContent(
     flat: Boolean = false,
 ) {
     val context = LocalContext.current
-    val prefs = APApplication.sharedPreferences
-
     val hideServiceTitle = stringResource(id = R.string.settings_hide_service)
     val hideServiceSummary = stringResource(id = R.string.settings_hide_service_summary)
     val umountServiceTitle = stringResource(id = R.string.settings_umount_service)
@@ -367,7 +367,49 @@ fun FunctionSettingsContent(
                                 Text(stringResource(R.string.path_hide_save))
                             }
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            val pathCount = pathHidePaths.lines().count { it.isNotBlank() }
+                            val appCount = selectedUids.size
+                            if (pathCount > 0 || appCount > 0) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    if (pathCount > 0) {
+                                        Icon(
+                                            Icons.Filled.FolderOff,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            "$pathCount paths",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                    if (pathCount > 0 && appCount > 0) {
+                                        Spacer(Modifier.width(12.dp))
+                                    }
+                                    if (appCount > 0) {
+                                        Icon(
+                                            Icons.Filled.PersonPin,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            "$appCount apps",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
 
                             // UID Execution Mode
                             val uidModeTitle = stringResource(id = R.string.path_hide_uid_mode)
@@ -415,35 +457,40 @@ fun FunctionSettingsContent(
                                     val noAppsText = stringResource(R.string.path_hide_no_apps_selected)
 
                                     if (selectedUids.isNotEmpty()) {
-                                        @OptIn(ExperimentalLayoutApi::class)
-                                        FlowRow(
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                                        Column(
+                                            verticalArrangement = Arrangement.spacedBy(8.dp),
                                         ) {
                                             selectedUids.forEach { uid ->
                                                 val pkgs = pm.getPackagesForUid(uid)
-                                                val label = pkgs?.firstOrNull()?.let {
+                                                val pkgName = pkgs?.firstOrNull()
+                                                val pkgInfo = remember(pkgName) {
+                                                    pkgName?.let {
+                                                        try { pm.getPackageInfo(it, 0) } catch (_: Exception) { null }
+                                                    }
+                                                }
+                                                val label = pkgName?.let {
                                                     try { pm.getApplicationInfo(it, 0).loadLabel(pm).toString() }
                                                     catch (_: Exception) { it }
                                                 } ?: "UID $uid"
-                                                FilterChip(
-                                                    selected = true,
-                                                    onClick = { onUidToggle(uid) },
-                                                    label = {
-                                                        Text(
-                                                            label,
-                                                            maxLines = 1,
-                                                            overflow = TextOverflow.Ellipsis,
-                                                            style = MaterialTheme.typography.bodySmall,
-                                                        )
-                                                    },
-                                                    trailingIcon = {
-                                                        Icon(
-                                                            Icons.Filled.Close,
-                                                            contentDescription = null,
-                                                            modifier = Modifier.size(FilterChipDefaults.IconSize),
-                                                        )
-                                                    },
+                                                val isSystemApp = remember(pkgName) {
+                                                    pkgName?.let {
+                                                        try {
+                                                            val appInfo = pm.getApplicationInfo(it, 0)
+                                                            (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
+                                                                (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                                                        } catch (_: Exception) {
+                                                            false
+                                                        }
+                                                    } ?: false
+                                                }
+
+                                                SelectedPathHideAppItem(
+                                                    label = label,
+                                                    packageName = pkgName ?: "UID $uid",
+                                                    uid = uid,
+                                                    packageInfo = pkgInfo,
+                                                    isSystemApp = isSystemApp,
+                                                    onRemove = { onUidToggle(uid) },
                                                 )
                                             }
                                         }
@@ -471,10 +518,122 @@ fun FunctionSettingsContent(
     }
 }
 
+@Composable
+private fun SelectedPathHideAppItem(
+    label: String,
+    packageName: String,
+    uid: Int,
+    packageInfo: PackageInfo?,
+    isSystemApp: Boolean,
+    onRemove: () -> Unit,
+) {
+    val context = LocalContext.current
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+        tonalElevation = 0.dp,
+        onClick = onRemove,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(packageInfo)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = label,
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape),
+            )
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = packageName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = FontFamily.Monospace,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "UID $uid",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (isSystemApp) {
+                        MiniBadge(text = stringResource(R.string.path_hide_show_system))
+                    }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Filled.Close,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MiniBadge(
+    text: String,
+    containerColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+    contentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+) {
+    Box(
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(containerColor)
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = contentColor,
+        )
+    }
+}
+
 data class AppListEntry(
     val uid: Int,
     val packageName: String,
     val label: String,
+    val packageInfo: PackageInfo?,
+    val isSystemApp: Boolean,
 )
 
 @Composable
@@ -518,12 +677,14 @@ private fun AppPickerSheet(
 
     val allApps = remember {
         pm.getInstalledApplications(0)
-            .filter { showSystem || it.uid >= 10000 }
             .map { appInfo ->
                 AppListEntry(
                     uid = appInfo.uid,
                     packageName = appInfo.packageName,
                     label = appInfo.loadLabel(pm).toString(),
+                    packageInfo = try { pm.getPackageInfo(appInfo.packageName, 0) } catch (_: Exception) { null },
+                    isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
+                        (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0,
                 )
             }
             .distinctBy { it.uid }
@@ -531,22 +692,15 @@ private fun AppPickerSheet(
     }
 
     val filteredApps = remember(searchQuery, showSystem) {
-        val base = if (showSystem) {
-            pm.getInstalledApplications(0)
-        } else {
-            pm.getInstalledApplications(0).filter { it.uid >= 10000 }
-        }
-        base
+        allApps
+            .filter { showSystem || !it.isSystemApp }
             .let { apps ->
                 if (searchQuery.isBlank()) apps
                 else apps.filter {
                     it.packageName.contains(searchQuery, true) ||
-                        it.loadLabel(pm).toString().contains(searchQuery, true)
+                        it.label.contains(searchQuery, true)
                 }
             }
-            .map { AppListEntry(it.uid, it.packageName, it.loadLabel(pm).toString()) }
-            .distinctBy { it.uid }
-            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.label })
     }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -627,10 +781,12 @@ private fun AppPickerSheet(
                         )
                         Spacer(Modifier.width(8.dp))
                         AsyncImage(
-                            model = app.packageName,
+                            model = ImageRequest.Builder(context)
+                                .data(app.packageInfo)
+                                .crossfade(true)
+                                .build(),
                             contentDescription = null,
-                            modifier = Modifier.size(36.dp),
-                            imageLoader = context.imageLoader,
+                            modifier = Modifier.size(36.dp).clip(CircleShape),
                         )
                         Spacer(Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
