@@ -293,6 +293,8 @@
     <string name="settings_fold_system_module_summary">Eylemleri genişletmek/daraltmak için modül kartına tıkla</string>
     <string name="settings_simple_list_bottom_bar">Basit Liste Alt Çubuğu</string>
     <string name="settings_simple_list_bottom_bar_summary">Modül eylemleri için yalnızca simge düğmeleri kullan (APatch’ten esinlenmiştir)</string>
+    <string name="settings_spliced_card_group">Spliced Card Group</string>
+    <string name="settings_spliced_card_group_summary">Use M3E continuous card group style for module list</string>
     <string name="apm_install_confirm_title">Modül Kur</string>
     <string name="apm_install_confirm_content">%s kurulmak istiyor musunuz?</string>
     <string name="apm_disable_all_title">Tüm Modülleri Devre Dışı Bırak</string>
@@ -470,6 +472,9 @@ Bol şans! Ayrıca, aşağıdaki belge butonuna tıklamak kesinlikle doğru!</st
     <string name="app_title_magicpatch">MagicPatch</string>
 
     <string name="settings_app_dpi">Uygulama DPI</string>
+    <string name="dpi_apply_settings">Uygula</string>
+    <string name="dpi_confirm_title">DPI değişikliğini onayla</string>
+    <string name="dpi_confirm_message">Uygulama DPI değerini %1$s ile %2$s arasında değiştirmek ister misiniz?</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Dahili modül bağlama sistemini etkinleştir</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
@@ -752,6 +757,8 @@ Komutların çalışması için uygulamanın tamamen kapatılıp yeniden açıld
     <string name="settings_appearance_night_mode_summary">Koyu tema ve renk yapılandırması</string>
     <string name="settings_amoled_theme">AMOLED Siyah Tema</string>
     <string name="settings_amoled_theme_desc">Karanlık mod için tam siyah arka plan</string>
+    <string name="settings_switch_icon">Düğme Göstergesi</string>
+    <string name="settings_switch_icon_desc">Anahtar düğmelerinde durum simgelerini göster</string>
     <string name="settings_category_behavior">Davranış</string>
     <string name="settings_category_function">Fonksiyon</string>
     <string name="settings_category_module">Modüller</string>
@@ -1024,4 +1031,28 @@ Komutların çalışması için uygulamanın tamamen kapatılıp yeniden açıld
     <string name="settings_kernel_spoof_version">Çekirdek Sürümü</string>
     <string name="settings_kernel_spoof_build_time">Çekirdek Yapım Zamanı</string>
     <string name="settings_kernel_spoof_restore">Geri Yükle</string>
+
+    <string name="kernel_spoof_enabled">Çekirdek sahtekarlığı etkinleştirildi</string>
+    <string name="kernel_spoof_disabled_restored">Çekirdek sahtekarlığı devre dışı bırakıldı ve geri yüklendi</string>
+    <string name="kernel_spoof_failed">Çekirdek sahtekarlığı başarısız: %d</string>
+    <string name="kernel_spoof_applied">Çekirdek sahtekarlığı uygulandı</string>
+
+    <string name="settings_path_hide">Yolu Gizle</string>
+    <string name="settings_path_hide_summary">Dosya ve dizinleri uygulamalardan çekirdek seviyesinde gizle</string>
+    <string name="path_hide_paths_label">Gizli Yollar (her satıra bir tane)</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">Her satıra bir yol girin. Eşleşen yollar ENOENT döndürecektir.</string>
+    <string name="path_hide_save">Kaydet</string>
+    <string name="path_hide_enabled">Yol gizleme etkinleştirildi</string>
+    <string name="path_hide_disabled">Yol gizleme devre dışı bırakıldı</string>
+    <string name="path_hide_applied">Yol gizleme yapılandırması uygulandı</string>
+    <string name="path_hide_failed">Yol gizleme işlemi başarısız: %d</string>
+    <string name="path_hide_uid_mode">UID Yürütme Modu</string>
+    <string name="path_hide_uid_mode_summary">Yolları yalnızca belirli uygulama UID\'leri için gizle</string>
+    <string name="path_hide_uids_label">Hedef UID\'ler (her satıra bir tane)</string>
+    <string name="path_hide_uids_helper">Uygulama UID\'lerini girin. Yalnızca bu uygulamaların yolları gizlenir.</string>
+    <string name="path_hide_uid_save">UID\'leri Kaydet</string>
+    <string name="path_hide_uid_mode_enabled">UID yürütme modu etkinleştirildi</string>
+    <string name="path_hide_uid_mode_disabled">UID yürütme modu devre dışı bırakıldı</string>
+    <string name="path_hide_uid_applied">UID beyaz liste uygulandı</string>
 </resources>

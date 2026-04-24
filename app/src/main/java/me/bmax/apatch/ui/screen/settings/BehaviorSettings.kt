@@ -9,8 +9,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.AddToHomeScreen
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,6 +39,7 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.CheckboxItem
 import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.ToggleSettingCard
 
 @Composable
@@ -39,11 +50,26 @@ fun BehaviorSettingsContent(
 ) {
     val prefs = APApplication.sharedPreferences
 
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    var currentStyle by remember { mutableStateOf(prefs.getString("home_layout_style", "circle")) }
+    DisposableEffect(Unit) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+            if (key == "home_layout_style") {
+                currentStyle = sharedPreferences.getString("home_layout_style", "circle")
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
 
+    SplicedColumnGroup(flat = flat) {
+
+    item {
     var enableWebDebugging by remember { mutableStateOf(prefs.getBoolean("enable_web_debugging", false)) }
     ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.BugReport,
         title = stringResource(id = R.string.enable_web_debugging),
         description = stringResource(id = R.string.enable_web_debugging_summary),
         checked = enableWebDebugging,
@@ -52,11 +78,13 @@ fun BehaviorSettingsContent(
             prefs.edit().putBoolean("enable_web_debugging", it).apply()
         }
     )
+    }
 
-    if (aPatchReady) {
+    item(visible = aPatchReady) {
         var installConfirm by remember { mutableStateOf(prefs.getBoolean("apm_install_confirm_enabled", true)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Verified,
             title = stringResource(id = R.string.settings_apm_install_confirm),
             description = stringResource(id = R.string.settings_apm_install_confirm_summary),
             checked = installConfirm,
@@ -67,10 +95,11 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (aPatchReady) {
+    item(visible = aPatchReady) {
         var enableModuleShortcutAdd by remember { mutableStateOf(prefs.getBoolean("enable_module_shortcut_add", true)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.AddToHomeScreen,
             title = stringResource(id = R.string.settings_enable_module_shortcut_add),
             description = stringResource(id = R.string.settings_enable_module_shortcut_add_summary),
             checked = enableModuleShortcutAdd,
@@ -81,10 +110,11 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (aPatchReady) {
+    item(visible = aPatchReady) {
         var stayOnPage by remember { mutableStateOf(prefs.getBoolean("apm_action_stay_on_page", true)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.OpenInNew,
             title = stringResource(id = R.string.settings_apm_stay_on_page),
             description = stringResource(id = R.string.settings_apm_stay_on_page_summary),
             checked = stayOnPage,
@@ -95,23 +125,11 @@ fun BehaviorSettingsContent(
         )
     }
 
-    var currentStyle by remember { mutableStateOf(prefs.getString("home_layout_style", "stats")) }
-    DisposableEffect(Unit) {
-        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
-            if (key == "home_layout_style") {
-                currentStyle = sharedPreferences.getString("home_layout_style", "stats")
-            }
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
-
-    if (currentStyle != "focus") {
+    item(visible = currentStyle != "focus") {
         var hideApatchCard by remember { mutableStateOf(prefs.getBoolean("hide_apatch_card", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.VisibilityOff,
             title = stringResource(id = R.string.settings_hide_apatch_card),
             description = stringResource(id = R.string.settings_hide_apatch_card_summary),
             checked = hideApatchCard,
@@ -122,10 +140,11 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var hideSuPath by remember { mutableStateOf(prefs.getBoolean("hide_su_path", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.VisibilityOff,
             title = stringResource(id = R.string.home_hide_su_path),
             description = stringResource(id = R.string.home_hide_su_path_summary),
             checked = hideSuPath,
@@ -136,10 +155,11 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var hideKpatchVersion by remember { mutableStateOf(prefs.getBoolean("hide_kpatch_version", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.VisibilityOff,
             title = stringResource(id = R.string.home_hide_kpatch_version),
             description = stringResource(id = R.string.home_hide_kpatch_version_summary),
             checked = hideKpatchVersion,
@@ -150,10 +170,11 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var hideFingerprint by remember { mutableStateOf(prefs.getBoolean("hide_fingerprint", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Fingerprint,
             title = stringResource(id = R.string.home_hide_fingerprint),
             description = stringResource(id = R.string.home_hide_fingerprint_summary),
             checked = hideFingerprint,
@@ -164,10 +185,11 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var hideZygisk by remember { mutableStateOf(prefs.getBoolean("hide_zygisk", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.VisibilityOff,
             title = stringResource(id = R.string.home_hide_zygisk),
             description = stringResource(id = R.string.home_hide_zygisk_summary),
             checked = hideZygisk,
@@ -178,10 +200,11 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var hideMount by remember { mutableStateOf(prefs.getBoolean("hide_mount", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.VisibilityOff,
             title = stringResource(id = R.string.home_hide_mount),
             description = stringResource(id = R.string.home_hide_mount_summary),
             checked = hideMount,
@@ -192,10 +215,11 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var useLegacySuPage by remember { mutableStateOf(prefs.getBoolean("use_legacy_su_page", false)) }
         ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.History,
             title = stringResource(id = R.string.settings_use_legacy_su_page),
             description = stringResource(id = R.string.settings_use_legacy_su_page_summary),
             checked = useLegacySuPage,
@@ -206,7 +230,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    if (kPatchReady) {
+    item(visible = kPatchReady) {
         var enableSuperUserBadge by remember { mutableStateOf(prefs.getBoolean("badge_superuser", true)) }
         var enableApmBadge by remember { mutableStateOf(prefs.getBoolean("badge_apm", true)) }
         var enableKernelBadge by remember { mutableStateOf(prefs.getBoolean("badge_kernel", true)) }
@@ -229,6 +253,13 @@ fun BehaviorSettingsContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                Icon(
+                    imageVector = Icons.Filled.Badge,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp),
+                )
+                Spacer(Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = badgeCountTitle,

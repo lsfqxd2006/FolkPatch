@@ -310,6 +310,8 @@
     <string name="settings_fold_system_module_summary">Нажмите на карточку модуля, чтобы развернуть/свернуть действия</string>
         <string name="settings_simple_list_bottom_bar">Простая нижняя панель списка</string>
         <string name="settings_simple_list_bottom_bar_summary">Использовать стиль кнопок только с иконками для действий модуля, вдохновлено APatch</string>
+    <string name="settings_spliced_card_group">Spliced Card Group</string>
+    <string name="settings_spliced_card_group_summary">Use M3E continuous card group style for module list</string>
     <string name="settings_show_more_module_info">Показать подробности о модуле</string>
     <string name="settings_show_more_module_info_summary">Показать ID и размер модуля в списке модулей</string>
     <string name="apm_install_confirm_title">Установить модуль</string>
@@ -471,6 +473,9 @@
     <string name="about_telegram_channel">Канал в Telegram</string>
 
     <string name="settings_app_dpi">DPI приложения</string>
+    <string name="dpi_apply_settings">Применить</string>
+    <string name="dpi_confirm_title">Подтверждение изменения DPI</string>
+    <string name="dpi_confirm_message">Изменить DPI приложения с %1$s на %2$s?</string>
     <string name="settings_alt_icon">Альтернативная иконка</string>
     <string name="alt_icon_summary">Использовать альтернативный значок запуска</string>
     <string name="settings_magic_mount">Folk Mount API</string>
@@ -747,6 +752,8 @@
     <string name="settings_appearance_night_mode_summary">Темная тема и настройка цветов</string>
     <string name="settings_amoled_theme">Чёрная тема AMOLED</string>
     <string name="settings_amoled_theme_desc">Чисто чёрный фон для тёмного режима</string>
+    <string name="settings_switch_icon">Индикатор кнопки</string>
+    <string name="settings_switch_icon_desc">Показать значки состояния на переключателях</string>
     <string name="settings_category_behavior">Поведение</string>
     <string name="settings_category_function">Функция</string>
     <string name="settings_use_legacy_su_page">Авторизация суперпользователя на одной странице</string>
@@ -1019,4 +1026,28 @@
     <string name="settings_kernel_spoof_version">Версия ядра</string>
     <string name="settings_kernel_spoof_build_time">Время сборки ядра</string>
     <string name="settings_kernel_spoof_restore">Восстановить</string>
+
+    <string name="kernel_spoof_enabled">Подмена ядра включена</string>
+    <string name="kernel_spoof_disabled_restored">Подмена ядра отключена и восстановлена</string>
+    <string name="kernel_spoof_failed">Ошибка подмены ядра: %d</string>
+    <string name="kernel_spoof_applied">Подмена ядра применена</string>
+
+    <string name="settings_path_hide">Скрытие путей</string>
+    <string name="settings_path_hide_summary">Скрывать файлы и каталоги от приложений на уровне ядра</string>
+    <string name="path_hide_paths_label">Скрытые пути (по одному на строку)</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">Введите по одному пути на строку. Совпадающие пути будут возвращать ENOENT.</string>
+    <string name="path_hide_save">Сохранить</string>
+    <string name="path_hide_enabled">Скрытие путей включено</string>
+    <string name="path_hide_disabled">Скрытие путей отключено</string>
+    <string name="path_hide_applied">Конфигурация скрытия путей применена</string>
+    <string name="path_hide_failed">Ошибка операции скрытия путей: %d</string>
+    <string name="path_hide_uid_mode">Режим выполнения по UID</string>
+    <string name="path_hide_uid_mode_summary">Скрывать пути только для указанных UID приложений</string>
+    <string name="path_hide_uids_label">Целевые UID (по одному на строку)</string>
+    <string name="path_hide_uids_helper">Введите UID приложений. Пути будут скрыты только для этих приложений.</string>
+    <string name="path_hide_uid_save">Сохранить UID</string>
+    <string name="path_hide_uid_mode_enabled">Режим выполнения по UID включён</string>
+    <string name="path_hide_uid_mode_disabled">Режим выполнения по UID отключён</string>
+    <string name="path_hide_uid_applied">Белый список UID применён</string>
 </resources>

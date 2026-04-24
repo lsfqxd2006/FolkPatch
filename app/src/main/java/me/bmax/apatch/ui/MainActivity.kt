@@ -164,7 +164,7 @@ import androidx.compose.ui.platform.LocalContext
 import android.provider.OpenableColumns
 import me.bmax.apatch.ui.theme.ThemeManager
 import me.bmax.apatch.ui.component.rememberLoadingDialog
-import android.widget.Toast
+
 
 import me.bmax.apatch.ui.screen.settings.ThemeImportDialog
 import me.bmax.apatch.util.BiometricUtils
@@ -172,6 +172,7 @@ import me.bmax.apatch.util.ui.navBarGlassEffect
 import me.bmax.apatch.util.ui.navBarLiquefiable
 import me.bmax.apatch.util.ui.rememberNavBarGlassLiquidState
 import me.bmax.apatch.util.ui.isRealTimeBlurAvailable
+import me.bmax.apatch.util.ui.showToast
 
 data class ScrollState(
     val isScrollingDown: MutableState<Boolean>,
@@ -382,7 +383,7 @@ class MainActivity : AppCompatActivity() {
                 object : androidx.biometric.BiometricPrompt.AuthenticationCallback() {
                     override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                         super.onAuthenticationError(errorCode, errString)
-                        android.widget.Toast.makeText(this@MainActivity, errString, android.widget.Toast.LENGTH_SHORT).show()
+                        showToast(this@MainActivity, errString.toString())
                         finishAndRemoveTask()
                     }
 
@@ -586,7 +587,7 @@ class MainActivity : AppCompatActivity() {
                                     themeImportMetadata.value = metadata
                                     showThemeImportDialog.value = true
                                 } else {
-                                    Toast.makeText(context, context.getString(R.string.settings_theme_import_failed), Toast.LENGTH_SHORT).show()
+                                    showToast(context, context.getString(R.string.settings_theme_import_failed))
                                 }
                             }
                         } else {
@@ -610,9 +611,9 @@ class MainActivity : AppCompatActivity() {
                                     ThemeManager.importTheme(context, themeImportUri.value!!)
                                 }
                                 if (success) {
-                                    Toast.makeText(context, context.getString(R.string.settings_theme_imported), Toast.LENGTH_LONG).show()
+                                    showToast(context, context.getString(R.string.settings_theme_imported))
                                 } else {
-                                    Toast.makeText(context, context.getString(R.string.settings_theme_import_failed), Toast.LENGTH_SHORT).show()
+                                    showToast(context, context.getString(R.string.settings_theme_import_failed))
                                 }
                             }
                         }
@@ -682,25 +683,6 @@ class MainActivity : AppCompatActivity() {
                 val currentRoute = currentBackStackEntry?.destination?.route
 
 
-                var previousNavMode by rememberSaveable { mutableStateOf(navMode) }
-                val modeSwitchNavigator = navController.rememberDestinationsNavigator()
-                LaunchedEffect(navMode) {
-                    if (previousNavMode != navMode) {
-                        previousNavMode = navMode
-                        val destRoute = currentRoute
-                        if (destRoute != null) {
-                            val dest = BottomBarDestination.entries.find { it.direction.route == destRoute }
-                            if (dest != null) {
-                                modeSwitchNavigator.navigate(dest.direction) {
-                                    popUpTo(NavGraphs.root) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        }
-                    }
-                }
-
                 // Show bottom bar logic: hide when scrolling down in floating mode,
                 // plus 3s auto-hide after last interaction.
                 val isFloatingMode = navMode == "floating"
@@ -733,85 +715,73 @@ class MainActivity : AppCompatActivity() {
                         "floating" -> false
                         else -> maxWidth >= 600.dp && maxWidth > maxHeight // auto
                     }
-                    
-                    if (useNavigationRail) {
-                        // 横向布局：NavigationRail 在左侧
-                        Row(modifier = Modifier.fillMaxSize()) {
-                            NavigationRailBar(navController)
-                            
-                            Box(modifier = Modifier.weight(1f)) {
-                                CompositionLocalProvider(
-                                    LocalSnackbarHost provides snackBarHostState,
-                                    LocalIsFloatingNavMode provides false,
-                                ) {
-                                    val railNavTransitions = remember(folkXEngineEnabled, folkXAnimationType, folkXAnimationSpeed, bottomBarRoutes) {
-                                        createNavTransitions(folkXEngineEnabled, folkXAnimationType, folkXAnimationSpeed, bottomBarRoutes, useNavigationRail = true)
-                                    }
-                                    DestinationsNavHost(
-                                        modifier = Modifier.fillMaxSize(),
-                                        navGraph = NavGraphs.root,
-                                        navController = navController,
-                                        engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
-                                        defaultTransitions = railNavTransitions
+
+                    val bottomBarVisibleState = remember { mutableStateOf(showBottomBar) }
+                    bottomBarVisibleState.value = showBottomBar
+                    val shouldExposeContentToLiquid = currentRoute !in settingsRoutes
+                    val floatingLiquidState = if (
+                        isFloatingMode &&
+                        showBottomBar &&
+                        isOnMainTabPage &&
+                        BackgroundConfig.isNavBarGlassEnabled &&
+                        isRealTimeBlurAvailable()
+                    ) {
+                        rememberNavBarGlassLiquidState()
+                    } else null
+
+                    val navTransitions = remember(
+                        folkXEngineEnabled, folkXAnimationType, folkXAnimationSpeed, bottomBarRoutes, useNavigationRail
+                    ) {
+                        createNavTransitions(folkXEngineEnabled, folkXAnimationType, folkXAnimationSpeed, bottomBarRoutes, useNavigationRail)
+                    }
+
+                    val scrollConnection = rememberScrollConnection(
+                        isScrollingDown, scrollOffset, previousScrollOffset,
+                        onUserScroll = { resetBottomBarAutoHide() }
+                    )
+
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        CompositionLocalProvider(
+                            LocalSnackbarHost provides snackBarHostState,
+                            LocalScrollState provides if (isFloatingMode) ScrollState(
+                                isScrollingDown = isScrollingDown,
+                                scrollOffset = scrollOffset,
+                                previousScrollOffset = previousScrollOffset
+                            ) else null,
+                            LocalBottomBarVisible provides bottomBarVisibleState,
+                            LocalIsFloatingNavMode provides isFloatingMode
+                        ) {
+                            DestinationsNavHost(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .then(
+                                        if (useNavigationRail) Modifier.padding(start = 80.dp) else Modifier
                                     )
-                                }
+                                    .navBarLiquefiable(
+                                        if (shouldExposeContentToLiquid) floatingLiquidState else null
+                                    )
+                                    .then(
+                                        when {
+                                            isFloatingMode -> Modifier.nestedScroll(scrollConnection)
+                                            !useNavigationRail -> Modifier.padding(bottom = 80.dp)
+                                            else -> Modifier
+                                        }
+                                    ),
+                                navGraph = NavGraphs.root,
+                                navController = navController,
+                                engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
+                                defaultTransitions = navTransitions
+                            )
+                        }
+
+                        if (useNavigationRail) {
+                            Box(modifier = Modifier.align(Alignment.CenterStart)) {
+                                NavigationRailBar(navController)
                             }
                         }
-                    } else {
 
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            val bottomBarVisibleState = remember { mutableStateOf(showBottomBar) }
-                            bottomBarVisibleState.value = showBottomBar
-                            val shouldExposeContentToLiquid = currentRoute !in settingsRoutes
-                            val floatingLiquidState = if (
-                                isFloatingMode &&
-                                showBottomBar &&
-                                isOnMainTabPage &&
-                                BackgroundConfig.isNavBarGlassEnabled &&
-                                isRealTimeBlurAvailable()
-                            ) {
-                                rememberNavBarGlassLiquidState()
-                            } else null
-
-                            CompositionLocalProvider(
-                                LocalSnackbarHost provides snackBarHostState,
-                                LocalScrollState provides if (isFloatingMode) ScrollState(
-                                    isScrollingDown = isScrollingDown,
-                                    scrollOffset = scrollOffset,
-                                    previousScrollOffset = previousScrollOffset
-                                ) else null,
-                                LocalBottomBarVisible provides bottomBarVisibleState,
-                                LocalIsFloatingNavMode provides isFloatingMode
-                            ) {
-                                val bottomNavTransitions = remember(folkXEngineEnabled, folkXAnimationType, folkXAnimationSpeed, bottomBarRoutes) {
-                                    createNavTransitions(folkXEngineEnabled, folkXAnimationType, folkXAnimationSpeed, bottomBarRoutes, useNavigationRail = false)
-                                }
-                                DestinationsNavHost(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .navBarLiquefiable(
-                                            if (shouldExposeContentToLiquid) floatingLiquidState else null
-                                        )
-                                        .then(
-                                            if (isFloatingMode) Modifier.nestedScroll(
-                                                rememberScrollConnection(
-                                                    isScrollingDown,
-                                                    scrollOffset,
-                                                    previousScrollOffset,
-                                                    onUserScroll = { resetBottomBarAutoHide() }
-                                                )
-                                            ) else Modifier.padding(bottom = 80.dp)
-                                        ),
-                                    navGraph = NavGraphs.root,
-                                    navController = navController,
-                                    engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
-                                    defaultTransitions = bottomNavTransitions
-                                )
-                            }
-
-                            // 底部导航栏：根据模式渲染悬浮或传统样式
+                        if (!useNavigationRail) {
                             if (isFloatingMode) {
-                                // Floating mode: animated overlay
                                 AnimatedVisibility(
                                     visible = showBottomBar,
                                     modifier = Modifier.align(Alignment.BottomCenter),
@@ -827,7 +797,6 @@ class MainActivity : AppCompatActivity() {
                                     )
                                 }
                             } else {
-                                // Non-floating mode: standard NavigationBar at bottom
                                 BottomBar(
                                     modifier = Modifier.align(Alignment.BottomCenter),
                                     navController = navController,

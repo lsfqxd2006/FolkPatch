@@ -306,6 +306,8 @@
     <string name="settings_fold_system_module_summary">点击魔法阵卡片展开/折叠操作按钮</string>
     <string name="settings_simple_list_bottom_bar">简约魔法底栏</string>
     <string name="settings_simple_list_bottom_bar_summary">魔法阵符法使用纯图标按钮样式，灵感来自APatch</string>
+    <string name="settings_spliced_card_group">Spliced Card Group</string>
+    <string name="settings_spliced_card_group_summary">Use M3E continuous card group style for module list</string>
     <string name="settings_show_more_module_info">显示魔法阵详细信息</string>
     <string name="settings_show_more_module_info_summary">在魔法阵列表中显示魔法阵 ID 和大小</string>
     <string name="apm_install_confirm_title">安装魔法阵</string>
@@ -469,6 +471,9 @@
     <string name="about_telegram_channel">魔法少女通讯频道</string>
 
     <string name="settings_app_dpi">魔法使清晰度</string>
+    <string name="dpi_apply_settings">适月</string>
+    <string name="dpi_confirm_title">确认更改DPI</string>
+    <string name="dpi_confirm_message">将应用DPI从%1$s更改为%2$s？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">启用内置的魔法阵挂载系统</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
@@ -747,6 +752,8 @@
     <string name="settings_appearance_night_mode_summary">深色主题和颜色配置</string>
     <string name="settings_amoled_theme">AMOLED 纯黑主题</string>
     <string name="settings_amoled_theme_desc">为深色模式使用纯黑背景</string>
+    <string name="settings_switch_icon">Товчлуурын заагчийг идэвхжүүлэх</string>
+    <string name="settings_switch_icon_desc">Товчлуур дээр төлөвийн дүрсийг харуулах</string>
     <string name="settings_category_behavior">咒语指令</string>
     <string name="settings_category_function">魔法功能</string>
     <string name="settings_use_legacy_su_page">单页超级用户授权喵</string>
@@ -1005,4 +1012,28 @@
     <string name="settings_kernel_spoof_version">内核魔法版本</string>
     <string name="settings_kernel_spoof_build_time">内核施法时间</string>
     <string name="settings_kernel_spoof_restore">恢复魔法</string>
+
+    <string name="kernel_spoof_enabled">内核伪装魔法已施放</string>
+    <string name="kernel_spoof_disabled_restored">内核伪装魔法已解除并恢复</string>
+    <string name="kernel_spoof_failed">内核伪装魔法施放失败: %d</string>
+    <string name="kernel_spoof_applied">内核伪装魔法已生效</string>
+
+    <string name="settings_path_hide">Замгаалалт нуух</string>
+    <string name="settings_path_hide_summary">Файл болон лавлахыг цөмийн түвшинд аппликешнаас нуух</string>
+    <string name="path_hide_paths_label">Нуугдсан замууд (нэг мөрөнд нэг)</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">Нэг мөрөнд нэг зам оруулна уу. Таарах замууд ENOENT буцаана.</string>
+    <string name="path_hide_save">Хадгалах</string>
+    <string name="path_hide_enabled">Зам нуух идэвхжсэн</string>
+    <string name="path_hide_disabled">Зам нуух идэвхгүй болсон</string>
+    <string name="path_hide_applied">Зам нуух тохиргоо хэрэглэгдсэн</string>
+    <string name="path_hide_failed">Зам нуух үйлдэл амжилтгүй: %d</string>
+    <string name="path_hide_uid_mode">UID гүйцэтгэх горим</string>
+    <string name="path_hide_uid_mode_summary">Зөвхөн тодорхой аппын UID-д замыг нуух</string>
+    <string name="path_hide_uids_label">Зорилтот UID (мөр бүрт нэг)</string>
+    <string name="path_hide_uids_helper">Аппын UID оруулна уу. Зөвхөн эдгээр аппуудын зам нуугдана.</string>
+    <string name="path_hide_uid_save">UID хадгалах</string>
+    <string name="path_hide_uid_mode_enabled">UID гүйцэтгэх горим идэвхжсэн</string>
+    <string name="path_hide_uid_mode_disabled">UID гүйцэтгэх горим идэвхгүй</string>
+    <string name="path_hide_uid_applied">UID цагаан жагсаалт хэрэгжсэн</string>
 </resources>

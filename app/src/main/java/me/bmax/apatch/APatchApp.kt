@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
+import me.bmax.apatch.util.ui.showToast
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
@@ -102,6 +102,11 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
         const val UMOUNT_BINARY_PATH = "/data/adb/fp/bin/fpd"
         const val UTS_SPOOF_ENABLE_FILE = "/data/adb/.uts_spoof_enable"
         const val UTS_SPOOF_CONFIG_FILE = "/data/adb/.uts_spoof_config"
+        const val PATHHIDE_DIR = "/data/adb/fp/pathhide/"
+        const val PATHHIDE_PATHS_FILE = "/data/adb/fp/pathhide/paths"
+        const val PATHHIDE_ENABLE_FILE = "/data/adb/fp/pathhide/enabled"
+        const val PATHHIDE_UIDS_FILE = "/data/adb/fp/pathhide/uids"
+        const val PATHHIDE_UID_MODE_FILE = "/data/adb/fp/pathhide/uid_mode"
         const val KPMS_DIR = APATCH_FOLDER + "kpms/"
 
         @Deprecated("Use SHA256 comparison instead")
@@ -355,8 +360,7 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
         Log.d(TAG, "Device architecture check: isArm64=$isArm64, supported ABIs=${Build.SUPPORTED_ABIS.joinToString(", ")}")
         if (!isArm64) {
             Log.e(TAG, "Unsupported architecture!")
-            Toast.makeText(applicationContext, "Unsupported architecture!", Toast.LENGTH_LONG)
-                .show()
+            showToast(applicationContext, "Unsupported architecture!")
             Thread.sleep(5000)
             exitProcess(0)
         }
@@ -372,7 +376,7 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
                 .putBoolean("night_mode_follow_sys", true)
                 .putBoolean("use_system_color_theme", true)
                 .putString("custom_color", "indigo")
-                .putString("home_layout_style", "stats")
+                .putString("home_layout_style", "circle")
                 .apply()
         }
         

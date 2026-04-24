@@ -32,6 +32,13 @@ const SUPERCALL_KPM_LOAD: c_long = 0x1020;
 const SUPERCALL_UTS_SET: c_long = 0x1050;
 const SUPERCALL_UTS_RESET: c_long = 0x1051;
 
+const SUPERCALL_PATHHIDE_ENABLE: c_long = 0x1064;
+const SUPERCALL_PATHHIDE_ADD: c_long = 0x1060;
+const SUPERCALL_PATHHIDE_CLEAR: c_long = 0x1063;
+const SUPERCALL_PATHHIDE_UID_MODE: c_long = 0x106A;
+const SUPERCALL_PATHHIDE_UID_ADD: c_long = 0x1066;
+const SUPERCALL_PATHHIDE_UID_CLEAR: c_long = 0x1069;
+
 const SUPERCALL_SCONTEXT_LEN: usize = 0x60;
 
 #[repr(C)]
@@ -459,6 +466,183 @@ pub fn autoload_kpm_modules(superkey: &Option<String>, event_filter: &str) {
         }
     }
     info!("[kpm_autoload] done: success={}, fail={}", success, fail);
+}
+
+fn sc_pathhide_enable(key: &CStr, enable: bool) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_PATHHIDE_ENABLE),
+            if enable { 1i64 } else { 0i64 },
+        ) as c_long
+    }
+}
+
+fn sc_pathhide_add(key: &CStr, path: &CStr) -> c_long {
+    if key.to_bytes().is_empty() || path.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_PATHHIDE_ADD),
+            path.as_ptr(),
+        ) as c_long
+    }
+}
+
+fn sc_pathhide_clear(key: &CStr) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_PATHHIDE_CLEAR),
+        ) as c_long
+    }
+}
+
+fn sc_pathhide_uid_mode(key: &CStr, enable: bool) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_PATHHIDE_UID_MODE),
+            if enable { 1i64 } else { 0i64 },
+        ) as c_long
+    }
+}
+
+fn sc_pathhide_uid_add(key: &CStr, uid: i32) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_PATHHIDE_UID_ADD),
+            uid,
+        ) as c_long
+    }
+}
+
+fn sc_pathhide_uid_clear(key: &CStr) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_PATHHIDE_UID_CLEAR),
+        ) as c_long
+    }
+}
+
+pub fn apply_pathhide(superkey: &Option<String>) {
+    if !std::path::Path::new(crate::defs::PATHHIDE_ENABLE_FILE).exists() {
+        info!("[pathhide] disabled, skipping");
+        return;
+    }
+
+    let key = convert_superkey(superkey);
+    let key = match key {
+        Some(k) => k,
+        None => {
+            warn!("[pathhide] no superkey available");
+            return;
+        }
+    };
+
+    // Enable pathhide in kernel
+    let rc = sc_pathhide_enable(&key, true);
+    if rc < 0 {
+        warn!("[pathhide] enable failed: {}", rc);
+        return;
+    }
+
+    // Load and apply paths
+    match std::fs::read_to_string(crate::defs::PATHHIDE_PATHS_FILE) {
+        Ok(paths) => {
+            sc_pathhide_clear(&key);
+            let mut count = 0u32;
+            for path in paths.lines() {
+                let path = path.trim();
+                if path.is_empty() {
+                    continue;
+                }
+                match CString::new(path) {
+                    Ok(path_cstr) => {
+                        let rc = sc_pathhide_add(&key, &path_cstr);
+                        if rc < 0 {
+                            warn!("[pathhide] add path '{}' failed: {}", path, rc);
+                        } else {
+                            count += 1;
+                        }
+                    }
+                    Err(e) => {
+                        warn!("[pathhide] invalid path '{}': {}", path, e);
+                    }
+                }
+            }
+            info!("[pathhide] {} paths restored", count);
+        }
+        Err(_) => {
+            info!("[pathhide] no paths file, clearing blocklist");
+            sc_pathhide_clear(&key);
+        }
+    }
+
+    // Restore UID mode if enabled
+    if std::path::Path::new(crate::defs::PATHHIDE_UID_MODE_FILE).exists() {
+        let rc = sc_pathhide_uid_mode(&key, true);
+        if rc < 0 {
+            warn!("[pathhide] uid mode enable failed: {}", rc);
+        }
+
+        match std::fs::read_to_string(crate::defs::PATHHIDE_UIDS_FILE) {
+            Ok(uids) => {
+                sc_pathhide_uid_clear(&key);
+                let mut count = 0u32;
+                for uid_str in uids.lines() {
+                    let uid_str = uid_str.trim();
+                    if uid_str.is_empty() {
+                        continue;
+                    }
+                    match uid_str.parse::<i32>() {
+                        Ok(uid) => {
+                            let rc = sc_pathhide_uid_add(&key, uid);
+                            if rc < 0 {
+                                warn!("[pathhide] add uid {} failed: {}", uid, rc);
+                            } else {
+                                count += 1;
+                            }
+                        }
+                        Err(_) => {
+                            warn!("[pathhide] invalid uid: '{}'", uid_str);
+                        }
+                    }
+                }
+                info!("[pathhide] {} uids restored", count);
+            }
+            Err(_) => {
+                info!("[pathhide] no uids file");
+            }
+        }
+    }
+
+    info!("[pathhide] auto-apply completed");
 }
 
 fn sc_uts_set(key: &CStr, release: Option<&CStr>, version: Option<&CStr>) -> c_long {

@@ -4,8 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import me.bmax.apatch.util.ui.showToast
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,11 +21,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
@@ -36,6 +41,7 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.BuildConfig
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.ToggleSettingCard
 import me.bmax.apatch.ui.component.UpdateDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
@@ -88,7 +94,7 @@ fun GeneralSettingsContent(
     val resetSuPathTitle = stringResource(id = R.string.setting_reset_su_path)
 
     val appTitleTitle = stringResource(id = R.string.settings_app_title)
-    val currentAppTitle = remember { prefs.getString("app_title", "folkpatch") }
+    var currentAppTitle by remember { mutableStateOf(prefs.getString("app_title", "folkpatch") ?: "folkpatch") }
     val appTitleLabel = when (currentAppTitle) {
         "custom" -> remember { prefs.getString("custom_app_title", "FolkPatch") } ?: stringResource(R.string.app_title_custom)
         "fpatch" -> stringResource(R.string.app_title_fpatch)
@@ -113,7 +119,7 @@ fun GeneralSettingsContent(
 
     val dpiTitle = stringResource(id = R.string.settings_app_dpi)
     val currentDpiVal = DPIUtils.currentDpi
-    val dpiValue = if (currentDpiVal == -1) stringResource(id = R.string.system_default) else "$currentDpiVal DPI"
+    val dpiValue = if (currentDpiVal == DPIUtils.DEFAULT_DPI) stringResource(id = R.string.system_default) else "${DPIUtils.getDpiFriendlyName(currentDpiVal)} ($currentDpiVal DPI)"
 
     val logTitle = stringResource(id = R.string.send_log)
 
@@ -146,56 +152,74 @@ fun GeneralSettingsContent(
     val showSELinuxModeDialog = remember { mutableStateOf(false) }
 
     var autoUpdateCheck by remember { mutableStateOf(prefs.getBoolean("auto_update_check", true)) }
+    var blockUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_KERNELPATCH_UPDATE, false)) }
+    var blockApUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_ANDROIDPATCH_UPDATE, false)) }
+    var folkXEngineEnabled by remember { mutableStateOf(prefs.getBoolean("folkx_engine_enabled", true)) }
+    val currentType = remember { prefs.getString("folkx_animation_type", "linear") }
+    val currentSpeed = remember { prefs.getFloat("folkx_animation_speed", 1.0f) }
+    var predictiveBackEnabled by remember { mutableStateOf(prefs.getBoolean("predictive_back_enabled", true)) }
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    SplicedColumnGroup(flat = flat) {
 
-        ExpressiveCard(flat = flat, onClick = { showLanguageDialog.value = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
+        item {
+            ExpressiveCard(flat = flat, onClick = { showLanguageDialog.value = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Filled.Translate, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = languageTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = languageValue,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            ExpressiveCard(flat = flat, onClick = {
+                scope.launch {
+                    loadingDialog.show()
+                    val hasUpdate = UpdateChecker.checkUpdate()
+                    loadingDialog.hide()
+                    if (hasUpdate) {
+                        showUpdateDialog.value = true
+                    } else {
+                        showToast(context, R.string.update_latest)
+                    }
+                }
+            }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Filled.Update, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Text(
-                        text = languageTitle,
+                        text = updateTitle,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = languageValue,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
         }
 
-        ExpressiveCard(flat = flat, onClick = {
-            scope.launch {
-                loadingDialog.show()
-                val hasUpdate = UpdateChecker.checkUpdate()
-                loadingDialog.hide()
-                if (hasUpdate) {
-                    showUpdateDialog.value = true
-                } else {
-                    Toast.makeText(context, R.string.update_latest, Toast.LENGTH_SHORT).show()
-                }
-            }
-        }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = updateTitle,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
-
-        ToggleSettingCard(
+        item {
+            ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Autorenew,
             title = autoUpdateTitle,
             description = autoUpdateSummary,
             checked = autoUpdateCheck,
@@ -204,10 +228,12 @@ fun GeneralSettingsContent(
                 prefs.edit { putBoolean("auto_update_check", it) }
             }
         )
+        }
 
-        var blockUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_KERNELPATCH_UPDATE, false)) }
-        ToggleSettingCard(
+        item {
+            ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Block,
             title = blockUpdateTitle,
             description = blockUpdateSummary,
             checked = blockUpdateChecked,
@@ -216,10 +242,12 @@ fun GeneralSettingsContent(
                 prefs.edit { putBoolean(APApplication.PREF_BLOCK_KERNELPATCH_UPDATE, it) }
             }
         )
+        }
 
-        var blockApUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_ANDROIDPATCH_UPDATE, false)) }
-        ToggleSettingCard(
+        item {
+            ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Block,
             title = blockApUpdateTitle,
             description = blockApUpdateSummary,
             checked = blockApUpdateChecked,
@@ -228,10 +256,12 @@ fun GeneralSettingsContent(
                 prefs.edit { putBoolean(APApplication.PREF_BLOCK_ANDROIDPATCH_UPDATE, it) }
             }
         )
+        }
 
-        var folkXEngineEnabled by remember { mutableStateOf(prefs.getBoolean("folkx_engine_enabled", true)) }
-        ToggleSettingCard(
+        item {
+            ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.AutoAwesome,
             title = folkXEngineTitle,
             description = folkXEngineSummary,
             checked = folkXEngineEnabled,
@@ -240,11 +270,9 @@ fun GeneralSettingsContent(
                 prefs.edit().putBoolean("folkx_engine_enabled", it).apply()
             }
         )
+        }
 
-        if (folkXEngineEnabled) {
-            val currentType = remember { prefs.getString("folkx_animation_type", "linear") }
-            val currentSpeed = remember { prefs.getFloat("folkx_animation_speed", 1.0f) }
-
+        item(visible = folkXEngineEnabled) {
             val animationTypeLabel = when (currentType) {
                 "linear" -> R.string.settings_folkx_animation_linear
                 "spatial" -> R.string.settings_folkx_animation_spatial
@@ -259,10 +287,13 @@ fun GeneralSettingsContent(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.Animation, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = stringResource(R.string.settings_folkx_animation_type),
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -274,16 +305,21 @@ fun GeneralSettingsContent(
                     }
                 }
             }
+        }
 
+        item(visible = folkXEngineEnabled) {
             ExpressiveCard(flat = flat, onClick = { showFolkXAnimationSpeedDialog.value = true }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.Speed, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = stringResource(R.string.settings_folkx_animation_speed),
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -297,10 +333,10 @@ fun GeneralSettingsContent(
             }
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            var predictiveBackEnabled by remember { mutableStateOf(prefs.getBoolean("predictive_back_enabled", true)) }
+        item(visible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.ArrowBack,
                 title = predictiveBackTitle,
                 description = predictiveBackSummary,
                 checked = predictiveBackEnabled,
@@ -312,16 +348,19 @@ fun GeneralSettingsContent(
             )
         }
 
-        if (kPatchReady) {
+        item(visible = kPatchReady) {
             ExpressiveCard(flat = flat, onClick = { showAppListLoadingSchemeDialog.value = true }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.List, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = appListLoadingSchemeTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -335,16 +374,19 @@ fun GeneralSettingsContent(
             }
         }
 
-        if (kPatchReady && aPatchReady) {
+        item(visible = kPatchReady && aPatchReady) {
             ExpressiveCard(flat = flat, onClick = { showSELinuxModeDialog.value = true }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.Security, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = selinuxModeTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -356,9 +398,12 @@ fun GeneralSettingsContent(
                     }
                 }
             }
+        }
 
+        item(visible = kPatchReady && aPatchReady) {
             ToggleSettingCard(
             flat = flat,
+            icon = Icons.Filled.Public,
                 title = globalNamespaceTitle,
                 description = globalNamespaceSummary,
                 checked = isGlobalNamespaceEnabled,
@@ -369,52 +414,92 @@ fun GeneralSettingsContent(
             )
         }
 
-        if (kPatchReady) {
+        item(visible = kPatchReady && aPatchReady) {
+            ToggleSettingCard(
+            flat = flat,
+            icon = Icons.Filled.FolderSpecial,
+                title = magicMountTitle,
+                description = magicMountSummary,
+                checked = isMagicMountEnabled,
+                onCheckedChange = {
+                    setMagicMountEnabled(it)
+                    onMagicMountChange(it)
+                }
+            )
+        }
+
+        item {
+            ToggleSettingCard(
+            flat = flat,
+            icon = Icons.Filled.Android,
+            title = launcherIconTitle,
+            description = launcherIconSummary,
+            checked = useAltIcon.value,
+            onCheckedChange = {
+                prefs.edit { putBoolean("use_alt_icon", it) }
+                LauncherIconUtils.updateLauncherState(context)
+                useAltIcon.value = it
+            }
+        )
+        }
+
+        item(visible = kPatchReady) {
             ExpressiveCard(flat = flat, onClick = { showResetSuPathDialog.value = true }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.LinkOff, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Text(
                         text = resetSuPathTitle,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
         }
 
-        ExpressiveCard(flat = flat, onClick = { showAppTitleDialog.value = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = appTitleTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = appTitleLabel,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+        item {
+            ExpressiveCard(flat = flat, onClick = { showAppTitleDialog.value = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Filled.Label, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = appTitleTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = appTitleLabel,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
 
-        if (currentAppTitle == "custom") {
+        item(visible = currentAppTitle == "custom") {
             ExpressiveCard(flat = flat, onClick = { showCustomAppTitleDialog.value = true }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Filled.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = customAppTitleTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
@@ -428,86 +513,101 @@ fun GeneralSettingsContent(
             }
         }
 
-        ExpressiveCard(flat = flat, onClick = { showDesktopAppNameDialog.value = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = desktopAppNameTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = currentDesktopAppName.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        ExpressiveCard(flat = flat, onClick = { showDpiDialog.value = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = dpiTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = dpiValue,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        ExpressiveCard(flat = flat, onClick = {
-            scope.launch {
-                val bugreport = loadingDialog.withLoading {
-                    withContext(Dispatchers.IO) {
-                        getBugreportFile(context)
+        item {
+            ExpressiveCard(flat = flat, onClick = { showDesktopAppNameDialog.value = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Filled.PhoneAndroid, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = desktopAppNameTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = currentDesktopAppName.toString(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
-
-                val uri: Uri = FileProvider.getUriForFile(
-                    context,
-                    "${BuildConfig.APPLICATION_ID}.fileprovider",
-                    bugreport
-                )
-
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    type = "application/gzip"
-                    clipData = android.content.ClipData.newRawUri(null, uri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-
-                context.startActivity(
-                    Intent.createChooser(
-                        shareIntent,
-                        context.getString(R.string.send_log)
-                    )
-                )
             }
-        }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = logTitle,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+        }
+
+        item {
+            ExpressiveCard(flat = flat, onClick = { showDpiDialog.value = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Filled.FormatSize, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = dpiTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = dpiValue,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            ExpressiveCard(flat = flat, onClick = {
+                scope.launch {
+                    val bugreport = loadingDialog.withLoading {
+                        withContext(Dispatchers.IO) {
+                            getBugreportFile(context)
+                        }
+                    }
+
+                    val uri: Uri = FileProvider.getUriForFile(
+                        context,
+                        "${BuildConfig.APPLICATION_ID}.fileprovider",
+                        bugreport
+                    )
+
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        type = "application/gzip"
+                        clipData = android.content.ClipData.newRawUri(null, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+
+                    context.startActivity(
+                        Intent.createChooser(
+                            shareIntent,
+                            context.getString(R.string.send_log)
+                        )
+                    )
+                }
+            }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Filled.BugReport, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
+                    Text(
+                        text = logTitle,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
     }
@@ -537,7 +637,9 @@ fun GeneralSettingsContent(
     }
 
     if (showAppTitleDialog.value) {
-        AppTitleChooseDialog(showAppTitleDialog)
+        AppTitleChooseDialog(showAppTitleDialog) { newTitle ->
+            currentAppTitle = newTitle
+        }
     }
 
     if (showCustomAppTitleDialog.value) {
@@ -619,29 +721,165 @@ fun DpiChooseDialog(showDialog: MutableState<Boolean>) {
     val context = LocalContext.current
     val activity = context as? Activity
 
+    val savedDpi = DPIUtils.currentDpi
+    var tempDpi by remember { mutableIntStateOf(if (savedDpi == DPIUtils.DEFAULT_DPI) DPIUtils.systemDpi else savedDpi) }
+    var isSystemDefault by remember { mutableStateOf(savedDpi == DPIUtils.DEFAULT_DPI) }
+
     BasicAlertDialog(
-        onDismissRequest = { showDialog.value = false }, properties = DialogProperties(
+        onDismissRequest = { showDialog.value = false },
+        properties = DialogProperties(
             decorFitsSystemWindows = true,
             usePlatformDefaultWidth = false,
         )
     ) {
         Surface(
             modifier = Modifier
-                .width(310.dp)
+                .width(340.dp)
                 .wrapContentHeight(),
             shape = RoundedCornerShape(30.dp),
             tonalElevation = AlertDialogDefaults.TonalElevation,
             color = AlertDialogDefaults.containerColor,
         ) {
-            LazyColumn {
-                items(DPIUtils.presets) { preset ->
-                    ListItem(
-                        headlineContent = { Text(text = preset.name) },
-                        modifier = Modifier.clickable {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Text(
+                    text = stringResource(id = R.string.settings_app_dpi),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                // System default toggle
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (isSystemDefault) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        .clickable {
+                            isSystemDefault = !isSystemDefault
+                            if (isSystemDefault) {
+                                tempDpi = DPIUtils.systemDpi
+                            }
+                        }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.system_default),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (isSystemDefault)
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    if (isSystemDefault) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                }
+
+                AnimatedVisibility(visible = !isSystemDefault) {
+                    Column {
+                        Spacer(Modifier.height(16.dp))
+
+                        // Slider
+                        val sliderValue by animateFloatAsState(
+                            targetValue = tempDpi.toFloat(),
+                            label = "DpiSlider",
+                        )
+                        Slider(
+                            value = sliderValue,
+                            onValueChange = { newValue ->
+                                tempDpi = newValue.toInt()
+                            },
+                            valueRange = DPIUtils.DPI_MIN.toFloat()..DPIUtils.DPI_MAX.toFloat(),
+                            steps = 10,
+                            colors = SliderDefaults.colors(
+                                thumbColor = MaterialTheme.colorScheme.primary,
+                                activeTrackColor = MaterialTheme.colorScheme.primary,
+                            ),
+                        )
+
+                        // Current value display
+                        Text(
+                            text = "${DPIUtils.getDpiFriendlyName(tempDpi)} ($tempDpi DPI)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 12.dp),
+                        )
+
+                        // Preset pills
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            DPIUtils.presets.forEach { preset ->
+                                val isSelected = tempDpi == preset.value
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(
+                                            if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                            else MaterialTheme.colorScheme.surfaceVariant
+                                        )
+                                        .clickable { tempDpi = preset.value }
+                                        .padding(vertical = 8.dp, horizontal = 4.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        text = preset.name,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = if (isSelected)
+                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                // Apply button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    TextButton(onClick = { showDialog.value = false }) {
+                        Text(stringResource(android.R.string.cancel))
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            val finalDpi = if (isSystemDefault) DPIUtils.DEFAULT_DPI else tempDpi
                             showDialog.value = false
-                            DPIUtils.setDpi(context, preset.value)
+                            DPIUtils.setDpi(context, finalDpi)
                             activity?.recreate()
-                        })
+                        },
+                    ) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.dpi_apply_settings))
+                    }
                 }
             }
 
@@ -759,7 +997,7 @@ fun SELinuxModeDialog(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppTitleChooseDialog(showDialog: MutableState<Boolean>) {
+fun AppTitleChooseDialog(showDialog: MutableState<Boolean>, onTitleChanged: (String) -> Unit = {}) {
     val prefs = APApplication.sharedPreferences
     val currentTitle = remember { prefs.getString("app_title", "folkpatch") }
     val titles = listOf(
@@ -800,6 +1038,7 @@ fun AppTitleChooseDialog(showDialog: MutableState<Boolean>) {
                         modifier = Modifier.clickable {
                             showDialog.value = false
                             prefs.edit { putString("app_title", key) }
+                            onTitleChanged(key)
                         },
                         trailingContent = {
                             if (currentTitle == key) {
@@ -1151,11 +1390,7 @@ fun ResetSUPathDialog(showDialog: MutableState<Boolean>) {
                     Button(enabled = suPath.startsWith("/") && suPath.trim().length > 1, onClick = {
                         showDialog.value = false
                         val success = me.bmax.apatch.Natives.resetSuPath(suPath)
-                        Toast.makeText(
-                            context,
-                            if (success) R.string.success else R.string.failure,
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        showToast(context, if (success) R.string.success else R.string.failure)
                         rootShellForResult("echo $suPath > ${APApplication.SU_PATH_FILE}")
                     }) {
                         Text(stringResource(id = android.R.string.ok))

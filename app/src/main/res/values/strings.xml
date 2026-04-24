@@ -291,6 +291,8 @@
     <string name="settings_fold_system_module_summary">Click module card to expand/collapse actions</string>
     <string name="settings_simple_list_bottom_bar">Simple List Bottom Bar</string>
     <string name="settings_simple_list_bottom_bar_summary">Use icon-only buttons style for module actions, inspired by APatch</string>
+    <string name="settings_spliced_card_group">Spliced Card Group</string>
+    <string name="settings_spliced_card_group_summary">Use M3E continuous card group style for module list</string>
     <string name="apm_install_confirm_title">Install Module</string>
     <string name="apm_install_confirm_content">Are you sure you want to install %s?</string>
     <string name="apm_disable_all_title">Disable All Modules</string>
@@ -476,6 +478,9 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="app_title_magicpatch">MagicPatch</string>
 
     <string name="settings_app_dpi">App DPI</string>
+    <string name="dpi_apply_settings">Apply</string>
+    <string name="dpi_confirm_title">Confirm DPI change</string>
+    <string name="dpi_confirm_message">Change app DPI from %1$s to %2$s?</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Enable the built-in module mounting system</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
@@ -485,6 +490,25 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="settings_kernel_spoof_version">Kernel Version</string>
     <string name="settings_kernel_spoof_build_time">Kernel Build Time</string>
     <string name="settings_kernel_spoof_restore">Restore</string>
+    <!-- Path Hide -->
+    <string name="settings_path_hide">Path Hide</string>
+    <string name="settings_path_hide_summary">Hide files and directories from apps at kernel level</string>
+    <string name="path_hide_paths_label">Hidden Paths (one per line)</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">Enter one path per line. Matching paths will return ENOENT.</string>
+    <string name="path_hide_save">Save</string>
+    <string name="path_hide_enabled">Path hide enabled</string>
+    <string name="path_hide_disabled">Path hide disabled</string>
+    <string name="path_hide_applied">Path hide configuration applied</string>
+    <string name="path_hide_failed">Path hide operation failed: %d</string>
+    <string name="path_hide_uid_mode">UID Execution Mode</string>
+    <string name="path_hide_uid_mode_summary">Only hide paths for specific app UIDs</string>
+    <string name="path_hide_uids_label">Target UIDs (one per line)</string>
+    <string name="path_hide_uids_helper">Enter app UIDs. Only these apps will have paths hidden.</string>
+    <string name="path_hide_uid_save">Save UIDs</string>
+    <string name="path_hide_uid_mode_enabled">UID execution mode enabled</string>
+    <string name="path_hide_uid_mode_disabled">UID execution mode disabled</string>
+    <string name="path_hide_uid_applied">UID whitelist applied</string>
     <!-- Umount Service -->
     <string name="settings_umount_service">Umount Service</string>
     <string name="settings_umount_service_summary">Configure mount points to auto-unmount at boot</string>
@@ -781,6 +805,8 @@ Please ensure the app is completely closed and reopened for the commands to exec
     <string name="settings_appearance_night_mode_summary">Dark theme and color configuration</string>
     <string name="settings_amoled_theme">AMOLED Black Theme</string>
     <string name="settings_amoled_theme_desc">Pure black background for dark mode</string>
+    <string name="settings_switch_icon">Enable Button Indicator</string>
+    <string name="settings_switch_icon_desc">Show status icons on toggle switches</string>
     <string name="settings_category_module">Modules</string>
     <string name="settings_category_security">Security</string>
     <string name="settings_category_function">Function</string>
@@ -1064,4 +1090,9 @@ Please ensure the app is completely closed and reopened for the commands to exec
     <string name="home_stats_kernel_modules">Kernel Modules</string>
     <string name="home_stats_apm_modules">System Modules</string>
     <string name="home_stats_superusers">Superusers</string>
+
+    <string name="kernel_spoof_enabled">Kernel spoof enabled</string>
+    <string name="kernel_spoof_disabled_restored">Kernel spoof disabled and restored</string>
+    <string name="kernel_spoof_failed">Kernel spoof failed: %d</string>
+    <string name="kernel_spoof_applied">Kernel spoof applied</string>
 </resources>

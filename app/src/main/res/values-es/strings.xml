@@ -317,6 +317,8 @@
     <string name="settings_fold_system_module_summary">Haz clic en la tarjeta del módulo para expandir/contraer acciones</string>
     <string name="settings_simple_list_bottom_bar">Barra Inferior Simple</string>
     <string name="settings_simple_list_bottom_bar_summary">Usar botones solo con iconos para acciones de módulo, inspirado en APatch</string>
+    <string name="settings_spliced_card_group">Spliced Card Group</string>
+    <string name="settings_spliced_card_group_summary">Use M3E continuous card group style for module list</string>
     <string name="apm_install_confirm_title">Instalar Módulo</string>
     <string name="apm_install_confirm_content">¿Seguro que deseas instalar %s?</string>
     <string name="apm_disable_all_title">Deshabilitar todos los módulos</string>
@@ -473,6 +475,9 @@ Aquí hay algunas posibles razones para el fallo de autenticación—por favor v
     <string name="about_telegram_channel">Canal de Telegram</string>
 
     <string name="settings_app_dpi">DPI de la App</string>
+    <string name="dpi_apply_settings">Aplicar</string>
+    <string name="dpi_confirm_title">Confirmar cambio de DPI</string>
+    <string name="dpi_confirm_message">¿Cambiar DPI de la app de %1$s a %2$s?</string>
     <string name="settings_alt_icon">Icono alternativo</string>
     <string name="alt_icon_summary">Usar icono de lanzador alternativo</string>
     <string name="settings_magic_mount">Folk Mount API</string>
@@ -748,6 +753,8 @@ Por ejemplo, los KPM que previenen la modificación de particiones solo pueden u
     <string name="settings_appearance_night_mode_summary">Tema oscuro y configuración de color</string>
     <string name="settings_amoled_theme">Tema Negro AMOLED</string>
     <string name="settings_amoled_theme_desc">Fondo negro puro para el modo oscuro</string>
+    <string name="settings_switch_icon">Indicador de botón</string>
+    <string name="settings_switch_icon_desc">Mostrar iconos de estado en los interruptores</string>
     <string name="settings_category_behavior">Comportamiento</string>
     <string name="settings_category_function">Función</string>
     <string name="settings_use_legacy_su_page">Autorización de superusuario de página única</string>
@@ -1022,4 +1029,28 @@ Por ejemplo, los KPM que previenen la modificación de particiones solo pueden u
     <string name="settings_kernel_spoof_version">Versión del Kernel</string>
     <string name="settings_kernel_spoof_build_time">Tiempo de Compilación del Kernel</string>
     <string name="settings_kernel_spoof_restore">Restaurar</string>
+
+    <string name="kernel_spoof_enabled">Falsificación del kernel habilitada</string>
+    <string name="kernel_spoof_disabled_restored">Falsificación del kernel deshabilitada y restaurada</string>
+    <string name="kernel_spoof_failed">Error de falsificación del kernel: %d</string>
+    <string name="kernel_spoof_applied">Falsificación del kernel aplicada</string>
+
+    <string name="settings_path_hide">Ocultar ruta</string>
+    <string name="settings_path_hide_summary">Ocultar archivos y directorios de las aplicaciones a nivel de kernel</string>
+    <string name="path_hide_paths_label">Rutas ocultas (una por línea)</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">Ingrese una ruta por línea. Las rutas coincidentes devolverán ENOENT.</string>
+    <string name="path_hide_save">Guardar</string>
+    <string name="path_hide_enabled">Ocultar ruta habilitado</string>
+    <string name="path_hide_disabled">Ocultar ruta deshabilitado</string>
+    <string name="path_hide_applied">Configuración de ocultar ruta aplicada</string>
+    <string name="path_hide_failed">Error en la operación de ocultar ruta: %d</string>
+    <string name="path_hide_uid_mode">Modo de ejecución por UID</string>
+    <string name="path_hide_uid_mode_summary">Ocultar rutas solo para UID de aplicaciones específicas</string>
+    <string name="path_hide_uids_label">UID de destino (uno por línea)</string>
+    <string name="path_hide_uids_helper">Introduce los UID de las aplicaciones. Solo estas aplicaciones tendrán rutas ocultas.</string>
+    <string name="path_hide_uid_save">Guardar UID</string>
+    <string name="path_hide_uid_mode_enabled">Modo de ejecución por UID activado</string>
+    <string name="path_hide_uid_mode_disabled">Modo de ejecución por UID desactivado</string>
+    <string name="path_hide_uid_applied">Lista blanca de UID aplicada</string>
 </resources>

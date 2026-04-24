@@ -317,6 +317,8 @@
     <string name="settings_fold_system_module_summary">点模块卡片展开/收起操作按钮喵！</string>
     <string name="settings_simple_list_bottom_bar">简约列表底栏喵</string>
     <string name="settings_simple_list_bottom_bar_summary">模块操作用纯图标按钮喵，灵感来自APatch喵！</string>
+    <string name="settings_spliced_card_group">拼接卡片组喵</string>
+    <string name="settings_spliced_card_group_summary">模块列表用连续拼接卡片样式喵！</string>
     <string name="apm_install_confirm_title">装模块喵</string>
     <string name="apm_install_confirm_content">确定装 %s 嘛喵？不要装错哦！</string>
     <string name="apm_disable_all_title">关所有模块喵</string>
@@ -474,6 +476,9 @@
     <string name="about_telegram_channel">Telegram频道哒</string>
 
     <string name="settings_app_dpi">应用DPI喵</string>
+    <string name="dpi_apply_settings">确定喵</string>
+    <string name="dpi_confirm_title">确认改应用DPI喵</string>
+    <string name="dpi_confirm_message">要把应用DPI从%1$s改成%2$s吗喵？</string>
     <string name="settings_alt_icon">备用图标喵</string>
     <string name="alt_icon_summary">用备选启动器图标喵</string>
     <string name="settings_magic_mount">我要挂载喵</string>
@@ -756,6 +761,8 @@
     <string name="settings_appearance_night_mode_summary">深色主题和颜色配置喵</string>
     <string name="settings_amoled_theme">AMOLED 纯黑主题喵</string>
     <string name="settings_amoled_theme_desc">为深色模式使用纯黑背景喵</string>
+    <string name="settings_switch_icon">启用按钮指示器</string>
+    <string name="settings_switch_icon_desc">为开关按钮添加状态指示图标</string>
     <string name="settings_category_behavior">行为喵</string>
     <string name="settings_category_function">功能喵</string>
     <string name="settings_category_module">模块喵</string>
@@ -1007,4 +1014,28 @@
     <string name="settings_kernel_spoof_version">内核版本喵</string>
     <string name="settings_kernel_spoof_build_time">内核构建时间喵</string>
     <string name="settings_kernel_spoof_restore">恢复喵</string>
+
+    <string name="kernel_spoof_enabled">内核伪装已启用喵</string>
+    <string name="kernel_spoof_disabled_restored">内核伪装已停用并还原喵</string>
+    <string name="kernel_spoof_failed">内核伪装失败喵: %d</string>
+    <string name="kernel_spoof_applied">内核伪装已应用喵</string>
+
+    <string name="settings_path_hide">路径隐藏喵</string>
+    <string name="settings_path_hide_summary">在内核层面隐藏文件和目录不让应用看到喵</string>
+    <string name="path_hide_paths_label">隐藏路径（每行一个）喵</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">每行输入一个路径喵，匹配的路径会返回文件不存在喵</string>
+    <string name="path_hide_save">保存喵</string>
+    <string name="path_hide_enabled">路径隐藏已启用喵</string>
+    <string name="path_hide_disabled">路径隐藏已禁用喵</string>
+    <string name="path_hide_applied">路径隐藏配置已生效喵</string>
+    <string name="path_hide_failed">路径隐藏操作失败喵: %d</string>
+    <string name="path_hide_uid_mode">UID 执行模式喵</string>
+    <string name="path_hide_uid_mode_summary">只对指定应用 UID 隐藏路径喵</string>
+    <string name="path_hide_uids_label">目标 UID（每行一个）喵</string>
+    <string name="path_hide_uids_helper">输入应用 UID 喵，只有这些应用的路径会被隐藏喵</string>
+    <string name="path_hide_uid_save">保存 UID 喵</string>
+    <string name="path_hide_uid_mode_enabled">UID 执行模式已启用喵</string>
+    <string name="path_hide_uid_mode_disabled">UID 执行模式已禁用喵</string>
+    <string name="path_hide_uid_applied">UID 白名单已生效喵</string>
 </resources>

@@ -5,10 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
+import me.bmax.apatch.util.ui.showToast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -37,10 +38,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.KeyboardActions
@@ -116,6 +113,8 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import me.bmax.apatch.ui.component.ConfirmResult
 import me.bmax.apatch.ui.component.KpmAutoLoadManager
 import me.bmax.apatch.ui.component.LoadingDialogHandle
+import me.bmax.apatch.ui.component.TwoColumnGrid
+import me.bmax.apatch.ui.component.splicedLazyColumnGroup
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.ui.viewmodel.KPModel
@@ -223,6 +222,7 @@ fun KPModuleScreen(navigator: DestinationsNavigator) {
     var showMoreModuleInfo by remember { mutableStateOf(prefs.getBoolean("show_more_module_info", true)) }
     var foldSystemModule by remember { mutableStateOf(prefs.getBoolean("fold_system_module", true)) }
     var simpleListBottomBar by remember { mutableStateOf(prefs.getBoolean("simple_list_bottom_bar", false)) }
+    var splicedCardGroup by remember { mutableStateOf(prefs.getBoolean("spliced_card_group", true)) }
 
     DisposableEffect(Unit) {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, key ->
@@ -232,6 +232,8 @@ fun KPModuleScreen(navigator: DestinationsNavigator) {
                 foldSystemModule = sharedPrefs.getBoolean("fold_system_module", false)
             } else if (key == "simple_list_bottom_bar") {
                 simpleListBottomBar = sharedPrefs.getBoolean("simple_list_bottom_bar", false)
+            } else if (key == "spliced_card_group") {
+                splicedCardGroup = sharedPrefs.getBoolean("spliced_card_group", true)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -317,9 +319,7 @@ fun KPModuleScreen(navigator: DestinationsNavigator) {
                     val rc = loadModule(loadingDialog, uri, "")
                     val toastText = if (rc == 0) successToastText else "$failToastText: $rc"
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            context, toastText, Toast.LENGTH_SHORT
-                        ).show()
+                        showToast(context, toastText)
                     }
                     viewModel.markNeedRefresh()
                     viewModel.fetchModuleList()
@@ -425,6 +425,7 @@ fun KPModuleScreen(navigator: DestinationsNavigator) {
             showMoreModuleInfo = showMoreModuleInfo,
             foldSystemModule = foldSystemModule,
             simpleListBottomBar = simpleListBottomBar,
+            splicedCardGroup = splicedCardGroup,
             checkStrongBiometric = ::checkStrongBiometric
         )
     }
@@ -564,17 +565,9 @@ fun KPMControlDialog(showDialog: MutableState<Boolean>) {
         }
 
         if (controlResult.rc >= 0) {
-            Toast.makeText(
-                context,
-                "$okStringRes\n${outMsgStringRes}: ${controlResult.outMsg}",
-                Toast.LENGTH_SHORT
-            ).show()
+            showToast(context, "$okStringRes\n${outMsgStringRes}: ${controlResult.outMsg}")
         } else {
-            Toast.makeText(
-                context,
-                "$failedStringRes\n${outMsgStringRes}: ${controlResult.outMsg}",
-                Toast.LENGTH_SHORT
-            ).show()
+            showToast(context, "$failedStringRes\n${outMsgStringRes}: ${controlResult.outMsg}")
         }
     }
 
@@ -667,6 +660,7 @@ private fun KPModuleList(
     showMoreModuleInfo: Boolean,
     foldSystemModule: Boolean,
     simpleListBottomBar: Boolean,
+    splicedCardGroup: Boolean,
     checkStrongBiometric: suspend () -> Boolean
 ) {
     val moduleStr = stringResource(id = R.string.kpm)
@@ -719,11 +713,12 @@ private fun KPModuleList(
         val isWideScreen = configuration.screenWidthDp >= 600
 
         if (isWideScreen) {
-            LazyVerticalStaggeredGrid(
+            TwoColumnGrid(
                 modifier = Modifier.fillMaxSize(),
-                columns = StaggeredGridCells.Fixed(2),
-                verticalItemSpacing = 16.dp,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                items = if (moduleList.isEmpty()) emptyList() else moduleList,
+                key = { module -> module.name },
+                verticalSpacing = 16.dp,
+                horizontalSpacing = 16.dp,
                 contentPadding = remember {
                     PaddingValues(
                         start = 16.dp,
@@ -732,61 +727,54 @@ private fun KPModuleList(
                         bottom = 16.dp + 16.dp + 56.dp
                     )
                 },
-            ) {
-                when {
-                    moduleList.isEmpty() -> {
-                        item(span = StaggeredGridItemSpan.FullLine) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .defaultMinSize(minHeight = 300.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    stringResource(R.string.kpm_apm_empty), textAlign = TextAlign.Center
-                                )
-                            }
-                        }
-                    }
-
-                    else -> {
-                        items(moduleList, key = { module -> module.name }) { module ->
-                            val scope = rememberCoroutineScope()
-                            KPModuleItem(
-                                module,
-                                onUninstall = {
-                                    scope.launch { onModuleUninstall(module) }
-                                },
-                                onControl = {
-                                    scope.launch {
-                                        if (checkStrongBiometric()) {
-                                            targetKPMToControl = module
-                                            showKPMControlDialog.value = true
-                                        }
-                                    }
-                                },
-                                showMoreModuleInfo = showMoreModuleInfo,
-                                simpleListBottomBar = simpleListBottomBar,
-                                foldSystemModule = foldSystemModule,
-                                expanded = expandedModuleId == module.name,
-                                onExpandToggle = {
-                                    expandedModuleId = if (expandedModuleId == module.name) null else module.name
-                                }
+                beforeItems = {
+                    if (moduleList.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .defaultMinSize(minHeight = 300.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                stringResource(R.string.kpm_apm_empty), textAlign = TextAlign.Center
                             )
                         }
                     }
+                },
+                itemContent = { module ->
+                    val scope = rememberCoroutineScope()
+                    KPModuleItem(
+                        module,
+                        onUninstall = {
+                            scope.launch { onModuleUninstall(module) }
+                        },
+                        onControl = {
+                            scope.launch {
+                                if (checkStrongBiometric()) {
+                                    targetKPMToControl = module
+                                    showKPMControlDialog.value = true
+                                }
+                            }
+                        },
+                        showMoreModuleInfo = showMoreModuleInfo,
+                        simpleListBottomBar = simpleListBottomBar,
+                        foldSystemModule = foldSystemModule,
+                        expanded = expandedModuleId == module.name,
+                        onExpandToggle = {
+                            expandedModuleId = if (expandedModuleId == module.name) null else module.name
+                        }
+                    )
                 }
-            }
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = state,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = remember {
                     PaddingValues(
-                        start = 16.dp,
+                        start = 0.dp,
                         top = 16.dp,
-                        end = 16.dp,
+                        end = 0.dp,
                         bottom = 16.dp + 16.dp + 56.dp /*  Scaffold Fab Spacing + Fab container height */
                     )
                 },
@@ -808,32 +796,66 @@ private fun KPModuleList(
                     }
 
                     else -> {
-                        itemsIndexed(moduleList, key = { _, module -> module.name }) { index, module ->
-                            val scope = rememberCoroutineScope()
-                            KPModuleItem(
-                                module,
-                                onUninstall = {
-                                    scope.launch { onModuleUninstall(module) }
-                                },
-                                onControl = {
-                                    scope.launch {
-                                        if (checkStrongBiometric()) {
-                                            targetKPMToControl = module
-                                            showKPMControlDialog.value = true
+                        if (splicedCardGroup) {
+                            item { Spacer(Modifier.height(8.dp)) }
+                            splicedLazyColumnGroup(
+                                items = moduleList,
+                                key = { _, module -> module.name },
+                                contentType = { _, _ -> "KPModuleItem" },
+                            ) { _, module ->
+                                val scope = rememberCoroutineScope()
+                                KPModuleItem(
+                                    module,
+                                    onUninstall = {
+                                        scope.launch { onModuleUninstall(module) }
+                                    },
+                                    onControl = {
+                                        scope.launch {
+                                            if (checkStrongBiometric()) {
+                                                targetKPMToControl = module
+                                                showKPMControlDialog.value = true
+                                            }
                                         }
+                                    },
+                                    showMoreModuleInfo = showMoreModuleInfo,
+                                    simpleListBottomBar = simpleListBottomBar,
+                                    foldSystemModule = foldSystemModule,
+                                    expanded = expandedModuleId == module.name,
+                                    onExpandToggle = {
+                                        expandedModuleId = if (expandedModuleId == module.name) null else module.name
                                     }
-                                },
-                                showMoreModuleInfo = showMoreModuleInfo,
-                                simpleListBottomBar = simpleListBottomBar,
-                                foldSystemModule = foldSystemModule,
-                                expanded = expandedModuleId == module.name,
-                                onExpandToggle = {
-                                    expandedModuleId = if (expandedModuleId == module.name) null else module.name
+                                )
+                            }
+                            item { Spacer(Modifier.height(88.dp)) }
+                        } else {
+                            item { Spacer(Modifier.height(8.dp)) }
+                            itemsIndexed(moduleList, key = { _, module -> module.name }) { _, module ->
+                                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                                val scope = rememberCoroutineScope()
+                                KPModuleItem(
+                                    module,
+                                    onUninstall = {
+                                        scope.launch { onModuleUninstall(module) }
+                                    },
+                                    onControl = {
+                                        scope.launch {
+                                            if (checkStrongBiometric()) {
+                                                targetKPMToControl = module
+                                                showKPMControlDialog.value = true
+                                            }
+                                        }
+                                    },
+                                    showMoreModuleInfo = showMoreModuleInfo,
+                                    simpleListBottomBar = simpleListBottomBar,
+                                    foldSystemModule = foldSystemModule,
+                                    expanded = expandedModuleId == module.name,
+                                    onExpandToggle = {
+                                        expandedModuleId = if (expandedModuleId == module.name) null else module.name
+                                    }
+                                )
                                 }
-                            )
-
-                            // fix last item shadow incomplete in LazyColumn
-                            Spacer(Modifier.height(1.dp))
+                            }
+                            item { Spacer(Modifier.height(88.dp)) }
                         }
                     }
                 }
@@ -1019,7 +1041,7 @@ private fun KPModuleItem(
                 } else {
                     folkBannerFailed.format(module.name)
                 }
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                showToast(context, message)
             }
         }
     }
@@ -1087,28 +1109,27 @@ private fun KPModuleItem(
         }
     }
 
+    val insideSplicedGroup = me.bmax.apatch.ui.component.LocalInsideSplicedGroup.current
+
     val cardShape = RoundedCornerShape(20.dp)
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .clip(cardShape)
-            .combinedClickable(
-                onClick = {
-                    if (foldSystemModule) {
-                        onExpandToggle()
-                    }
-                },
-                onLongClick = {
-                    if (BackgroundConfig.isBannerEnabled && BackgroundConfig.isFolkBannerEnabled) {
-                        showFolkBannerDialog = true
-                    }
+
+    val clickModifier = Modifier
+        .fillMaxWidth()
+        .animateContentSize()
+        .combinedClickable(
+            onClick = {
+                if (foldSystemModule) {
+                    onExpandToggle()
                 }
-            ),
-        shape = cardShape,
-        color = cardColor,
-        tonalElevation = 0.dp
-    ) {
+            },
+            onLongClick = {
+                if (BackgroundConfig.isBannerEnabled && BackgroundConfig.isFolkBannerEnabled) {
+                    showFolkBannerDialog = true
+                }
+            }
+        )
+
+    val contentBlock: @Composable () -> Unit = {
         Box(modifier = Modifier.fillMaxWidth()) {
             if (bannerData != null) {
                 val colorScheme = MaterialTheme.colorScheme
@@ -1287,6 +1308,22 @@ private fun KPModuleItem(
         }
     }
 
+    // Render: inside spliced group → no Surface wrapper; standalone → Surface card
+    if (insideSplicedGroup) {
+        Box(modifier = modifier.then(clickModifier)) {
+            contentBlock()
+        }
+    } else {
+        Surface(
+            modifier = modifier.then(clickModifier),
+            shape = cardShape,
+            color = cardColor,
+            tonalElevation = 0.dp
+        ) {
+            contentBlock()
+        }
+    }
+
     if (showFolkBannerDialog) {
         AlertDialog(
             onDismissRequest = { showFolkBannerDialog = false },
@@ -1318,7 +1355,7 @@ private fun KPModuleItem(
                                     } else {
                                         folkBannerFailed.format(module.name)
                                     }
-                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                    showToast(context, message)
                                 }
                             },
                             modifier = Modifier.fillMaxWidth()

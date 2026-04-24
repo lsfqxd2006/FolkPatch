@@ -1,13 +1,19 @@
 package me.bmax.apatch.ui.screen.settings
 
 import android.content.Intent
-import android.widget.Toast
+import me.bmax.apatch.util.ui.showToast
 import androidx.core.content.FileProvider
 import me.bmax.apatch.BuildConfig
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,10 +28,15 @@ import kotlinx.coroutines.launch
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.ToggleSettingCard
 import me.bmax.apatch.ui.theme.BackupConfig
 import me.bmax.apatch.util.BackupLogManager
 import me.bmax.apatch.util.WebDavUtils
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.vector.ImageVector
 
 @Composable
 fun BackupSettingsContent(
@@ -38,33 +49,37 @@ fun BackupSettingsContent(
 
     val showWebDavDialog = remember { mutableStateOf(false) }
 
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_enable_local_backup),
-            description = stringResource(id = R.string.settings_enable_local_backup_summary),
-            checked = autoBackupModule,
-            onCheckedChange = {
-                onAutoBackupModuleChange(it)
-                prefs.edit().putBoolean("auto_backup_module", it).apply()
-            }
-        )
+    SplicedColumnGroup(flat = flat) {
+        item {
+            ToggleSettingCard(
+                flat = flat,
+                icon = Icons.Filled.Save,
+                title = stringResource(id = R.string.settings_enable_local_backup),
+                description = stringResource(id = R.string.settings_enable_local_backup_summary),
+                checked = autoBackupModule,
+                onCheckedChange = {
+                    onAutoBackupModuleChange(it)
+                    prefs.edit().putBoolean("auto_backup_module", it).apply()
+                }
+            )
+        }
 
-        var autoBackupBoot by remember { mutableStateOf(prefs.getBoolean("auto_backup_boot", false)) }
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_auto_backup_boot),
-            description = stringResource(id = R.string.settings_auto_backup_boot_summary),
-            checked = autoBackupBoot,
-            onCheckedChange = {
-                autoBackupBoot = it
-                prefs.edit().putBoolean("auto_backup_boot", it).apply()
-            }
-        )
+        item {
+            var autoBackupBoot by remember { mutableStateOf(prefs.getBoolean("auto_backup_boot", false)) }
+            ToggleSettingCard(
+                flat = flat,
+                icon = Icons.Filled.RestartAlt,
+                title = stringResource(id = R.string.settings_auto_backup_boot),
+                description = stringResource(id = R.string.settings_auto_backup_boot_summary),
+                checked = autoBackupBoot,
+                onCheckedChange = {
+                    autoBackupBoot = it
+                    prefs.edit().putBoolean("auto_backup_boot", it).apply()
+                }
+            )
+        }
 
-        if (autoBackupModule) {
+        item(visible = autoBackupModule) {
             val openBackupDirTitle = stringResource(id = R.string.settings_open_backup_dir)
             ExpressiveCard(
                 flat = flat,
@@ -93,7 +108,7 @@ fun BackupSettingsContent(
                                 context.startActivity(Intent.createChooser(intent2, context.getString(R.string.settings_open_backup_dir)))
                             }
                         } catch (e3: Exception) {
-                            Toast.makeText(context, R.string.backup_dir_open_failed, Toast.LENGTH_SHORT).show()
+                            showToast(context, R.string.backup_dir_open_failed)
                         }
                     }
                 }
@@ -104,10 +119,18 @@ fun BackupSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(
+                        imageVector = Icons.Filled.FolderOpen,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = openBackupDirTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                     }
@@ -115,18 +138,21 @@ fun BackupSettingsContent(
             }
         }
 
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_enable_cloud_backup),
-            description = stringResource(id = R.string.settings_enable_cloud_backup_summary),
-            checked = BackupConfig.isBackupEnabled,
-            onCheckedChange = {
-                BackupConfig.isBackupEnabled = it
-                BackupConfig.save(context)
-            }
-        )
+        item {
+            ToggleSettingCard(
+                flat = flat,
+                icon = Icons.Filled.Cloud,
+                title = stringResource(id = R.string.settings_enable_cloud_backup),
+                description = stringResource(id = R.string.settings_enable_cloud_backup_summary),
+                checked = BackupConfig.isBackupEnabled,
+                onCheckedChange = {
+                    BackupConfig.isBackupEnabled = it
+                    BackupConfig.save(context)
+                }
+            )
+        }
 
-        if (BackupConfig.isBackupEnabled) {
+        item(visible = BackupConfig.isBackupEnabled) {
             val configureWebDavTitle = stringResource(id = R.string.settings_configure_webdav)
             ExpressiveCard(
                 flat = flat,
@@ -140,10 +166,18 @@ fun BackupSettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
                             text = configureWebDavTitle,
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.SemiBold,
                         )
                     }
@@ -244,9 +278,9 @@ fun WebDavConfigDialog(showDialog: MutableState<Boolean>) {
                                 val result = WebDavUtils.testConnection(url, username, password)
                                 isTesting = false
                                 if (result.isSuccess) {
-                                    Toast.makeText(context, context.getString(R.string.webdav_test_success), Toast.LENGTH_SHORT).show()
+                                    showToast(context, context.getString(R.string.webdav_test_success))
                                 } else {
-                                    Toast.makeText(context, context.getString(R.string.webdav_test_failed, result.exceptionOrNull()?.message), Toast.LENGTH_LONG).show()
+                                    showToast(context, context.getString(R.string.webdav_test_failed, result.exceptionOrNull()?.message))
                                 }
                             }
                         },

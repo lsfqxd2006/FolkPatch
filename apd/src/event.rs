@@ -131,6 +131,9 @@ pub fn on_post_data_fs(superkey: Option<String>) -> Result<()> {
     // Apply UTS namespace spoofing if configured
     supercall::apply_uts_spoof(&superkey);
 
+    // Apply pathhide config if enabled
+    supercall::apply_pathhide(&superkey);
+
     // Clear all temporary module configs early
     if let Err(e) = crate::module_config::clear_all_temp_configs() {
         warn!("clear temp configs failed: {e}");

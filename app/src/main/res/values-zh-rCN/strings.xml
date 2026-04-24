@@ -295,6 +295,8 @@
     <string name="settings_fold_system_module_summary">点击模块卡片展开/折叠操作按钮</string>
     <string name="settings_simple_list_bottom_bar">简约列表底栏</string>
     <string name="settings_simple_list_bottom_bar_summary">模块操作使用纯图标按钮样式，灵感来自APatch</string>
+    <string name="settings_spliced_card_group">拼接卡片组</string>
+    <string name="settings_spliced_card_group_summary">模块列表使用 M3E 连续拼接卡片样式</string>
     <string name="apm_install_confirm_title">安装模块</string>
     <string name="apm_install_confirm_content">确定要安装 %s 吗？</string>
     <string name="apm_disable_all_title">禁用所有模块</string>
@@ -456,6 +458,9 @@
     <string name="about_telegram_channel">Telegram 频道</string>
 
     <string name="settings_app_dpi">应用 DPI</string>
+    <string name="dpi_apply_settings">应用</string>
+    <string name="dpi_confirm_title">确认更改 DPI</string>
+    <string name="dpi_confirm_message">将应用 DPI 从 %1$s 更改为 %2$s？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">启用内置的模块挂载系统</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
@@ -742,6 +747,8 @@
     <string name="settings_appearance_night_mode_summary">深色主题和颜色配置</string>
     <string name="settings_amoled_theme">AMOLED 纯黑主题</string>
     <string name="settings_amoled_theme_desc">为深色模式使用纯黑背景</string>
+    <string name="settings_switch_icon">启用按钮指示器</string>
+    <string name="settings_switch_icon_desc">为开关按钮添加状态指示图标</string>
     <string name="settings_use_legacy_su_page">单页超级用户授权</string>
     <string name="settings_use_legacy_su_page_summary">超级用户页面改用单页授权设计</string>
     <string name="settings_category_module">模块</string>
@@ -1011,4 +1018,28 @@
     <string name="home_stats_kernel_modules">内核模块</string>
     <string name="home_stats_apm_modules">系统模块</string>
     <string name="home_stats_superusers">超级用户</string>
+
+    <string name="kernel_spoof_enabled">内核伪装已启用</string>
+    <string name="kernel_spoof_disabled_restored">内核伪装已停用并还原</string>
+    <string name="kernel_spoof_failed">内核伪装失败: %d</string>
+    <string name="kernel_spoof_applied">内核伪装已应用</string>
+
+    <string name="settings_path_hide">路径隐藏</string>
+    <string name="settings_path_hide_summary">在内核层面向应用隐藏文件和目录</string>
+    <string name="path_hide_paths_label">隐藏路径（每行一个）</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">每行输入一个路径。匹配的路径将返回 ENOENT。</string>
+    <string name="path_hide_save">保存</string>
+    <string name="path_hide_enabled">路径隐藏已启用</string>
+    <string name="path_hide_disabled">路径隐藏已禁用</string>
+    <string name="path_hide_applied">路径隐藏配置已应用</string>
+    <string name="path_hide_failed">路径隐藏操作失败：%d</string>
+    <string name="path_hide_uid_mode">UID 执行模式</string>
+    <string name="path_hide_uid_mode_summary">仅对指定应用 UID 隐藏路径</string>
+    <string name="path_hide_uids_label">目标 UID（每行一个）</string>
+    <string name="path_hide_uids_helper">输入应用 UID，仅这些应用的路径会被隐藏。</string>
+    <string name="path_hide_uid_save">保存 UID</string>
+    <string name="path_hide_uid_mode_enabled">UID 执行模式已启用</string>
+    <string name="path_hide_uid_mode_disabled">UID 执行模式已禁用</string>
+    <string name="path_hide_uid_applied">UID 白名单已应用</string>
 </resources>

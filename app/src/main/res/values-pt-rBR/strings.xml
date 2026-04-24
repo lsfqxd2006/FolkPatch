@@ -317,6 +317,8 @@
     <string name="settings_fold_system_module_summary">Clique no cartão do módulo para expandir/colapsar ações</string>
         <string name="settings_simple_list_bottom_bar">Barra Inferior Simples</string>
         <string name="settings_simple_list_bottom_bar_summary">Usar estilo de botões somente com ícones para ações de módulo, inspirado no APatch</string>
+    <string name="settings_spliced_card_group">Spliced Card Group</string>
+    <string name="settings_spliced_card_group_summary">Use M3E continuous card group style for module list</string>
     <string name="apm_install_confirm_title">Instalar Módulo</string>
     <string name="apm_install_confirm_content">Tem certeza de que deseja instalar %s?</string>
     <string name="apm_disable_all_title">Desativar Todos os Módulos</string>
@@ -471,6 +473,9 @@ Aqui estão algumas possíveis razões para a falha de autenticação—verifiqu
     <string name="about_telegram_channel">Canal do Telegram</string>
 
     <string name="settings_app_dpi">DPI do App</string>
+    <string name="dpi_apply_settings">Aplicar</string>
+    <string name="dpi_confirm_title">Confirmar alteração de DPI</string>
+    <string name="dpi_confirm_message">Alterar DPI do app de %1$s para %2$s?</string>
     <string name="settings_alt_icon">Ícone alternativo</string>
     <string name="alt_icon_summary">Usar ícone alternativo do lançador</string>
     <string name="settings_magic_mount">Folk Mount API</string>
@@ -744,6 +749,8 @@ Por favor, certifique-se de fechar completamente o app e reabri-lo para que os c
     <string name="settings_appearance_night_mode_summary">Tema escuro e configuração de cor</string>
     <string name="settings_amoled_theme">Tema Preto AMOLED</string>
     <string name="settings_amoled_theme_desc">Fundo preto puro para o modo escuro</string>
+    <string name="settings_switch_icon">Indicador de botão</string>
+    <string name="settings_switch_icon_desc">Mostrar ícones de status nos interruptores</string>
     <string name="settings_category_behavior">Comportamento</string>
     <string name="settings_category_function">Função</string>
     <string name="settings_use_legacy_su_page">Autorização de superusuário de página única</string>
@@ -1020,4 +1027,28 @@ Por favor, certifique-se de fechar completamente o app e reabri-lo para que os c
     <string name="settings_kernel_spoof_version">Versão do Kernel</string>
     <string name="settings_kernel_spoof_build_time">Tempo de Compilação do Kernel</string>
     <string name="settings_kernel_spoof_restore">Restaurar</string>
+
+    <string name="kernel_spoof_enabled">Falsificação do kernel ativada</string>
+    <string name="kernel_spoof_disabled_restored">Falsificação do kernel desativada e restaurada</string>
+    <string name="kernel_spoof_failed">Falha na falsificação do kernel: %d</string>
+    <string name="kernel_spoof_applied">Falsificação do kernel aplicada</string>
+
+    <string name="settings_path_hide">Ocultar caminho</string>
+    <string name="settings_path_hide_summary">Ocultar arquivos e diretórios de aplicativos em nível de kernel</string>
+    <string name="path_hide_paths_label">Caminhos ocultos (um por linha)</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">Insira um caminho por linha. Caminhos correspondentes retornarão ENOENT.</string>
+    <string name="path_hide_save">Salvar</string>
+    <string name="path_hide_enabled">Ocultar caminho ativado</string>
+    <string name="path_hide_disabled">Ocultar caminho desativado</string>
+    <string name="path_hide_applied">Configuração de ocultar caminho aplicada</string>
+    <string name="path_hide_failed">Falha na operação de ocultar caminho: %d</string>
+    <string name="path_hide_uid_mode">Modo de execução por UID</string>
+    <string name="path_hide_uid_mode_summary">Ocultar caminhos apenas para UIDs de aplicativos específicos</string>
+    <string name="path_hide_uids_label">UIDs de destino (um por linha)</string>
+    <string name="path_hide_uids_helper">Insira os UIDs dos aplicativos. Apenas estes aplicativos terão caminhos ocultos.</string>
+    <string name="path_hide_uid_save">Salvar UIDs</string>
+    <string name="path_hide_uid_mode_enabled">Modo de execução por UID ativado</string>
+    <string name="path_hide_uid_mode_disabled">Modo de execução por UID desativado</string>
+    <string name="path_hide_uid_applied">Lista de permissão de UIDs aplicada</string>
 </resources>

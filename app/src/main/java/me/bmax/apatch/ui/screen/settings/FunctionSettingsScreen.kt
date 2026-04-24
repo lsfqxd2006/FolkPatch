@@ -48,6 +48,12 @@ import me.bmax.apatch.util.isUtsSpoofEnabled as checkUtsSpoofEnabled
 import me.bmax.apatch.util.setUtsSpoofEnabled
 import me.bmax.apatch.util.writeUtsSpoofConfig
 import me.bmax.apatch.util.removeUtsSpoofConfig
+import me.bmax.apatch.util.isPathHideEnabled as checkPathHideEnabled
+import me.bmax.apatch.util.setPathHideEnabled
+import me.bmax.apatch.util.writePathHidePaths
+import me.bmax.apatch.util.readPathHidePaths
+import me.bmax.apatch.util.writePathHideUids
+import me.bmax.apatch.util.setPathHideUidMode
 import me.bmax.apatch.util.ui.LocalSnackbarHost
 import me.bmax.apatch.util.ui.NavigationBarsSpacer
 import androidx.compose.ui.platform.LocalContext
@@ -67,6 +73,10 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
     var kernelSpoofBuildTime by rememberSaveable { mutableStateOf("") }
     var isUmountEnabled by rememberSaveable { mutableStateOf(false) }
     var umountPaths by rememberSaveable { mutableStateOf("") }
+    var isPathHideEnabled by rememberSaveable { mutableStateOf(false) }
+    var pathHidePaths by rememberSaveable { mutableStateOf("") }
+    var isPathHideUidMode by rememberSaveable { mutableStateOf(false) }
+    var pathHideUids by rememberSaveable { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -83,6 +93,23 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                 val umountConfig = UmountConfigManager.loadConfig(context)
                 isUmountEnabled = umountConfig.enabled
                 umountPaths = umountConfig.paths
+                // Load pathhide state from kernel + config file
+                isPathHideEnabled = checkPathHideEnabled()
+                // Try to get paths from kernel first, fall back to config file
+                val kernelPaths = Natives.pathHideList()
+                if (kernelPaths.isNotBlank()) {
+                    pathHidePaths = kernelPaths.trimEnd('\n')
+                } else {
+                    pathHidePaths = readPathHidePaths()
+                }
+                // Load UID mode state
+                isPathHideUidMode = APApplication.sharedPreferences.getBoolean("pathhide_uid_mode", false)
+                val kernelUids = Natives.pathHideUidList()
+                if (kernelUids.isNotBlank()) {
+                    pathHideUids = kernelUids.trimEnd('\n')
+                } else {
+                    pathHideUids = me.bmax.apatch.util.readPathHideUids()
+                }
             }
         }
     }
@@ -107,7 +134,7 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
         snackbarHost = { SnackbarHost(snackBarHost) },
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.padding(paddingValues).padding(horizontal = 16.dp).nestedScroll(scrollBehavior.nestedScrollConnection),
+            modifier = Modifier.padding(paddingValues).nestedScroll(scrollBehavior.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item { Spacer(Modifier.height(8.dp)) }
@@ -130,14 +157,14 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                                 writeUtsSpoofConfig(savedRelease, savedVersion)
                                 Natives.utsSet(savedRelease.ifBlank { null }, savedVersion.ifBlank { null })
                                 withContext(Dispatchers.Main) {
-                                    snackBarHost.showSnackbar("Kernel spoof enabled")
+                                    snackBarHost.showSnackbar(context.getString(R.string.kernel_spoof_enabled))
                                 }
                             } else {
                                 Natives.utsReset()
                                 setUtsSpoofEnabled(false)
                                 removeUtsSpoofConfig()
                                 withContext(Dispatchers.Main) {
-                                    snackBarHost.showSnackbar("Kernel spoof disabled and restored")
+                                    snackBarHost.showSnackbar(context.getString(R.string.kernel_spoof_disabled_restored))
                                 }
                             }
                         }
@@ -167,9 +194,9 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                                 )
                                 withContext(Dispatchers.Main) {
                                     if (rc < 0) {
-                                        snackBarHost.showSnackbar("Kernel spoof failed: $rc")
+                                        snackBarHost.showSnackbar(context.getString(R.string.kernel_spoof_failed, rc))
                                     } else {
-                                        snackBarHost.showSnackbar("Kernel spoof applied")
+                                        snackBarHost.showSnackbar(context.getString(R.string.kernel_spoof_applied))
                                     }
                                 }
                             } else {
@@ -177,7 +204,7 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                                 setUtsSpoofEnabled(false)
                                 removeUtsSpoofConfig()
                                 withContext(Dispatchers.Main) {
-                                    snackBarHost.showSnackbar("Kernel spoof disabled and restored")
+                                    snackBarHost.showSnackbar(context.getString(R.string.kernel_spoof_disabled_restored))
                                 }
                             }
                         }
@@ -206,6 +233,82 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                         }
                     },
                     snackBarHost = snackBarHost,
+                    isPathHideEnabled = isPathHideEnabled,
+                    onPathHideChange = { enabled ->
+                        isPathHideEnabled = enabled
+                        scope.launch(Dispatchers.IO) {
+                            setPathHideEnabled(enabled)
+                            val rc = Natives.pathHideEnable(enabled)
+                            withContext(Dispatchers.Main) {
+                                if (rc < 0) {
+                                    snackBarHost.showSnackbar(context.getString(R.string.path_hide_failed, rc.toInt()))
+                                } else {
+                                    snackBarHost.showSnackbar(
+                                        context.getString(if (enabled) R.string.path_hide_enabled else R.string.path_hide_disabled)
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    pathHidePaths = pathHidePaths,
+                    onPathHidePathsChange = { pathHidePaths = it },
+                    onPathHideSave = {
+                        val currentPaths = pathHidePaths
+                        scope.launch(Dispatchers.IO) {
+                            // Save to config file for persistence
+                            writePathHidePaths(currentPaths)
+                            // Clear existing kernel paths and re-add
+                            Natives.pathHideClear()
+                            if (currentPaths.isNotBlank()) {
+                                currentPaths.lines()
+                                    .map { it.trim() }
+                                    .filter { it.isNotBlank() }
+                                    .forEach { path ->
+                                        Natives.pathHideAdd(path)
+                                    }
+                            }
+                            withContext(Dispatchers.Main) {
+                                snackBarHost.showSnackbar(context.getString(R.string.path_hide_applied))
+                            }
+                        }
+                    },
+                    isPathHideUidMode = isPathHideUidMode,
+                    onPathHideUidModeChange = { enabled ->
+                        isPathHideUidMode = enabled
+                        scope.launch(Dispatchers.IO) {
+                            APApplication.sharedPreferences.edit().putBoolean("pathhide_uid_mode", enabled).apply()
+                            setPathHideUidMode(enabled)
+                            Natives.pathHideUidMode(enabled)
+                            withContext(Dispatchers.Main) {
+                                snackBarHost.showSnackbar(
+                                    context.getString(if (enabled) R.string.path_hide_uid_mode_enabled else R.string.path_hide_uid_mode_disabled)
+                                )
+                            }
+                        }
+                    },
+                    pathHideUids = pathHideUids,
+                    onPathHideUidsChange = { pathHideUids = it },
+                    onPathHideUidSave = {
+                        val currentUids = pathHideUids
+                        scope.launch(Dispatchers.IO) {
+                            // Save to config file for persistence
+                            writePathHideUids(currentUids)
+                            Natives.pathHideUidClear()
+                            if (currentUids.isNotBlank()) {
+                                currentUids.lines()
+                                    .map { it.trim() }
+                                    .filter { it.isNotBlank() }
+                                    .forEach { uidStr ->
+                                        uidStr.toIntOrNull()?.let { uid ->
+                                            Natives.pathHideUidAdd(uid)
+                                        }
+                                    }
+                            }
+                            withContext(Dispatchers.Main) {
+                                snackBarHost.showSnackbar(context.getString(R.string.path_hide_uid_applied))
+                            }
+                        }
+                    },
                     isUmountEnabled = isUmountEnabled,
                     onUmountEnabledChange = { enabled ->
                         isUmountEnabled = enabled

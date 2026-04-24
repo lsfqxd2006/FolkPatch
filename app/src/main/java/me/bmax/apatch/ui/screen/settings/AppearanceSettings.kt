@@ -4,18 +4,20 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.net.Uri
 import android.os.Build
-import android.widget.Toast
+import me.bmax.apatch.util.ui.showToast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -32,6 +34,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
@@ -40,8 +44,11 @@ import kotlinx.coroutines.launch
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.ExpressiveSwitch
+import me.bmax.apatch.ui.component.SwitchIconState
 import me.bmax.apatch.ui.component.FilePickerDialog
-import me.bmax.apatch.ui.component.SectionHeader
+
+import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.ToggleSettingCard
 import me.bmax.apatch.ui.component.ThemeColorPicker
 import me.bmax.apatch.ui.component.ThemeMode
@@ -212,8 +219,9 @@ fun AppearanceSettingsContent(
     val refreshThemeObserver by refreshTheme.observeAsState(false)
 
     var customColorScheme by remember { mutableStateOf(prefs.getString("custom_color", "indigo")) }
+    var amoledTheme by remember { mutableStateOf(prefs.getBoolean("amoled_theme", false)) }
 
-    var currentStyle by remember { mutableStateOf(prefs.getString("home_layout_style", "stats")) }
+    var currentStyle by remember { mutableStateOf(prefs.getString("home_layout_style", "circle")) }
 
     if (refreshThemeObserver) {
         nightModeFollowSys = prefs.getBoolean("night_mode_follow_sys", false)
@@ -221,7 +229,8 @@ fun AppearanceSettingsContent(
         useSystemDynamicColor = prefs.getBoolean("use_system_color_theme", true)
         customFontEnabled = FontConfig.isCustomFontEnabled
         customColorScheme = prefs.getString("custom_color", "indigo")
-        currentStyle = prefs.getString("home_layout_style", "stats")
+        amoledTheme = prefs.getBoolean("amoled_theme", false)
+        currentStyle = prefs.getString("home_layout_style", "circle")
     }
 
     val isDarkTheme = if (nightModeFollowSys) isSystemInDarkTheme() else nightModeEnabled
@@ -270,1067 +279,455 @@ fun AppearanceSettingsContent(
 
     Column(modifier = Modifier.fillMaxWidth()) {
 
-        SectionHeader(text = stringResource(R.string.settings_appearance_night_mode))
-        Spacer(Modifier.height(8.dp))
-
-        if (isNightModeSupported) {
-            ThemeModeSelector(
-                selectedMode = themeMode,
-                onModeSelected = { mode ->
-                    when (mode) {
-                        ThemeMode.LIGHT -> {
-                            nightModeFollowSys = false
-                            nightModeEnabled = false
-                            prefs.edit().putBoolean("night_mode_follow_sys", false).putBoolean("night_mode_enabled", false).apply()
-                        }
-                        ThemeMode.DARK -> {
-                            nightModeFollowSys = false
-                            nightModeEnabled = true
-                            prefs.edit().putBoolean("night_mode_follow_sys", false).putBoolean("night_mode_enabled", true).apply()
-                        }
-                        ThemeMode.SYSTEM -> {
-                            nightModeFollowSys = true
-                            prefs.edit().putBoolean("night_mode_follow_sys", true).apply()
-                        }
-                    }
-                    refreshTheme.value = true
-                },
-                flat = flat,
-            )
-            Spacer(Modifier.height(8.dp))
-        }
-
-        ThemeColorPicker(
-            selectedColorKey = customColorScheme ?: "indigo",
-            onColorSelected = { key ->
-                prefs.edit().putString("custom_color", key).putBoolean("use_system_color_theme", false).apply()
-                customColorScheme = key
-                useSystemDynamicColor = false
-                refreshTheme.value = true
-            },
-            isDarkTheme = isDarkTheme,
-            flat = flat,
-            isDynamicColorSupported = isDynamicColorSupport,
-            isDynamicColorEnabled = useSystemDynamicColor,
-            onDynamicColorSelected = {
-                prefs.edit().putBoolean("use_system_color_theme", true).apply()
-                useSystemDynamicColor = true
-                refreshTheme.value = true
-            },
-        )
-        Spacer(Modifier.height(8.dp))
-
-        if (isDarkTheme) {
-            var amoledTheme by remember { mutableStateOf(prefs.getBoolean("amoled_theme", false)) }
-            val isWallpaperEnabled = BackgroundConfig.isCustomBackgroundEnabled
-
-            val amoledRefreshObserver by refreshTheme.observeAsState(false)
-            if (amoledRefreshObserver) {
-                amoledTheme = prefs.getBoolean("amoled_theme", false)
-            }
-
-            ToggleSettingCard(
-                title = stringResource(R.string.settings_amoled_theme),
-                description = stringResource(R.string.settings_amoled_theme_desc),
-                checked = amoledTheme,
-                enabled = !isWallpaperEnabled,
-                flat = flat,
-                onCheckedChange = { enabled ->
-                    amoledTheme = enabled
-                    prefs.edit().putBoolean("amoled_theme", enabled).apply()
-                    refreshTheme.value = true
-                },
-            )
-            Spacer(Modifier.height(8.dp))
-        }
-
-        Spacer(Modifier.height(16.dp))
-        SectionHeader(text = stringResource(R.string.settings_appearance_layout))
-        Spacer(Modifier.height(8.dp))
-
-        ExpressiveCard(flat = flat, onClick = { showHomeLayoutChooseDialog.value = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(id = R.string.settings_home_layout_style),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        text = stringResource(homeLayoutStyleToString(currentStyle.toString())),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
-                }
-            }
-        }
-        Spacer(Modifier.height(8.dp))
-
-        if (isStatsLayout) {
-            ExpressiveCard(flat = flat, onClick = { showStatsTopLayoutDialog = true }) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(id = R.string.settings_stats_top_layout),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        Text(
-                            text = statsTopLayoutValue,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline,
-                        )
-                    }
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-        }
-
-        if (kPatchReady) {
-            var expanded by remember { mutableStateOf(false) }
-            val rotationState by animateFloatAsState(
-                targetValue = if (expanded) 180f else 0f,
-                label = "ArrowRotation",
-            )
-            ExpressiveCard(flat = flat, onClick = { expanded = !expanded }) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(id = R.string.settings_nav_layout_title),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        Text(
-                            text = stringResource(id = R.string.settings_nav_layout_summary),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline,
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.Filled.KeyboardArrowDown,
-                        contentDescription = null,
-                        modifier = Modifier.rotate(rotationState),
-                    )
-                }
-            }
-            AnimatedVisibility(visible = expanded) {
-                Column(modifier = Modifier.padding(start = 16.dp, top = 8.dp)) {
-                    me.bmax.apatch.ui.component.CheckboxItem(
-                        icon = null,
-                        title = stringResource(id = R.string.settings_show_apm),
-                        summary = null,
-                        checked = showNavApm,
-                        onCheckedChange = {
-                            showNavApm = it
-                            prefs.edit().putBoolean("show_nav_apm", it).apply()
-                        },
-                    )
-                    me.bmax.apatch.ui.component.CheckboxItem(
-                        icon = null,
-                        title = stringResource(id = R.string.settings_show_kpm),
-                        summary = null,
-                        checked = showNavKpm,
-                        onCheckedChange = {
-                            showNavKpm = it
-                            prefs.edit().putBoolean("show_nav_kpm", it).apply()
-                        },
-                    )
-                    me.bmax.apatch.ui.component.CheckboxItem(
-                        icon = null,
-                        title = stringResource(id = R.string.settings_show_superuser),
-                        summary = null,
-                        checked = showNavSuperUser,
-                        onCheckedChange = {
-                            showNavSuperUser = it
-                            prefs.edit().putBoolean("show_nav_superuser", it).apply()
-                        },
-                    )
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-        }
-
-        ExpressiveCard(flat = flat, onClick = { showNavSchemeDialog = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(id = R.string.settings_nav_scheme),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        text = navSchemeLabel,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
-                }
-            }
-        }
-        Spacer(Modifier.height(8.dp))
-
-        if (isFloatingNav) {
-            ToggleSettingCard(
-                flat = flat,
-                title = stringResource(id = R.string.settings_navbar_glass_effect),
-                description = stringResource(id = R.string.settings_navbar_glass_effect_summary),
-                checked = BackgroundConfig.isNavBarGlassEnabled,
-                onCheckedChange = {
-                    BackgroundConfig.setNavBarGlassEnabledState(it)
-                    BackgroundConfig.save(context)
-                },
-            )
-            Spacer(Modifier.height(8.dp))
-
-            if (BackgroundConfig.isNavBarGlassEnabled) {
-                ExpressiveCard(flat = flat) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Text(
-                            text = stringResource(id = R.string.settings_navbar_glass_blur_strength),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Slider(
-                            value = BackgroundConfig.navBarGlassBlurStrength,
-                            onValueChange = { BackgroundConfig.setNavBarGlassBlurStrengthValue(it) },
-                            onValueChangeFinished = { BackgroundConfig.save(context) },
-                            valueRange = 0f..1f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            ),
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-
-                ExpressiveCard(flat = flat) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Text(
-                            text = stringResource(id = R.string.settings_navbar_glass_transparency),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Slider(
-                            value = BackgroundConfig.navBarGlassTransparency,
-                            onValueChange = { BackgroundConfig.setNavBarGlassTransparencyValue(it) },
-                            onValueChangeFinished = { BackgroundConfig.save(context) },
-                            valueRange = 0f..1f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            ),
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-
-                ExpressiveCard(flat = flat) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Text(
-                            text = stringResource(id = R.string.settings_navbar_glass_highlight_strength),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Slider(
-                            value = BackgroundConfig.navBarGlassHighlightStrength,
-                            onValueChange = { BackgroundConfig.setNavBarGlassHighlightStrengthValue(it) },
-                            onValueChangeFinished = { BackgroundConfig.save(context) },
-                            valueRange = 0f..1f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            ),
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-
-                ToggleSettingCard(
-                    flat = flat,
-                    title = stringResource(id = R.string.settings_navbar_glass_specular),
-                    description = stringResource(id = R.string.settings_navbar_glass_specular_summary),
-                    checked = BackgroundConfig.isNavBarGlassSpecularEnabled,
-                    onCheckedChange = {
-                        BackgroundConfig.setNavBarGlassSpecularEnabledState(it)
-                        BackgroundConfig.save(context)
-                    },
-                )
-                Spacer(Modifier.height(8.dp))
-
-                ToggleSettingCard(
-                    flat = flat,
-                    title = stringResource(id = R.string.settings_navbar_glass_inner_glow),
-                    description = stringResource(id = R.string.settings_navbar_glass_inner_glow_summary),
-                    checked = BackgroundConfig.isNavBarGlassInnerGlowEnabled,
-                    onCheckedChange = {
-                        BackgroundConfig.setNavBarGlassInnerGlowEnabledState(it)
-                        BackgroundConfig.save(context)
-                    },
-                )
-                Spacer(Modifier.height(8.dp))
-
-                ToggleSettingCard(
-                    flat = flat,
-                    title = stringResource(id = R.string.settings_navbar_glass_border),
-                    description = stringResource(id = R.string.settings_navbar_glass_border_summary),
-                    checked = BackgroundConfig.isNavBarGlassBorderEnabled,
-                    onCheckedChange = {
-                        BackgroundConfig.setNavBarGlassBorderEnabledState(it)
-                        BackgroundConfig.save(context)
-                    },
-                )
-                Spacer(Modifier.height(8.dp))
-            }
-
-            ToggleSettingCard(
-                flat = flat,
-                title = stringResource(id = R.string.settings_floating_auto_hide),
-                description = stringResource(id = R.string.settings_floating_auto_hide_summary),
-                checked = floatingAutoHide,
-                onCheckedChange = {
-                    floatingAutoHide = it
-                    prefs.edit().putBoolean("floating_auto_hide", it).apply()
-                },
-            )
-            Spacer(Modifier.height(8.dp))
-            ToggleSettingCard(
-                flat = flat,
-                title = stringResource(id = R.string.settings_floating_swipe_hide),
-                description = stringResource(id = R.string.settings_floating_swipe_hide_summary),
-                checked = floatingSwipeHide,
-                onCheckedChange = {
-                    floatingSwipeHide = it
-                    prefs.edit().putBoolean("floating_swipe_hide", it).apply()
-                },
-            )
-            Spacer(Modifier.height(8.dp))
-        }
-
-        if (isListStyle) {
-            ToggleSettingCard(
-                flat = flat,
-                title = stringResource(id = R.string.settings_list_card_hide_status_badge),
-                description = stringResource(id = R.string.settings_list_card_hide_status_badge_summary),
-                checked = BackgroundConfig.isListWorkingCardModeHidden,
-                onCheckedChange = {
-                    BackgroundConfig.setListWorkingCardModeHiddenState(it)
-                    BackgroundConfig.save(context)
-                },
-            )
-            Spacer(Modifier.height(8.dp))
-        }
-
-        if (isListStyle && !BackgroundConfig.isListWorkingCardModeHidden) {
-            ExpressiveCard(flat = flat, onClick = { showCustomBadgeTextDialog.value = true }) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(id = R.string.settings_custom_badge_text),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        Text(
-                            text = currentBadgeTextMode,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline,
-                        )
-                    }
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-        }
-
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_advanced_title_style),
-            description = if (BackgroundConfig.isAdvancedTitleStyleEnabled) stringResource(id = R.string.settings_advanced_title_style_enabled) else stringResource(id = R.string.settings_advanced_title_style_summary),
-            checked = BackgroundConfig.isAdvancedTitleStyleEnabled,
-            onCheckedChange = {
-                BackgroundConfig.setAdvancedTitleStyleEnabledState(it)
-                BackgroundConfig.save(context)
-                refreshTheme.value = true
-            },
-        )
-        Spacer(Modifier.height(8.dp))
-
-        if (BackgroundConfig.isAdvancedTitleStyleEnabled) {
-            ExpressiveCard(flat = flat) {
-                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                    Text(text = stringResource(id = R.string.settings_title_image_day_opacity), style = MaterialTheme.typography.titleMedium)
-                    Slider(
-                        value = BackgroundConfig.titleImageDayOpacity,
-                        onValueChange = { BackgroundConfig.setTitleImageDayOpacityValue(it) },
-                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                        valueRange = 0f..1f,
-                        colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                        ),
-                    )
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-
-            ExpressiveCard(flat = flat) {
-                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                    Text(text = stringResource(id = R.string.settings_title_image_night_opacity), style = MaterialTheme.typography.titleMedium)
-                    Slider(
-                        value = BackgroundConfig.titleImageNightOpacity,
-                        onValueChange = { BackgroundConfig.setTitleImageNightOpacityValue(it) },
-                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                        valueRange = 0f..1f,
-                        colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                        ),
-                    )
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-
-            ExpressiveCard(flat = flat) {
-                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                    Text(text = stringResource(id = R.string.settings_title_image_dim), style = MaterialTheme.typography.titleMedium)
-                    Slider(
-                        value = BackgroundConfig.titleImageDim,
-                        onValueChange = { BackgroundConfig.setTitleImageDimValue(it) },
-                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                        valueRange = 0f..1f,
-                        colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                        ),
-                    )
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-
-            ExpressiveCard(flat = flat) {
-                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                    Text(text = stringResource(id = R.string.settings_title_image_offset_x), style = MaterialTheme.typography.titleMedium)
-                    Slider(
-                        value = BackgroundConfig.titleImageOffsetX,
-                        onValueChange = { BackgroundConfig.setTitleImageOffsetXValue(it) },
-                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                        valueRange = -1f..1f,
-                        colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                        ),
-                    )
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-
-            ExpressiveCard(
-                flat = flat,
-                onClick = {
-                    if (PermissionUtils.hasExternalStoragePermission(context)) {
-                        try {
-                            pickTitleImageLauncher.launch("image/*")
-                        } catch (e: ActivityNotFoundException) {
-                            Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                        }
-                    } else {
-                        Toast.makeText(context, "请先授予存储权限才能选择标题图片", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(text = stringResource(id = R.string.settings_select_title_image), style = MaterialTheme.typography.titleMedium)
-                        if (!BackgroundConfig.titleImageUri.isNullOrEmpty()) {
-                            Text(text = stringResource(id = R.string.settings_title_image_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
-                        }
-                    }
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-
-            if (!BackgroundConfig.titleImageUri.isNullOrEmpty()) {
-                val clearTitleImageDialog = rememberConfirmDialog(
-                    onConfirm = {
-                        scope.launch {
-                            loadingDialog.show()
-                            BackgroundManager.clearTitleImage(context)
-                            loadingDialog.hide()
-                            snackBarHost.showSnackbar(message = context.getString(R.string.settings_title_image_cleared))
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_night_mode), flat = flat) {
+            if (isNightModeSupported) {
+                item {
+                    ThemeModeSelector(
+                        selectedMode = themeMode,
+                        onModeSelected = { mode ->
+                            when (mode) {
+                                ThemeMode.LIGHT -> {
+                                    nightModeFollowSys = false
+                                    nightModeEnabled = false
+                                    prefs.edit().putBoolean("night_mode_follow_sys", false).putBoolean("night_mode_enabled", false).apply()
+                                }
+                                ThemeMode.DARK -> {
+                                    nightModeFollowSys = false
+                                    nightModeEnabled = true
+                                    prefs.edit().putBoolean("night_mode_follow_sys", false).putBoolean("night_mode_enabled", true).apply()
+                                }
+                                ThemeMode.SYSTEM -> {
+                                    nightModeFollowSys = true
+                                    prefs.edit().putBoolean("night_mode_follow_sys", true).apply()
+                                }
+                            }
                             refreshTheme.value = true
-                        }
-                    }
-                )
-                ExpressiveCard(
-                    flat = flat,
-                    onClick = {
-                        clearTitleImageDialog.showConfirm(
-                            title = context.getString(R.string.settings_clear_title_image),
-                            content = context.getString(R.string.settings_clear_title_image_confirm),
-                            markdown = false,
-                        )
-                    }
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(text = stringResource(id = R.string.settings_clear_title_image), style = MaterialTheme.typography.titleMedium)
-                    }
+                        },
+                        flat = flat,
+                        bare = true,
+                    )
                 }
-                Spacer(Modifier.height(8.dp))
             }
-        }
 
-        Spacer(Modifier.height(16.dp))
-        SectionHeader(text = stringResource(R.string.settings_appearance_background))
-        Spacer(Modifier.height(8.dp))
-
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_custom_background),
-            description = if (BackgroundConfig.isCustomBackgroundEnabled) stringResource(id = R.string.settings_custom_background_enabled) else stringResource(id = R.string.settings_custom_background_summary),
-            checked = BackgroundConfig.isCustomBackgroundEnabled,
-            onCheckedChange = {
-                BackgroundConfig.setCustomBackgroundEnabledState(it)
-                BackgroundConfig.save(context)
-                refreshTheme.value = true
-            },
-        )
-        Spacer(Modifier.height(8.dp))
-
-        if (BackgroundConfig.isCustomBackgroundEnabled) {
-            if (!BackgroundConfig.isVideoBackgroundEnabled) {
-                ToggleSettingCard(
-                    flat = flat,
-                    title = stringResource(id = R.string.settings_custom_background_dual_dim),
-                    description = stringResource(id = R.string.settings_custom_background_dual_dim_desc),
-                    checked = BackgroundConfig.isDualBackgroundDimEnabled,
-                    onCheckedChange = {
-                        BackgroundConfig.setDualBackgroundDimEnabledState(it)
-                        BackgroundConfig.save(context)
+            item {
+                ThemeColorPicker(
+                    selectedColorKey = customColorScheme ?: "indigo",
+                    onColorSelected = { key ->
+                        prefs.edit().putString("custom_color", key).putBoolean("use_system_color_theme", false).apply()
+                        customColorScheme = key
+                        useSystemDynamicColor = false
                         refreshTheme.value = true
                     },
+                    isDarkTheme = isDarkTheme,
+                    flat = flat,
+                    isDynamicColorSupported = isDynamicColorSupport,
+                    isDynamicColorEnabled = useSystemDynamicColor,
+                    onDynamicColorSelected = {
+                        prefs.edit().putBoolean("use_system_color_theme", true).apply()
+                        useSystemDynamicColor = true
+                        refreshTheme.value = true
+                    },
+                    bare = true,
                 )
-                Spacer(Modifier.height(8.dp))
+            }
 
-                ExpressiveCard(flat = flat) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium)
-                        Slider(
-                            value = BackgroundConfig.customBackgroundOpacity,
-                            onValueChange = { BackgroundConfig.setCustomBackgroundOpacityValue(it) },
-                            onValueChangeFinished = { BackgroundConfig.save(context) },
-                            valueRange = 0f..1f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            ),
+            if (isDarkTheme) {
+                item {
+                    val isWallpaperEnabled = BackgroundConfig.isCustomBackgroundEnabled
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .toggleable(
+                                value = amoledTheme,
+                                onValueChange = {
+                                    if (!isWallpaperEnabled) {
+                                        amoledTheme = it
+                                        prefs.edit().putBoolean("amoled_theme", it).apply()
+                                        refreshTheme.value = true
+                                    }
+                                },
+                                role = Role.Switch,
+                                enabled = !isWallpaperEnabled,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = ripple(),
+                            )
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(imageVector = Icons.Filled.DarkMode, contentDescription = null, tint = if (!isWallpaperEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f), modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                            Text(
+                                text = stringResource(R.string.settings_amoled_theme),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = if (!isWallpaperEnabled) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = stringResource(R.string.settings_amoled_theme_desc),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (!isWallpaperEnabled) MaterialTheme.colorScheme.onSurfaceVariant
+                                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                            )
+                        }
+                        ExpressiveSwitch(
+                            checked = amoledTheme,
+                            onCheckedChange = null,
+                            enabled = !isWallpaperEnabled,
                         )
                     }
-                }
-                Spacer(Modifier.height(8.dp))
-
-                ExpressiveCard(flat = flat) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Text(text = stringResource(id = R.string.settings_custom_background_blur), style = MaterialTheme.typography.titleMedium)
-                        Slider(
-                            value = BackgroundConfig.customBackgroundBlur,
-                            onValueChange = { BackgroundConfig.setCustomBackgroundBlurValue(it) },
-                            onValueChangeFinished = { BackgroundConfig.save(context) },
-                            valueRange = 0f..50f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            ),
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-
-                if (!BackgroundConfig.isDualBackgroundDimEnabled) {
-                    ExpressiveCard(flat = flat) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium)
-                            Slider(
-                                value = BackgroundConfig.customBackgroundDim,
-                                onValueChange = { BackgroundConfig.setCustomBackgroundDimValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                ),
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                } else {
-                    ExpressiveCard(flat = flat) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_custom_background_day_dim), style = MaterialTheme.typography.titleMedium)
-                            Slider(
-                                value = BackgroundConfig.customBackgroundDayDim,
-                                onValueChange = { BackgroundConfig.setCustomBackgroundDayDimValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                ),
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-
-                    ExpressiveCard(flat = flat) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_custom_background_night_dim), style = MaterialTheme.typography.titleMedium)
-                            Slider(
-                                value = BackgroundConfig.customBackgroundNightDim,
-                                onValueChange = { BackgroundConfig.setCustomBackgroundNightDimValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                ),
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
                 }
             }
 
-            ToggleSettingCard(
-                flat = flat,
-                title = stringResource(id = R.string.settings_video_background),
-                description = stringResource(id = R.string.settings_video_background_summary),
-                checked = BackgroundConfig.isVideoBackgroundEnabled,
-                onCheckedChange = {
-                    BackgroundConfig.setVideoBackgroundEnabledState(it)
-                    BackgroundConfig.save(context)
-                    refreshTheme.value = true
-                },
-            )
-            Spacer(Modifier.height(8.dp))
-
-            if (BackgroundConfig.isVideoBackgroundEnabled) {
-                ExpressiveCard(
+            item {
+                var showSwitchIcon by remember { mutableStateOf(SwitchIconState.showIcon) }
+                ToggleSettingCard(
+                    icon = Icons.Filled.ToggleOn,
                     flat = flat,
-                    onClick = {
-                        try {
-                            pickVideoLauncher.launch("video/*")
-                        } catch (e: ActivityNotFoundException) {
-                            Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                ) {
+                    title = stringResource(R.string.settings_switch_icon),
+                    description = stringResource(R.string.settings_switch_icon_desc),
+                    checked = showSwitchIcon,
+                    onCheckedChange = {
+                        showSwitchIcon = it
+                        SwitchIconState.showIcon = it
+                        prefs.edit().putBoolean("show_switch_icon", it).apply()
+                    },
+                )
+            }
+        }
+
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_layout), flat = flat) {
+            item {
+                ExpressiveCard(flat = flat, onClick = { showHomeLayoutChooseDialog.value = true }) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Icon(imageVector = Icons.Filled.Dashboard, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(text = stringResource(id = R.string.settings_select_video), style = MaterialTheme.typography.titleMedium)
-                            if (!BackgroundConfig.videoBackgroundUri.isNullOrEmpty()) {
-                                Text(text = stringResource(id = R.string.settings_video_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
-                            }
-                        }
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-
-                val clearVideoDialog = rememberConfirmDialog(
-                    onConfirm = {
-                        scope.launch {
-                            loadingDialog.show()
-                            BackgroundManager.clearVideoBackground(context)
-                            loadingDialog.hide()
-                            snackBarHost.showSnackbar(message = context.getString(R.string.settings_background_image_cleared))
-                            refreshTheme.value = true
-                        }
-                    }
-                )
-
-                if (!BackgroundConfig.videoBackgroundUri.isNullOrEmpty()) {
-                    val clearVideoTitle = stringResource(id = R.string.settings_clear_video_background)
-                    val clearVideoConfirm = context.getString(R.string.settings_clear_video_background_confirm)
-                    ExpressiveCard(
-                        flat = flat,
-                        onClick = {
-                            clearVideoDialog.showConfirm(
-                                title = clearVideoTitle,
-                                content = clearVideoConfirm,
-                                markdown = false,
+                            Text(
+                                text = stringResource(id = R.string.settings_home_layout_style),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = stringResource(homeLayoutStyleToString(currentStyle.toString())),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline,
                             )
                         }
+                    }
+                }
+            }
+
+            item(visible = isStatsLayout) {
+                ExpressiveCard(flat = flat, onClick = { showStatsTopLayoutDialog = true }) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(text = clearVideoTitle, style = MaterialTheme.typography.titleMedium)
+                        Icon(imageVector = Icons.Filled.GridView, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(id = R.string.settings_stats_top_layout),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = statsTopLayoutValue,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline,
+                            )
                         }
                     }
-                    Spacer(Modifier.height(8.dp))
                 }
+            }
 
-                ExpressiveCard(flat = flat) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Text(text = stringResource(id = R.string.settings_video_volume), style = MaterialTheme.typography.titleMedium)
-                        Slider(
-                            value = BackgroundConfig.videoVolume,
-                            onValueChange = { BackgroundConfig.setVideoVolumeValue(it) },
-                            onValueChangeFinished = { BackgroundConfig.save(context) },
-                            valueRange = 0f..1f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            ),
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-            } else {
-                ToggleSettingCard(
-                    flat = flat,
-                    title = stringResource(id = R.string.settings_multi_background_mode),
-                    description = stringResource(id = R.string.settings_multi_background_mode_summary),
-                    checked = BackgroundConfig.isMultiBackgroundEnabled,
-                    onCheckedChange = {
-                        BackgroundConfig.setMultiBackgroundEnabledState(it)
-                        BackgroundConfig.save(context)
-                        refreshTheme.value = true
-                    },
-                )
-                Spacer(Modifier.height(8.dp))
-
-                if (BackgroundConfig.isMultiBackgroundEnabled) {
-                    val items = listOf(
-                        Triple(R.string.settings_select_home_background, "home", BackgroundConfig.homeBackgroundUri),
-                        Triple(R.string.settings_select_kernel_background, "kernel", BackgroundConfig.kernelBackgroundUri),
-                        Triple(R.string.settings_select_superuser_background, "superuser", BackgroundConfig.superuserBackgroundUri),
-                        Triple(R.string.settings_select_system_module_background, "system", BackgroundConfig.systemModuleBackgroundUri),
-                        Triple(R.string.settings_select_settings_background, "settings", BackgroundConfig.settingsBackgroundUri)
+            if (kPatchReady) {
+                item {
+                    var expanded by remember { mutableStateOf(false) }
+                    val rotationState by animateFloatAsState(
+                        targetValue = if (expanded) 180f else 0f,
+                        label = "ArrowRotation",
                     )
-                    items.forEach { (titleRes, type, uri) ->
-                        ExpressiveCard(
-                            flat = flat,
-                            onClick = {
-                                if (PermissionUtils.hasExternalStoragePermission(context) &&
-                                    PermissionUtils.hasWriteExternalStoragePermission(context)) {
-                                    pickingType = type
-                                    try {
-                                        pickImageLauncher.launch("image/*")
-                                    } catch (e: ActivityNotFoundException) {
-                                        Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                                    }
-                                } else {
-                                    Toast.makeText(context, "请先授予存储权限才能选择背景图片", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = stringResource(id = titleRes), style = MaterialTheme.typography.titleMedium)
-                                    if (!uri.isNullOrEmpty()) {
-                                        Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
-                                    }
-                                }
-                            }
-                        }
-                        Spacer(Modifier.height(8.dp))
-                    }
-                } else {
-                    ExpressiveCard(
-                        flat = flat,
-                        onClick = {
-                            if (PermissionUtils.hasExternalStoragePermission(context) &&
-                                PermissionUtils.hasWriteExternalStoragePermission(context)) {
-                                pickingType = "default"
-                                try {
-                                    pickImageLauncher.launch("image/*")
-                                } catch (e: ActivityNotFoundException) {
-                                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                                }
-                            } else {
-                                Toast.makeText(context, "请先授予存储权限才能选择背景图片", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    ) {
+                    ExpressiveCard(flat = flat, onClick = { expanded = !expanded }) {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
+                            Icon(imageVector = Icons.Filled.Navigation, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium)
-                                if (!BackgroundConfig.customBackgroundUri.isNullOrEmpty()) {
-                                    Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
-                                }
-                            }
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-
-                    if (!BackgroundConfig.customBackgroundUri.isNullOrEmpty()) {
-                        val clearBackgroundDialog = rememberConfirmDialog(
-                            onConfirm = {
-                                scope.launch {
-                                    loadingDialog.show()
-                                    BackgroundManager.clearCustomBackground(context)
-                                    loadingDialog.hide()
-                                    snackBarHost.showSnackbar(message = context.getString(R.string.settings_background_image_cleared))
-                                    refreshTheme.value = true
-                                }
-                            }
-                        )
-                        val clearBgTitle = stringResource(id = R.string.settings_clear_background)
-                        val clearBgConfirm = context.getString(R.string.settings_clear_background_confirm)
-                        ExpressiveCard(
-                            flat = flat,
-                            onClick = {
-                                clearBackgroundDialog.showConfirm(
-                                    title = clearBgTitle,
-                                    content = clearBgConfirm,
-                                    markdown = false,
+                                Text(
+                                    text = stringResource(id = R.string.settings_nav_layout_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Text(
+                                    text = stringResource(id = R.string.settings_nav_layout_summary),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.outline,
                                 )
                             }
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(text = clearBgTitle, style = MaterialTheme.typography.titleMedium)
-                            }
+                            Icon(
+                                imageVector = Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null,
+                                modifier = Modifier.rotate(rotationState),
+                            )
                         }
-                        Spacer(Modifier.height(8.dp))
+                    }
+                    AnimatedVisibility(visible = expanded) {
+                        Column(modifier = Modifier.padding(start = 16.dp, top = 8.dp)) {
+                            me.bmax.apatch.ui.component.CheckboxItem(
+                                icon = null,
+                                title = stringResource(id = R.string.settings_show_apm),
+                                summary = null,
+                                checked = showNavApm,
+                                onCheckedChange = {
+                                    showNavApm = it
+                                    prefs.edit().putBoolean("show_nav_apm", it).apply()
+                                },
+                            )
+                            me.bmax.apatch.ui.component.CheckboxItem(
+                                icon = null,
+                                title = stringResource(id = R.string.settings_show_kpm),
+                                summary = null,
+                                checked = showNavKpm,
+                                onCheckedChange = {
+                                    showNavKpm = it
+                                    prefs.edit().putBoolean("show_nav_kpm", it).apply()
+                                },
+                            )
+                            me.bmax.apatch.ui.component.CheckboxItem(
+                                icon = null,
+                                title = stringResource(id = R.string.settings_show_superuser),
+                                summary = null,
+                                checked = showNavSuperUser,
+                                onCheckedChange = {
+                                    showNavSuperUser = it
+                                    prefs.edit().putBoolean("show_nav_superuser", it).apply()
+                                },
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        if (showGridCardSettings) {
-            ToggleSettingCard(
-                flat = flat,
-                title = stringResource(id = R.string.settings_grid_working_card_background),
-                description = if (BackgroundConfig.isGridWorkingCardBackgroundEnabled) stringResource(id = R.string.settings_grid_working_card_background_enabled) else stringResource(id = R.string.settings_grid_working_card_background_summary),
-                checked = BackgroundConfig.isGridWorkingCardBackgroundEnabled,
-                onCheckedChange = {
-                    BackgroundConfig.setGridWorkingCardBackgroundEnabledState(it)
-                    BackgroundConfig.save(context)
-                },
-            )
-            Spacer(Modifier.height(8.dp))
-
-            if (BackgroundConfig.isGridWorkingCardBackgroundEnabled) {
-                ToggleSettingCard(
-                    flat = flat,
-                    title = stringResource(id = R.string.settings_grid_working_card_dual_opacity),
-                    description = stringResource(id = R.string.settings_grid_working_card_dual_opacity_desc),
-                    checked = BackgroundConfig.isGridDualOpacityEnabled,
-                    onCheckedChange = {
-                        BackgroundConfig.setGridDualOpacityEnabledState(it)
-                        BackgroundConfig.save(context)
-                    },
-                )
-                Spacer(Modifier.height(8.dp))
-
-                if (!BackgroundConfig.isGridDualOpacityEnabled) {
-                    ExpressiveCard(flat = flat) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium)
-                            Slider(
-                                value = BackgroundConfig.gridWorkingCardBackgroundOpacity,
-                                onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundOpacityValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                ),
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                } else {
-                    ExpressiveCard(flat = flat) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_grid_working_card_day_opacity), style = MaterialTheme.typography.titleMedium)
-                            Slider(
-                                value = BackgroundConfig.gridWorkingCardBackgroundDayOpacity,
-                                onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDayOpacityValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                ),
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-
-                    ExpressiveCard(flat = flat) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_grid_working_card_night_opacity), style = MaterialTheme.typography.titleMedium)
-                            Slider(
-                                value = BackgroundConfig.gridWorkingCardBackgroundNightOpacity,
-                                onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundNightOpacityValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                ),
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                }
-
-                ExpressiveCard(flat = flat) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium)
-                        Slider(
-                            value = BackgroundConfig.gridWorkingCardBackgroundDim,
-                            onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDimValue(it) },
-                            onValueChangeFinished = { BackgroundConfig.save(context) },
-                            valueRange = 0f..1f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            ),
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-
-                ExpressiveCard(
-                    flat = flat,
-                    onClick = {
-                        if (PermissionUtils.hasExternalStoragePermission(context)) {
-                            try {
-                                pickGridImageLauncher.launch("image/*")
-                            } catch (e: ActivityNotFoundException) {
-                                Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                            }
-                        } else {
-                            Toast.makeText(context, "请先授予存储权限才能选择背景图片", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                ) {
+            item {
+                ExpressiveCard(flat = flat, onClick = { showNavSchemeDialog = true }) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Icon(imageVector = Icons.Filled.Menu, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium)
-                            if (!BackgroundConfig.gridWorkingCardBackgroundUri.isNullOrEmpty()) {
-                                Text(text = stringResource(id = R.string.settings_grid_working_card_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                            Text(
+                                text = stringResource(id = R.string.settings_nav_scheme),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = navSchemeLabel,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline,
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (isFloatingNav) {
+                item {
+                    ToggleSettingCard(
+                        flat = flat,
+                        icon = Icons.Filled.AutoAwesome,
+                        title = stringResource(id = R.string.settings_navbar_glass_effect),
+                        description = stringResource(id = R.string.settings_navbar_glass_effect_summary),
+                        checked = BackgroundConfig.isNavBarGlassEnabled,
+                        onCheckedChange = {
+                            BackgroundConfig.setNavBarGlassEnabledState(it)
+                            BackgroundConfig.save(context)
+                        },
+                    )
+                }
+
+                if (BackgroundConfig.isNavBarGlassEnabled) {
+                    item {
+                        ExpressiveCard(flat = flat) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                Text(
+                                    text = stringResource(id = R.string.settings_navbar_glass_blur_strength),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Slider(
+                                    value = BackgroundConfig.navBarGlassBlurStrength,
+                                    onValueChange = { BackgroundConfig.setNavBarGlassBlurStrengthValue(it) },
+                                    onValueChangeFinished = { BackgroundConfig.save(context) },
+                                    valueRange = 0f..1f,
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    ),
+                                )
                             }
                         }
                     }
-                }
-                Spacer(Modifier.height(8.dp))
 
-                val clearGridBackgroundDialog = rememberConfirmDialog(
-                    onConfirm = {
-                        scope.launch {
-                            loadingDialog.show()
-                            BackgroundManager.clearGridWorkingCardBackground(context)
-                            loadingDialog.hide()
-                            snackBarHost.showSnackbar(message = context.getString(R.string.settings_grid_working_card_background_cleared))
+                    item {
+                        ExpressiveCard(flat = flat) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                Text(
+                                    text = stringResource(id = R.string.settings_navbar_glass_transparency),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Slider(
+                                    value = BackgroundConfig.navBarGlassTransparency,
+                                    onValueChange = { BackgroundConfig.setNavBarGlassTransparencyValue(it) },
+                                    onValueChangeFinished = { BackgroundConfig.save(context) },
+                                    valueRange = 0f..1f,
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    ),
+                                )
+                            }
                         }
                     }
-                )
-                ExpressiveCard(
-                    flat = flat,
-                    onClick = {
-                        clearGridBackgroundDialog.showConfirm(
-                            title = context.getString(R.string.settings_clear_grid_working_card_background),
-                            content = context.getString(R.string.settings_clear_grid_working_card_background_confirm),
-                            markdown = false,
+
+                    item {
+                        ExpressiveCard(flat = flat) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                Text(
+                                    text = stringResource(id = R.string.settings_navbar_glass_highlight_strength),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Slider(
+                                    value = BackgroundConfig.navBarGlassHighlightStrength,
+                                    onValueChange = { BackgroundConfig.setNavBarGlassHighlightStrengthValue(it) },
+                                    onValueChangeFinished = { BackgroundConfig.save(context) },
+                                    valueRange = 0f..1f,
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        ToggleSettingCard(
+                            flat = flat,
+                            icon = Icons.Filled.LensBlur,
+                            title = stringResource(id = R.string.settings_navbar_glass_specular),
+                            description = stringResource(id = R.string.settings_navbar_glass_specular_summary),
+                            checked = BackgroundConfig.isNavBarGlassSpecularEnabled,
+                            onCheckedChange = {
+                                BackgroundConfig.setNavBarGlassSpecularEnabledState(it)
+                                BackgroundConfig.save(context)
+                            },
                         )
                     }
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(text = stringResource(id = R.string.settings_clear_grid_working_card_background), style = MaterialTheme.typography.titleMedium)
+
+                    item {
+                        ToggleSettingCard(
+                            flat = flat,
+                            icon = Icons.Filled.Grain,
+                            title = stringResource(id = R.string.settings_navbar_glass_inner_glow),
+                            description = stringResource(id = R.string.settings_navbar_glass_inner_glow_summary),
+                            checked = BackgroundConfig.isNavBarGlassInnerGlowEnabled,
+                            onCheckedChange = {
+                                BackgroundConfig.setNavBarGlassInnerGlowEnabledState(it)
+                                BackgroundConfig.save(context)
+                            },
+                        )
+                    }
+
+                    item {
+                        ToggleSettingCard(
+                            flat = flat,
+                            icon = Icons.Filled.BorderStyle,
+                            title = stringResource(id = R.string.settings_navbar_glass_border),
+                            description = stringResource(id = R.string.settings_navbar_glass_border_summary),
+                            checked = BackgroundConfig.isNavBarGlassBorderEnabled,
+                            onCheckedChange = {
+                                BackgroundConfig.setNavBarGlassBorderEnabledState(it)
+                                BackgroundConfig.save(context)
+                            },
+                        )
                     }
                 }
-                Spacer(Modifier.height(8.dp))
+
+                item {
+                    ToggleSettingCard(
+                        flat = flat,
+                        icon = Icons.Filled.VisibilityOff,
+                        title = stringResource(id = R.string.settings_floating_auto_hide),
+                        description = stringResource(id = R.string.settings_floating_auto_hide_summary),
+                        checked = floatingAutoHide,
+                        onCheckedChange = {
+                            floatingAutoHide = it
+                            prefs.edit().putBoolean("floating_auto_hide", it).apply()
+                        },
+                    )
+                }
+
+                item {
+                    ToggleSettingCard(
+                        flat = flat,
+                        icon = Icons.Filled.Swipe,
+                        title = stringResource(id = R.string.settings_floating_swipe_hide),
+                        description = stringResource(id = R.string.settings_floating_swipe_hide_summary),
+                        checked = floatingSwipeHide,
+                        onCheckedChange = {
+                            floatingSwipeHide = it
+                            prefs.edit().putBoolean("floating_swipe_hide", it).apply()
+                        },
+                    )
+                }
             }
 
-            ToggleSettingCard(
-                flat = flat,
-                title = stringResource(id = R.string.settings_grid_working_card_hide_check),
-                description = stringResource(id = R.string.settings_grid_working_card_hide_check_summary),
-                checked = BackgroundConfig.isGridWorkingCardCheckHidden,
-                onCheckedChange = {
-                    BackgroundConfig.setGridWorkingCardCheckHiddenState(it)
-                    BackgroundConfig.save(context)
-                },
-            )
-            Spacer(Modifier.height(8.dp))
+            item(visible = isListStyle) {
+                ToggleSettingCard(
+                    flat = flat,
+                    icon = Icons.Filled.LabelOff,
+                    title = stringResource(id = R.string.settings_list_card_hide_status_badge),
+                    description = stringResource(id = R.string.settings_list_card_hide_status_badge_summary),
+                    checked = BackgroundConfig.isListWorkingCardModeHidden,
+                    onCheckedChange = {
+                        BackgroundConfig.setListWorkingCardModeHiddenState(it)
+                        BackgroundConfig.save(context)
+                    },
+                )
+            }
 
-            ToggleSettingCard(
-                flat = flat,
-                title = stringResource(id = R.string.settings_grid_working_card_hide_text),
-                description = stringResource(id = R.string.settings_grid_working_card_hide_text_summary),
-                checked = BackgroundConfig.isGridWorkingCardTextHidden,
-                onCheckedChange = {
-                    BackgroundConfig.setGridWorkingCardTextHiddenState(it)
-                    BackgroundConfig.save(context)
-                },
-            )
-            Spacer(Modifier.height(8.dp))
-
-            ToggleSettingCard(
-                flat = flat,
-                title = stringResource(id = R.string.settings_grid_working_card_hide_mode),
-                description = stringResource(id = R.string.settings_grid_working_card_hide_mode_summary),
-                checked = BackgroundConfig.isGridWorkingCardModeHidden,
-                onCheckedChange = {
-                    BackgroundConfig.setGridWorkingCardModeHiddenState(it)
-                    BackgroundConfig.save(context)
-                },
-            )
-            Spacer(Modifier.height(8.dp))
-
-            if (!BackgroundConfig.isGridWorkingCardModeHidden) {
+            item(visible = isListStyle && !BackgroundConfig.isListWorkingCardModeHidden) {
                 ExpressiveCard(flat = flat, onClick = { showCustomBadgeTextDialog.value = true }) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Icon(imageVector = Icons.Filled.Badge, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = stringResource(id = R.string.settings_custom_badge_text),
                                 style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
                                 text = currentBadgeTextMode,
@@ -1340,7 +737,760 @@ fun AppearanceSettingsContent(
                         }
                     }
                 }
-                Spacer(Modifier.height(8.dp))
+            }
+
+            item {
+                ToggleSettingCard(
+                    flat = flat,
+                    icon = Icons.Filled.Title,
+                    title = stringResource(id = R.string.settings_advanced_title_style),
+                    description = if (BackgroundConfig.isAdvancedTitleStyleEnabled) stringResource(id = R.string.settings_advanced_title_style_enabled) else stringResource(id = R.string.settings_advanced_title_style_summary),
+                    checked = BackgroundConfig.isAdvancedTitleStyleEnabled,
+                    onCheckedChange = {
+                        BackgroundConfig.setAdvancedTitleStyleEnabledState(it)
+                        BackgroundConfig.save(context)
+                        refreshTheme.value = true
+                    },
+                )
+            }
+
+            if (BackgroundConfig.isAdvancedTitleStyleEnabled) {
+                item {
+                    ExpressiveCard(flat = flat) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Text(text = stringResource(id = R.string.settings_title_image_day_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                            Slider(
+                                value = BackgroundConfig.titleImageDayOpacity,
+                                onValueChange = { BackgroundConfig.setTitleImageDayOpacityValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                                valueRange = 0f..1f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                ),
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    ExpressiveCard(flat = flat) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Text(text = stringResource(id = R.string.settings_title_image_night_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                            Slider(
+                                value = BackgroundConfig.titleImageNightOpacity,
+                                onValueChange = { BackgroundConfig.setTitleImageNightOpacityValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                                valueRange = 0f..1f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                ),
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    ExpressiveCard(flat = flat) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Text(text = stringResource(id = R.string.settings_title_image_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                            Slider(
+                                value = BackgroundConfig.titleImageDim,
+                                onValueChange = { BackgroundConfig.setTitleImageDimValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                                valueRange = 0f..1f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                ),
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    ExpressiveCard(flat = flat) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Text(text = stringResource(id = R.string.settings_title_image_offset_x), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                            Slider(
+                                value = BackgroundConfig.titleImageOffsetX,
+                                onValueChange = { BackgroundConfig.setTitleImageOffsetXValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                                valueRange = -1f..1f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                ),
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    ExpressiveCard(
+                        flat = flat,
+                        onClick = {
+                            if (PermissionUtils.hasExternalStoragePermission(context)) {
+                                try {
+                                    pickTitleImageLauncher.launch("image/*")
+                                } catch (e: ActivityNotFoundException) {
+                                    showToast(context, e.message ?: "")
+                                }
+                            } else {
+                                showToast(context, "请先授予存储权限才能选择标题图片")
+                            }
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(16.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = stringResource(id = R.string.settings_select_title_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                if (!BackgroundConfig.titleImageUri.isNullOrEmpty()) {
+                                    Text(text = stringResource(id = R.string.settings_title_image_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!BackgroundConfig.titleImageUri.isNullOrEmpty()) {
+                    item {
+                        val clearTitleImageDialog = rememberConfirmDialog(
+                            onConfirm = {
+                                scope.launch {
+                                    loadingDialog.show()
+                                    BackgroundManager.clearTitleImage(context)
+                                    loadingDialog.hide()
+                                    snackBarHost.showSnackbar(message = context.getString(R.string.settings_title_image_cleared))
+                                    refreshTheme.value = true
+                                }
+                            }
+                        )
+                        ExpressiveCard(
+                            flat = flat,
+                            onClick = {
+                                clearTitleImageDialog.showConfirm(
+                                    title = context.getString(R.string.settings_clear_title_image),
+                                    content = context.getString(R.string.settings_clear_title_image_confirm),
+                                    markdown = false,
+                                )
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                Spacer(Modifier.width(16.dp))
+                                Text(text = stringResource(id = R.string.settings_clear_title_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_background), flat = flat) {
+            item {
+                ToggleSettingCard(
+                    flat = flat,
+                    icon = Icons.Filled.Wallpaper,
+                    title = stringResource(id = R.string.settings_custom_background),
+                    description = if (BackgroundConfig.isCustomBackgroundEnabled) stringResource(id = R.string.settings_custom_background_enabled) else stringResource(id = R.string.settings_custom_background_summary),
+                    checked = BackgroundConfig.isCustomBackgroundEnabled,
+                    onCheckedChange = {
+                        BackgroundConfig.setCustomBackgroundEnabledState(it)
+                        BackgroundConfig.save(context)
+                        refreshTheme.value = true
+                    },
+                )
+            }
+
+            if (BackgroundConfig.isCustomBackgroundEnabled) {
+                if (!BackgroundConfig.isVideoBackgroundEnabled) {
+                    item {
+                        ToggleSettingCard(
+                            flat = flat,
+                            icon = Icons.Filled.Contrast,
+                            title = stringResource(id = R.string.settings_custom_background_dual_dim),
+                            description = stringResource(id = R.string.settings_custom_background_dual_dim_desc),
+                            checked = BackgroundConfig.isDualBackgroundDimEnabled,
+                            onCheckedChange = {
+                                BackgroundConfig.setDualBackgroundDimEnabledState(it)
+                                BackgroundConfig.save(context)
+                                refreshTheme.value = true
+                            },
+                        )
+                    }
+
+                    item {
+                        ExpressiveCard(flat = flat) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                Slider(
+                                    value = BackgroundConfig.customBackgroundOpacity,
+                                    onValueChange = { BackgroundConfig.setCustomBackgroundOpacityValue(it) },
+                                    onValueChangeFinished = { BackgroundConfig.save(context) },
+                                    valueRange = 0f..1f,
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        ExpressiveCard(flat = flat) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                Text(text = stringResource(id = R.string.settings_custom_background_blur), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                Slider(
+                                    value = BackgroundConfig.customBackgroundBlur,
+                                    onValueChange = { BackgroundConfig.setCustomBackgroundBlurValue(it) },
+                                    onValueChangeFinished = { BackgroundConfig.save(context) },
+                                    valueRange = 0f..50f,
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+
+                    if (!BackgroundConfig.isDualBackgroundDimEnabled) {
+                        item {
+                            ExpressiveCard(flat = flat) {
+                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                    Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    Slider(
+                                        value = BackgroundConfig.customBackgroundDim,
+                                        onValueChange = { BackgroundConfig.setCustomBackgroundDimValue(it) },
+                                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                                        valueRange = 0f..1f,
+                                        colors = SliderDefaults.colors(
+                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        item {
+                            ExpressiveCard(flat = flat) {
+                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                    Text(text = stringResource(id = R.string.settings_custom_background_day_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    Slider(
+                                        value = BackgroundConfig.customBackgroundDayDim,
+                                        onValueChange = { BackgroundConfig.setCustomBackgroundDayDimValue(it) },
+                                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                                        valueRange = 0f..1f,
+                                        colors = SliderDefaults.colors(
+                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+
+                        item {
+                            ExpressiveCard(flat = flat) {
+                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                    Text(text = stringResource(id = R.string.settings_custom_background_night_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    Slider(
+                                        value = BackgroundConfig.customBackgroundNightDim,
+                                        onValueChange = { BackgroundConfig.setCustomBackgroundNightDimValue(it) },
+                                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                                        valueRange = 0f..1f,
+                                        colors = SliderDefaults.colors(
+                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    ToggleSettingCard(
+                        flat = flat,
+                        icon = Icons.Filled.VideoFile,
+                        title = stringResource(id = R.string.settings_video_background),
+                        description = stringResource(id = R.string.settings_video_background_summary),
+                        checked = BackgroundConfig.isVideoBackgroundEnabled,
+                        onCheckedChange = {
+                            BackgroundConfig.setVideoBackgroundEnabledState(it)
+                            BackgroundConfig.save(context)
+                            refreshTheme.value = true
+                        },
+                    )
+                }
+
+                if (BackgroundConfig.isVideoBackgroundEnabled) {
+                    item {
+                        ExpressiveCard(
+                            flat = flat,
+                            onClick = {
+                                try {
+                                    pickVideoLauncher.launch("video/*")
+                                } catch (e: ActivityNotFoundException) {
+                                    showToast(context, e.message ?: "")
+                                }
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(imageVector = Icons.Filled.VideoFile, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                Spacer(Modifier.width(16.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(text = stringResource(id = R.string.settings_select_video), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    if (!BackgroundConfig.videoBackgroundUri.isNullOrEmpty()) {
+                                        Text(text = stringResource(id = R.string.settings_video_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (!BackgroundConfig.videoBackgroundUri.isNullOrEmpty()) {
+                        item {
+                            val clearVideoDialog = rememberConfirmDialog(
+                                onConfirm = {
+                                    scope.launch {
+                                        loadingDialog.show()
+                                        BackgroundManager.clearVideoBackground(context)
+                                        loadingDialog.hide()
+                                        snackBarHost.showSnackbar(message = context.getString(R.string.settings_background_image_cleared))
+                                        refreshTheme.value = true
+                                    }
+                                }
+                            )
+                            val clearVideoTitle = stringResource(id = R.string.settings_clear_video_background)
+                            val clearVideoConfirm = context.getString(R.string.settings_clear_video_background_confirm)
+                            ExpressiveCard(
+                                flat = flat,
+                                onClick = {
+                                    clearVideoDialog.showConfirm(
+                                        title = clearVideoTitle,
+                                        content = clearVideoConfirm,
+                                        markdown = false,
+                                    )
+                                }
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                    Spacer(Modifier.width(16.dp))
+                                    Text(text = clearVideoTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        ExpressiveCard(flat = flat) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                Text(text = stringResource(id = R.string.settings_video_volume), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                Slider(
+                                    value = BackgroundConfig.videoVolume,
+                                    onValueChange = { BackgroundConfig.setVideoVolumeValue(it) },
+                                    onValueChangeFinished = { BackgroundConfig.save(context) },
+                                    valueRange = 0f..1f,
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    item {
+                        ToggleSettingCard(
+                            flat = flat,
+                            icon = Icons.Filled.GridView,
+                            title = stringResource(id = R.string.settings_multi_background_mode),
+                            description = stringResource(id = R.string.settings_multi_background_mode_summary),
+                            checked = BackgroundConfig.isMultiBackgroundEnabled,
+                            onCheckedChange = {
+                                BackgroundConfig.setMultiBackgroundEnabledState(it)
+                                BackgroundConfig.save(context)
+                                refreshTheme.value = true
+                            },
+                        )
+                    }
+
+                    if (BackgroundConfig.isMultiBackgroundEnabled) {
+                        item {
+                            val multiItems = listOf(
+                                Triple(R.string.settings_select_home_background, "home", BackgroundConfig.homeBackgroundUri),
+                                Triple(R.string.settings_select_kernel_background, "kernel", BackgroundConfig.kernelBackgroundUri),
+                                Triple(R.string.settings_select_superuser_background, "superuser", BackgroundConfig.superuserBackgroundUri),
+                                Triple(R.string.settings_select_system_module_background, "system", BackgroundConfig.systemModuleBackgroundUri),
+                                Triple(R.string.settings_select_settings_background, "settings", BackgroundConfig.settingsBackgroundUri)
+                            )
+                            Column {
+                                multiItems.forEach { (titleRes, type, uri) ->
+                                    ExpressiveCard(
+                                        flat = flat,
+                                        onClick = {
+                                            if (PermissionUtils.hasExternalStoragePermission(context) &&
+                                                PermissionUtils.hasWriteExternalStoragePermission(context)) {
+                                                pickingType = type
+                                                try {
+                                                    pickImageLauncher.launch("image/*")
+                                                } catch (e: ActivityNotFoundException) {
+                                                    showToast(context, e.message ?: "")
+                                                }
+                                            } else {
+                                                showToast(context, "请先授予存储权限才能选择背景图片")
+                                            }
+                                        }
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                            Spacer(Modifier.width(16.dp))
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(text = stringResource(id = titleRes), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                                if (!uri.isNullOrEmpty()) {
+                                                    Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        item {
+                            ExpressiveCard(
+                                flat = flat,
+                                onClick = {
+                                    if (PermissionUtils.hasExternalStoragePermission(context) &&
+                                        PermissionUtils.hasWriteExternalStoragePermission(context)) {
+                                        pickingType = "default"
+                                        try {
+                                            pickImageLauncher.launch("image/*")
+                                        } catch (e: ActivityNotFoundException) {
+                                            showToast(context, e.message ?: "")
+                                        }
+                                    } else {
+                                        showToast(context, "请先授予存储权限才能选择背景图片")
+                                    }
+                                }
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                    Spacer(Modifier.width(16.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                        if (!BackgroundConfig.customBackgroundUri.isNullOrEmpty()) {
+                                            Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!BackgroundConfig.customBackgroundUri.isNullOrEmpty()) {
+                            item {
+                                val clearBackgroundDialog = rememberConfirmDialog(
+                                    onConfirm = {
+                                        scope.launch {
+                                            loadingDialog.show()
+                                            BackgroundManager.clearCustomBackground(context)
+                                            loadingDialog.hide()
+                                            snackBarHost.showSnackbar(message = context.getString(R.string.settings_background_image_cleared))
+                                            refreshTheme.value = true
+                                        }
+                                    }
+                                )
+                                val clearBgTitle = stringResource(id = R.string.settings_clear_background)
+                                val clearBgConfirm = context.getString(R.string.settings_clear_background_confirm)
+                                ExpressiveCard(
+                                    flat = flat,
+                                    onClick = {
+                                        clearBackgroundDialog.showConfirm(
+                                            title = clearBgTitle,
+                                            content = clearBgConfirm,
+                                            markdown = false,
+                                        )
+                                    }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                        Spacer(Modifier.width(16.dp))
+                                        Text(text = clearBgTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (showGridCardSettings) {
+                item {
+                    ToggleSettingCard(
+                        flat = flat,
+                        icon = Icons.Filled.GridView,
+                        title = stringResource(id = R.string.settings_grid_working_card_background),
+                        description = if (BackgroundConfig.isGridWorkingCardBackgroundEnabled) stringResource(id = R.string.settings_grid_working_card_background_enabled) else stringResource(id = R.string.settings_grid_working_card_background_summary),
+                        checked = BackgroundConfig.isGridWorkingCardBackgroundEnabled,
+                        onCheckedChange = {
+                            BackgroundConfig.setGridWorkingCardBackgroundEnabledState(it)
+                            BackgroundConfig.save(context)
+                        },
+                    )
+                }
+
+                if (BackgroundConfig.isGridWorkingCardBackgroundEnabled) {
+                    item {
+                        ToggleSettingCard(
+                            flat = flat,
+                            icon = Icons.Filled.Contrast,
+                            title = stringResource(id = R.string.settings_grid_working_card_dual_opacity),
+                            description = stringResource(id = R.string.settings_grid_working_card_dual_opacity_desc),
+                            checked = BackgroundConfig.isGridDualOpacityEnabled,
+                            onCheckedChange = {
+                                BackgroundConfig.setGridDualOpacityEnabledState(it)
+                                BackgroundConfig.save(context)
+                            },
+                        )
+                    }
+
+                    if (!BackgroundConfig.isGridDualOpacityEnabled) {
+                        item {
+                            ExpressiveCard(flat = flat) {
+                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                    Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    Slider(
+                                        value = BackgroundConfig.gridWorkingCardBackgroundOpacity,
+                                        onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundOpacityValue(it) },
+                                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                                        valueRange = 0f..1f,
+                                        colors = SliderDefaults.colors(
+                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        item {
+                            ExpressiveCard(flat = flat) {
+                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                    Text(text = stringResource(id = R.string.settings_grid_working_card_day_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    Slider(
+                                        value = BackgroundConfig.gridWorkingCardBackgroundDayOpacity,
+                                        onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDayOpacityValue(it) },
+                                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                                        valueRange = 0f..1f,
+                                        colors = SliderDefaults.colors(
+                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+
+                        item {
+                            ExpressiveCard(flat = flat) {
+                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                    Text(text = stringResource(id = R.string.settings_grid_working_card_night_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    Slider(
+                                        value = BackgroundConfig.gridWorkingCardBackgroundNightOpacity,
+                                        onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundNightOpacityValue(it) },
+                                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                                        valueRange = 0f..1f,
+                                        colors = SliderDefaults.colors(
+                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        ExpressiveCard(flat = flat) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                Slider(
+                                    value = BackgroundConfig.gridWorkingCardBackgroundDim,
+                                    onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDimValue(it) },
+                                    onValueChangeFinished = { BackgroundConfig.save(context) },
+                                    valueRange = 0f..1f,
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        ExpressiveCard(
+                            flat = flat,
+                            onClick = {
+                                if (PermissionUtils.hasExternalStoragePermission(context)) {
+                                    try {
+                                        pickGridImageLauncher.launch("image/*")
+                                    } catch (e: ActivityNotFoundException) {
+                                        showToast(context, e.message ?: "")
+                                    }
+                                } else {
+                                    showToast(context, "请先授予存储权限才能选择背景图片")
+                                }
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                Spacer(Modifier.width(16.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    if (!BackgroundConfig.gridWorkingCardBackgroundUri.isNullOrEmpty()) {
+                                        Text(text = stringResource(id = R.string.settings_grid_working_card_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        val clearGridBackgroundDialog = rememberConfirmDialog(
+                            onConfirm = {
+                                scope.launch {
+                                    loadingDialog.show()
+                                    BackgroundManager.clearGridWorkingCardBackground(context)
+                                    loadingDialog.hide()
+                                    snackBarHost.showSnackbar(message = context.getString(R.string.settings_grid_working_card_background_cleared))
+                                }
+                            }
+                        )
+                        ExpressiveCard(
+                            flat = flat,
+                            onClick = {
+                                clearGridBackgroundDialog.showConfirm(
+                                    title = context.getString(R.string.settings_clear_grid_working_card_background),
+                                    content = context.getString(R.string.settings_clear_grid_working_card_background_confirm),
+                                    markdown = false,
+                                )
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                Spacer(Modifier.width(16.dp))
+                                Text(text = stringResource(id = R.string.settings_clear_grid_working_card_background), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    ToggleSettingCard(
+                        flat = flat,
+                        icon = Icons.Filled.CheckCircle,
+                        title = stringResource(id = R.string.settings_grid_working_card_hide_check),
+                        description = stringResource(id = R.string.settings_grid_working_card_hide_check_summary),
+                        checked = BackgroundConfig.isGridWorkingCardCheckHidden,
+                        onCheckedChange = {
+                            BackgroundConfig.setGridWorkingCardCheckHiddenState(it)
+                            BackgroundConfig.save(context)
+                        },
+                    )
+                }
+
+                item {
+                    ToggleSettingCard(
+                        flat = flat,
+                        icon = Icons.Filled.TextFields,
+                        title = stringResource(id = R.string.settings_grid_working_card_hide_text),
+                        description = stringResource(id = R.string.settings_grid_working_card_hide_text_summary),
+                        checked = BackgroundConfig.isGridWorkingCardTextHidden,
+                        onCheckedChange = {
+                            BackgroundConfig.setGridWorkingCardTextHiddenState(it)
+                            BackgroundConfig.save(context)
+                        },
+                    )
+                }
+
+                item {
+                    ToggleSettingCard(
+                        flat = flat,
+                        icon = Icons.Filled.Label,
+                        title = stringResource(id = R.string.settings_grid_working_card_hide_mode),
+                        description = stringResource(id = R.string.settings_grid_working_card_hide_mode_summary),
+                        checked = BackgroundConfig.isGridWorkingCardModeHidden,
+                        onCheckedChange = {
+                            BackgroundConfig.setGridWorkingCardModeHiddenState(it)
+                            BackgroundConfig.save(context)
+                        },
+                    )
+                }
+
+                item(visible = !BackgroundConfig.isGridWorkingCardModeHidden) {
+                    ExpressiveCard(flat = flat, onClick = { showCustomBadgeTextDialog.value = true }) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(imageVector = Icons.Filled.Badge, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(16.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(id = R.string.settings_custom_badge_text),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Text(
+                                    text = currentBadgeTextMode,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -1385,207 +1535,303 @@ fun AppearanceSettingsContent(
             )
         }
 
-        Spacer(Modifier.height(16.dp))
-        SectionHeader(text = stringResource(R.string.settings_appearance_banner))
-        Spacer(Modifier.height(8.dp))
-
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.apm_enable_module_banner),
-            description = stringResource(id = R.string.apm_enable_module_banner_summary),
-            checked = BackgroundConfig.isBannerEnabled,
-            onCheckedChange = {
-                BackgroundConfig.setBannerEnabledState(it)
-                BackgroundConfig.save(context)
-            },
-        )
-        Spacer(Modifier.height(8.dp))
-
-        if (BackgroundConfig.isBannerEnabled) {
-            ToggleSettingCard(
-                flat = flat,
-                title = stringResource(id = R.string.apm_enable_folk_banner),
-                description = stringResource(id = R.string.apm_enable_folk_banner_summary),
-                checked = BackgroundConfig.isFolkBannerEnabled,
-                onCheckedChange = {
-                    BackgroundConfig.setFolkBannerEnabledState(it)
-                    BackgroundConfig.save(context)
-                },
-            )
-            Spacer(Modifier.height(8.dp))
-
-            if (BackgroundConfig.isFolkBannerEnabled) {
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_banner), flat = flat) {
+            item {
                 ToggleSettingCard(
                     flat = flat,
-                    title = stringResource(id = R.string.apm_banner_api_mode),
-                    description = stringResource(id = R.string.apm_banner_api_mode_summary),
-                    checked = BackgroundConfig.isBannerApiModeEnabled,
+                    icon = Icons.Filled.Campaign,
+                    title = stringResource(id = R.string.apm_enable_module_banner),
+                    description = stringResource(id = R.string.apm_enable_module_banner_summary),
+                    checked = BackgroundConfig.isBannerEnabled,
                     onCheckedChange = {
-                        BackgroundConfig.setBannerApiModeEnabledState(it)
+                        BackgroundConfig.setBannerEnabledState(it)
                         BackgroundConfig.save(context)
                     },
                 )
-                Spacer(Modifier.height(8.dp))
-
-                if (BackgroundConfig.isBannerApiModeEnabled) {
-                    val showBannerApiConfigDialog = remember { mutableStateOf(false) }
-                    val apiSourceSummary = if (BackgroundConfig.bannerApiSource.isNotBlank()) {
-                        if (BackgroundConfig.bannerApiSource.startsWith("/")) {
-                            context.getString(R.string.apm_banner_local_dir_configured)
-                        } else {
-                            context.getString(R.string.apm_banner_api_url_configured)
-                        }
-                    } else {
-                        context.getString(R.string.apm_banner_api_source_not_configured)
-                    }
-
-                    ExpressiveCard(flat = flat, onClick = { showBannerApiConfigDialog.value = true }) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(id = R.string.apm_banner_api_source),
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                                Text(
-                                    text = apiSourceSummary,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.outline,
-                                )
-                            }
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-
-                    if (showBannerApiConfigDialog.value) {
-                        BannerApiConfigDialog(
-                            showDialog = showBannerApiConfigDialog,
-                            currentSource = BackgroundConfig.bannerApiSource,
-                            onConfirm = { newSource ->
-                                BackgroundConfig.setBannerApiSourceValue(newSource)
-                                BackgroundConfig.save(context)
-                            },
-                            onClearCache = {
-                                scope.launch {
-                                    loadingDialog.show()
-                                    me.bmax.apatch.ui.screen.BannerApiService.clearAllCache(context)
-                                    loadingDialog.hide()
-                                    Toast.makeText(context, context.getString(R.string.apm_banner_cache_cleared), Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        )
-                    }
-
-                    ExpressiveCard(flat = flat, onClick = { onNavigateToApiMarketplace() }) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.apm_api_marketplace_title),
-                                style = MaterialTheme.typography.titleMedium,
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                }
             }
 
-            ToggleSettingCard(
-                flat = flat,
-                title = stringResource(id = R.string.settings_banner_custom_opacity),
-                description = stringResource(id = R.string.settings_banner_custom_opacity_summary),
-                checked = BackgroundConfig.isBannerCustomOpacityEnabled,
-                onCheckedChange = {
-                    BackgroundConfig.setBannerCustomOpacityEnabledState(it)
-                    BackgroundConfig.save(context)
-                },
-            )
-            Spacer(Modifier.height(8.dp))
+            if (BackgroundConfig.isBannerEnabled) {
+                item {
+                    ToggleSettingCard(
+                        flat = flat,
+                        icon = Icons.Filled.Image,
+                        title = stringResource(id = R.string.apm_enable_folk_banner),
+                        description = stringResource(id = R.string.apm_enable_folk_banner_summary),
+                        checked = BackgroundConfig.isFolkBannerEnabled,
+                        onCheckedChange = {
+                            BackgroundConfig.setFolkBannerEnabledState(it)
+                            BackgroundConfig.save(context)
+                        },
+                    )
+                }
 
-            if (BackgroundConfig.isBannerCustomOpacityEnabled) {
-                ExpressiveCard(flat = flat) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Text(text = stringResource(id = R.string.settings_banner_opacity), style = MaterialTheme.typography.titleMedium)
-                        Slider(
-                            value = BackgroundConfig.bannerCustomOpacity,
-                            onValueChange = { BackgroundConfig.setBannerCustomOpacityValue(it) },
-                            onValueChangeFinished = { BackgroundConfig.save(context) },
-                            valueRange = 0f..1f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                            ),
+                if (BackgroundConfig.isFolkBannerEnabled) {
+                    item {
+                        ToggleSettingCard(
+                            flat = flat,
+                            icon = Icons.Filled.Api,
+                            title = stringResource(id = R.string.apm_banner_api_mode),
+                            description = stringResource(id = R.string.apm_banner_api_mode_summary),
+                            checked = BackgroundConfig.isBannerApiModeEnabled,
+                            onCheckedChange = {
+                                BackgroundConfig.setBannerApiModeEnabledState(it)
+                                BackgroundConfig.save(context)
+                            },
                         )
                     }
+
+                    if (BackgroundConfig.isBannerApiModeEnabled) {
+                        item {
+                            val showBannerApiConfigDialog = remember { mutableStateOf(false) }
+                            val apiSourceSummary = if (BackgroundConfig.bannerApiSource.isNotBlank()) {
+                                if (BackgroundConfig.bannerApiSource.startsWith("/")) {
+                                    context.getString(R.string.apm_banner_local_dir_configured)
+                                } else {
+                                    context.getString(R.string.apm_banner_api_url_configured)
+                                }
+                            } else {
+                                context.getString(R.string.apm_banner_api_source_not_configured)
+                            }
+
+                            Column {
+                                ExpressiveCard(flat = flat, onClick = { showBannerApiConfigDialog.value = true }) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Icon(imageVector = Icons.Filled.Api, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                        Spacer(Modifier.width(16.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = stringResource(id = R.string.apm_banner_api_source),
+                                                style = MaterialTheme.typography.titleMedium,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                            )
+                                            Text(
+                                                text = apiSourceSummary,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.outline,
+                                            )
+                                        }
+                                    }
+                                }
+
+                                if (showBannerApiConfigDialog.value) {
+                                    BannerApiConfigDialog(
+                                        showDialog = showBannerApiConfigDialog,
+                                        currentSource = BackgroundConfig.bannerApiSource,
+                                        onConfirm = { newSource ->
+                                            BackgroundConfig.setBannerApiSourceValue(newSource)
+                                            BackgroundConfig.save(context)
+                                        },
+                                        onClearCache = {
+                                            scope.launch {
+                                                loadingDialog.show()
+                                                me.bmax.apatch.ui.screen.BannerApiService.clearAllCache(context)
+                                                loadingDialog.hide()
+                                                showToast(context, context.getString(R.string.apm_banner_cache_cleared))
+                                            }
+                                        }
+                                    )
+                                }
+
+                                ExpressiveCard(flat = flat, onClick = { onNavigateToApiMarketplace() }) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Icon(imageVector = Icons.Filled.Store, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                        Spacer(Modifier.width(16.dp))
+                                        Text(
+                                            text = stringResource(id = R.string.apm_api_marketplace_title),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                Spacer(Modifier.height(8.dp))
+
+                item {
+                    ToggleSettingCard(
+                        flat = flat,
+                        icon = Icons.Filled.Opacity,
+                        title = stringResource(id = R.string.settings_banner_custom_opacity),
+                        description = stringResource(id = R.string.settings_banner_custom_opacity_summary),
+                        checked = BackgroundConfig.isBannerCustomOpacityEnabled,
+                        onCheckedChange = {
+                            BackgroundConfig.setBannerCustomOpacityEnabledState(it)
+                            BackgroundConfig.save(context)
+                        },
+                    )
+                }
+
+                if (BackgroundConfig.isBannerCustomOpacityEnabled) {
+                    item {
+                        ExpressiveCard(flat = flat) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                                Text(text = stringResource(id = R.string.settings_banner_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                Slider(
+                                    value = BackgroundConfig.bannerCustomOpacity,
+                                    onValueChange = { BackgroundConfig.setBannerCustomOpacityValue(it) },
+                                    onValueChangeFinished = { BackgroundConfig.save(context) },
+                                    valueRange = 0f..1f,
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        Spacer(Modifier.height(16.dp))
-        SectionHeader(text = stringResource(R.string.settings_appearance_font))
-        Spacer(Modifier.height(8.dp))
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_font), flat = flat) {
+            item {
+                ToggleSettingCard(
+                    flat = flat,
+                    icon = Icons.Filled.FormatSize,
+                    title = stringResource(id = R.string.settings_custom_font),
+                    description = if (customFontEnabled) {
+                        if (FontConfig.customFontFilename != null) stringResource(id = R.string.settings_font_selected) else stringResource(id = R.string.settings_custom_font_enabled)
+                    } else {
+                        stringResource(id = R.string.settings_custom_font_summary)
+                    },
+                    checked = customFontEnabled,
+                    onCheckedChange = {
+                        customFontEnabled = it
+                        FontConfig.setCustomFontEnabledState(it)
+                        FontConfig.save(context)
+                        refreshTheme.value = true
+                    },
+                )
+            }
 
-        ToggleSettingCard(
-            flat = flat,
-            title = stringResource(id = R.string.settings_custom_font),
-            description = if (customFontEnabled) {
-                if (FontConfig.customFontFilename != null) stringResource(id = R.string.settings_font_selected) else stringResource(id = R.string.settings_custom_font_enabled)
-            } else {
-                stringResource(id = R.string.settings_custom_font_summary)
-            },
-            checked = customFontEnabled,
-            onCheckedChange = {
-                customFontEnabled = it
-                FontConfig.setCustomFontEnabledState(it)
-                FontConfig.save(context)
-                refreshTheme.value = true
-            },
-        )
-        Spacer(Modifier.height(8.dp))
-
-        if (FontConfig.isCustomFontEnabled) {
-            ExpressiveCard(
-                flat = flat,
-                onClick = {
-                    try {
-                        pickFontLauncher.launch("*/*")
-                    } catch (e: ActivityNotFoundException) {
-                        Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+            if (FontConfig.isCustomFontEnabled) {
+                item {
+                    ExpressiveCard(
+                        flat = flat,
+                        onClick = {
+                            try {
+                                pickFontLauncher.launch("*/*")
+                            } catch (e: ActivityNotFoundException) {
+                                showToast(context, e.message ?: "")
+                            }
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(imageVector = Icons.Filled.FontDownload, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(16.dp))
+                            Text(text = stringResource(id = R.string.settings_select_font_file), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        }
                     }
                 }
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(text = stringResource(id = R.string.settings_select_font_file), style = MaterialTheme.typography.titleMedium)
+
+                if (FontConfig.customFontFilename != null) {
+                    item {
+                        val clearFontDialog = rememberConfirmDialog(
+                            onConfirm = {
+                                FontConfig.clearFont(context)
+                                refreshTheme.value = true
+                                scope.launch {
+                                    snackBarHost.showSnackbar(message = context.getString(R.string.settings_font_cleared))
+                                }
+                            }
+                        )
+                        val clearFontTitle = stringResource(id = R.string.settings_clear_font)
+                        val clearFontConfirm = context.getString(R.string.settings_clear_font_confirm)
+                        ExpressiveCard(
+                            flat = flat,
+                            onClick = {
+                                clearFontDialog.showConfirm(
+                                    title = clearFontTitle,
+                                    content = clearFontConfirm,
+                                )
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                                Spacer(Modifier.width(16.dp))
+                                Text(text = clearFontTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
                 }
             }
-            Spacer(Modifier.height(8.dp))
+        }
 
-            if (FontConfig.customFontFilename != null) {
-                val clearFontDialog = rememberConfirmDialog(
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_theme), flat = flat) {
+            item {
+                ExpressiveCard(flat = flat, onClick = { onNavigateToThemeStore() }) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(imageVector = Icons.Filled.Store, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Text(text = stringResource(id = R.string.theme_store_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                    }
+                }
+            }
+
+            item {
+                ExpressiveCard(flat = flat, onClick = { showExportDialog.value = true }) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(imageVector = Icons.Filled.FileDownload, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Text(text = stringResource(id = R.string.settings_save_theme), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                    }
+                }
+            }
+
+            item {
+                ExpressiveCard(flat = flat, onClick = { showFilePicker.value = true }) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(imageVector = Icons.Filled.FileUpload, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Text(text = stringResource(id = R.string.settings_import_theme), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                    }
+                }
+            }
+
+            item {
+                val resetThemeDialog = rememberConfirmDialog(
                     onConfirm = {
-                        FontConfig.clearFont(context)
-                        refreshTheme.value = true
                         scope.launch {
-                            snackBarHost.showSnackbar(message = context.getString(R.string.settings_font_cleared))
+                            loadingDialog.show()
+                            val success = ThemeManager.resetTheme(context)
+                            loadingDialog.hide()
+                            snackBarHost.showSnackbar(
+                                message = if (success) context.getString(R.string.settings_theme_reset) else context.getString(R.string.settings_theme_reset_failed)
+                            )
                         }
                     }
                 )
-                val clearFontTitle = stringResource(id = R.string.settings_clear_font)
-                val clearFontConfirm = context.getString(R.string.settings_clear_font_confirm)
+                val resetThemeTitle = stringResource(id = R.string.settings_reset_theme)
+                val resetThemeConfirm = context.getString(R.string.settings_reset_theme_confirm)
                 ExpressiveCard(
                     flat = flat,
                     onClick = {
-                        clearFontDialog.showConfirm(
-                            title = clearFontTitle,
-                            content = clearFontConfirm,
+                        resetThemeDialog.showConfirm(
+                            title = resetThemeTitle,
+                            content = resetThemeConfirm,
                         )
                     }
                 ) {
@@ -1593,75 +1839,11 @@ fun AppearanceSettingsContent(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(text = clearFontTitle, style = MaterialTheme.typography.titleMedium)
+                        Icon(imageVector = Icons.Filled.RestartAlt, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Text(text = resetThemeTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
-                Spacer(Modifier.height(8.dp))
-            }
-        }
-
-        Spacer(Modifier.height(16.dp))
-        SectionHeader(text = stringResource(R.string.settings_appearance_theme))
-        Spacer(Modifier.height(8.dp))
-
-        ExpressiveCard(flat = flat, onClick = { onNavigateToThemeStore() }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(text = stringResource(id = R.string.theme_store_title), style = MaterialTheme.typography.titleMedium)
-            }
-        }
-        Spacer(Modifier.height(8.dp))
-
-        ExpressiveCard(flat = flat, onClick = { showExportDialog.value = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(text = stringResource(id = R.string.settings_save_theme), style = MaterialTheme.typography.titleMedium)
-            }
-        }
-        Spacer(Modifier.height(8.dp))
-
-        ExpressiveCard(flat = flat, onClick = { showFilePicker.value = true }) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(text = stringResource(id = R.string.settings_import_theme), style = MaterialTheme.typography.titleMedium)
-            }
-        }
-        Spacer(Modifier.height(8.dp))
-
-        val resetThemeDialog = rememberConfirmDialog(
-            onConfirm = {
-                scope.launch {
-                    loadingDialog.show()
-                    val success = ThemeManager.resetTheme(context)
-                    loadingDialog.hide()
-                    snackBarHost.showSnackbar(
-                        message = if (success) context.getString(R.string.settings_theme_reset) else context.getString(R.string.settings_theme_reset_failed)
-                    )
-                }
-            }
-        )
-        val resetThemeTitle = stringResource(id = R.string.settings_reset_theme)
-        val resetThemeConfirm = context.getString(R.string.settings_reset_theme_confirm)
-        ExpressiveCard(
-            flat = flat,
-            onClick = {
-                resetThemeDialog.showConfirm(
-                    title = resetThemeTitle,
-                    content = resetThemeConfirm,
-                )
-            }
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(text = resetThemeTitle, style = MaterialTheme.typography.titleMedium)
             }
         }
         }
@@ -1887,7 +2069,7 @@ fun HomeLayoutChooseDialog(showDialog: MutableState<Boolean>, onLayoutSelected: 
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
                 
-                val currentStyle = prefs.getString("home_layout_style", "stats")
+                val currentStyle = prefs.getString("home_layout_style", "circle")
                 
                 Surface(
                     shape = RoundedCornerShape(12.dp),
@@ -2515,7 +2697,7 @@ fun BannerApiConfigDialog(
                         onClick = {
                             onConfirm(sourceText)
                             showDialog.value = false
-                            Toast.makeText(context, context.getString(R.string.apm_banner_api_source_saved), Toast.LENGTH_SHORT).show()
+                            showToast(context, context.getString(R.string.apm_banner_api_source_saved))
                         },
                         enabled = sourceText.isNotBlank(),
                         modifier = Modifier.weight(1f)

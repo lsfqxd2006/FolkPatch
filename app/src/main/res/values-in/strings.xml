@@ -310,6 +310,8 @@
     <string name="settings_fold_system_module_summary">Klik kartu modul untuk memperluas/menyembunyikan tindakan</string>
     <string name="settings_simple_list_bottom_bar">Bar Bawah Daftar Sederhana</string>
     <string name="settings_simple_list_bottom_bar_summary">Gunakan gaya tombol hanya ikon untuk tindakan modul, terinspirasi dari APatch</string>
+    <string name="settings_spliced_card_group">Spliced Card Group</string>
+    <string name="settings_spliced_card_group_summary">Use M3E continuous card group style for module list</string>
     <string name="settings_show_more_module_info">Tampilkan detail modul</string>
     <string name="settings_show_more_module_info_summary">Tampilkan ID dan ukuran modul dalam daftar modul</string>
     <string name="apm_install_confirm_title">Instal modul</string>
@@ -466,6 +468,9 @@ Berikut adalah beberapa kemungkinan penyebab kegagalan autentikasi—silakan cek
     <string name="about_telegram_channel">Saluran Telegram</string>
 
     <string name="settings_app_dpi">DPI Aplikasi</string>
+    <string name="dpi_apply_settings">Terapkan</string>
+    <string name="dpi_confirm_title">Konfirmasi perubahan DPI</string>
+    <string name="dpi_confirm_message">Ubah DPI aplikasi dari %1$s ke %2$s?</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Aktifkan sistem pemasangan modul bawaan</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
@@ -728,6 +733,8 @@ Pastikan aplikasi ditutup sepenuhnya dan dimulai ulang untuk menjalankan perinta
     <string name="settings_appearance_night_mode_summary">Tema gelap dan konfigurasi warna</string>
     <string name="settings_amoled_theme">Tema Hitam AMOLED</string>
     <string name="settings_amoled_theme_desc">Latar belakang hitam penuh untuk mode gelap</string>
+    <string name="settings_switch_icon">Indikator Tombol</string>
+    <string name="settings_switch_icon_desc">Tampilkan ikon status pada tombol saklar</string>
     <string name="settings_category_behavior">Perilaku</string>
     <string name="settings_category_function">Fungsi</string>
     <string name="settings_use_legacy_su_page">Otorisasi superuser satu halaman</string>
@@ -1001,4 +1008,28 @@ Pastikan aplikasi ditutup sepenuhnya dan dimulai ulang untuk menjalankan perinta
     <string name="settings_kernel_spoof_version">Versi Kernel</string>
     <string name="settings_kernel_spoof_build_time">Waktu Pembuatan Kernel</string>
     <string name="settings_kernel_spoof_restore">Pulihkan</string>
+
+    <string name="kernel_spoof_enabled">Pemalsuan kernel diaktifkan</string>
+    <string name="kernel_spoof_disabled_restored">Pemalsuan kernel dinonaktifkan dan dipulihkan</string>
+    <string name="kernel_spoof_failed">Pemalsuan kernel gagal: %d</string>
+    <string name="kernel_spoof_applied">Pemalsuan kernel diterapkan</string>
+
+    <string name="settings_path_hide">Sembunyikan Jalur</string>
+    <string name="settings_path_hide_summary">Sembunyikan file dan direktori dari aplikasi di level kernel</string>
+    <string name="path_hide_paths_label">Jalur Tersembunyi (satu per baris)</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">Masukkan satu jalur per baris. Jalur yang cocok akan mengembalikan ENOENT.</string>
+    <string name="path_hide_save">Simpan</string>
+    <string name="path_hide_enabled">Sembunyikan jalur diaktifkan</string>
+    <string name="path_hide_disabled">Sembunyikan jalur dinonaktifkan</string>
+    <string name="path_hide_applied">Konfigurasi sembunyikan jalur diterapkan</string>
+    <string name="path_hide_failed">Operasi sembunyikan jalur gagal: %d</string>
+    <string name="path_hide_uid_mode">Mode Eksekusi UID</string>
+    <string name="path_hide_uid_mode_summary">Sembunyikan jalur hanya untuk UID aplikasi tertentu</string>
+    <string name="path_hide_uids_label">UID target (satu per baris)</string>
+    <string name="path_hide_uids_helper">Masukkan UID aplikasi. Hanya aplikasi ini yang jalurnya akan disembunyikan.</string>
+    <string name="path_hide_uid_save">Simpan UID</string>
+    <string name="path_hide_uid_mode_enabled">Mode eksekusi UID diaktifkan</string>
+    <string name="path_hide_uid_mode_disabled">Mode eksekusi UID dinonaktifkan</string>
+    <string name="path_hide_uid_applied">Daftar putih UID diterapkan</string>
 </resources>

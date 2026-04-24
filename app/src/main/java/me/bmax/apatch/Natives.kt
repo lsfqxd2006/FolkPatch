@@ -167,6 +167,72 @@ object Natives {
     }
 
     @FastNative
+    private external fun nativePathHideAdd(superKey: String, path: String): Long
+    fun pathHideAdd(path: String): Long {
+        return nativePathHideAdd(APApplication.superKey, path)
+    }
+
+    @FastNative
+    private external fun nativePathHideRemove(superKey: String, path: String): Long
+    fun pathHideRemove(path: String): Long {
+        return nativePathHideRemove(APApplication.superKey, path)
+    }
+
+    @FastNative
+    private external fun nativePathHideList(superKey: String): String
+    fun pathHideList(): String {
+        return nativePathHideList(APApplication.superKey)
+    }
+
+    @FastNative
+    private external fun nativePathHideClear(superKey: String): Long
+    fun pathHideClear(): Long {
+        return nativePathHideClear(APApplication.superKey)
+    }
+
+    @FastNative
+    private external fun nativePathHideEnable(superKey: String, enable: Int): Long
+    fun pathHideEnable(enable: Boolean): Long {
+        return nativePathHideEnable(APApplication.superKey, if (enable) 1 else 0)
+    }
+
+    @FastNative
+    private external fun nativePathHideStatus(superKey: String): Long
+    fun pathHideStatus(): Long {
+        return nativePathHideStatus(APApplication.superKey)
+    }
+
+    @FastNative
+    private external fun nativePathHideUidAdd(superKey: String, uid: Int): Long
+    fun pathHideUidAdd(uid: Int): Long {
+        return nativePathHideUidAdd(APApplication.superKey, uid)
+    }
+
+    @FastNative
+    private external fun nativePathHideUidRemove(superKey: String, uid: Int): Long
+    fun pathHideUidRemove(uid: Int): Long {
+        return nativePathHideUidRemove(APApplication.superKey, uid)
+    }
+
+    @FastNative
+    private external fun nativePathHideUidList(superKey: String): String
+    fun pathHideUidList(): String {
+        return nativePathHideUidList(APApplication.superKey)
+    }
+
+    @FastNative
+    private external fun nativePathHideUidClear(superKey: String): Long
+    fun pathHideUidClear(): Long {
+        return nativePathHideUidClear(APApplication.superKey)
+    }
+
+    @FastNative
+    private external fun nativePathHideUidMode(superKey: String, enable: Int): Long
+    fun pathHideUidMode(enable: Boolean): Long {
+        return nativePathHideUidMode(APApplication.superKey, if (enable) 1 else 0)
+    }
+
+    @FastNative
     private external fun nativeSuAuditList(superKey: String): String
     fun suAuditList(): String {
         return nativeSuAuditList(APApplication.superKey)

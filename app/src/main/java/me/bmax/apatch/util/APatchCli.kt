@@ -467,6 +467,52 @@ fun removeUtsSpoofConfig() {
     shell.newJob().add("rm -f ${APApplication.UTS_SPOOF_CONFIG_FILE}").exec()
 }
 
+fun isPathHideEnabled(): Boolean {
+    val flagFile = SuFile(APApplication.PATHHIDE_ENABLE_FILE)
+    flagFile.shell = getRootShell()
+    return flagFile.exists()
+}
+
+fun setPathHideEnabled(enable: Boolean) {
+    val shell = getRootShell()
+    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
+    shell.newJob().add("${if (enable) "touch" else "rm -f"} ${APApplication.PATHHIDE_ENABLE_FILE}")
+        .exec()
+}
+
+fun writePathHidePaths(paths: String) {
+    val shell = getRootShell()
+    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
+    val escapedPaths = paths.replace("'", "'\\''")
+    shell.newJob().add("echo -n '$escapedPaths' > ${APApplication.PATHHIDE_PATHS_FILE}")
+        .exec()
+}
+
+fun readPathHidePaths(): String {
+    val shell = getRootShell()
+    return ShellUtils.fastCmd(shell, "cat ${APApplication.PATHHIDE_PATHS_FILE} 2>/dev/null") ?: ""
+}
+
+fun writePathHideUids(uids: String) {
+    val shell = getRootShell()
+    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
+    val escapedUids = uids.replace("'", "'\\''")
+    shell.newJob().add("echo -n '$escapedUids' > ${APApplication.PATHHIDE_UIDS_FILE}")
+        .exec()
+}
+
+fun readPathHideUids(): String {
+    val shell = getRootShell()
+    return ShellUtils.fastCmd(shell, "cat ${APApplication.PATHHIDE_UIDS_FILE} 2>/dev/null") ?: ""
+}
+
+fun setPathHideUidMode(enable: Boolean) {
+    val shell = getRootShell()
+    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
+    shell.newJob().add("${if (enable) "touch" else "rm -f"} ${APApplication.PATHHIDE_UID_MODE_FILE}")
+        .exec()
+}
+
 fun executeHideBinary(): Boolean {
     val shell = getRootShell()
     val context = apApp.applicationContext

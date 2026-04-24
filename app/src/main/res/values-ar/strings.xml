@@ -317,6 +317,8 @@
     <string name="settings_fold_system_module_summary">انقر على بطاقة الوحدة للتوسيع/الطي الإجراءات</string>
         <string name="settings_simple_list_bottom_bar">شريط سفلي بسيط</string>
         <string name="settings_simple_list_bottom_bar_summary">استخدم أزرار الأيقونات فقط لإجراءات الوحدة، مستوحى من APatch</string>
+    <string name="settings_spliced_card_group">Spliced Card Group</string>
+    <string name="settings_spliced_card_group_summary">Use M3E continuous card group style for module list</string>
     <string name="apm_install_confirm_title">تثبيت الوحدة</string>
     <string name="apm_install_confirm_content">هل أنت متأكد من أنك تريد تثبيت %s؟</string>
     <string name="apm_disable_all_title">تعطيل كل الوحدات</string>
@@ -474,6 +476,9 @@
     <string name="about_telegram_channel">قناة تيليجرام</string>
 
     <string name="settings_app_dpi">DPI التطبيق</string>
+    <string name="dpi_apply_settings">تطبيق</string>
+    <string name="dpi_confirm_title">تأكيد تغيير DPI</string>
+    <string name="dpi_confirm_message">تغيير DPI التطبيق من %1$s إلى %2$s؟</string>
     <string name="settings_alt_icon">أيقونة بديلة</string>
     <string name="alt_icon_summary">استخدم أيقونة المشغل البديلة</string>
     <string name="settings_magic_mount">Folk Mount API</string>
@@ -755,6 +760,8 @@
     <string name="settings_appearance_night_mode_summary">السمة الداكنة وتكوين الألوان</string>
     <string name="settings_amoled_theme">سمة AMOLED السوداء</string>
     <string name="settings_amoled_theme_desc">خلفية سوداء بالكامل للوضع الداكن</string>
+    <string name="settings_switch_icon">تمكين مؤشر الزر</string>
+    <string name="settings_switch_icon_desc">إظهار أيقونات الحالة على أزرار التبديل</string>
     <string name="settings_category_behavior">السلوك</string>
     <string name="settings_category_function">الوظيفة</string>
     <string name="settings_use_legacy_su_page">تفويض المستخدم المتميز لصفحة واحدة</string>
@@ -1007,4 +1014,28 @@
     <string name="settings_kernel_spoof_version">إصدار النواة</string>
     <string name="settings_kernel_spoof_build_time">وقت بناء النواة</string>
     <string name="settings_kernel_spoof_restore">استعادة</string>
+
+    <string name="kernel_spoof_enabled">تم تفعيل تمويه النواة</string>
+    <string name="kernel_spoof_disabled_restored">تم تعطيل تمويه النواة واستعادتها</string>
+    <string name="kernel_spoof_failed">فشل تمويه النواة: %d</string>
+    <string name="kernel_spoof_applied">تم تطبيق تمويه النواة</string>
+
+    <string name="settings_path_hide">إخفاء المسار</string>
+    <string name="settings_path_hide_summary">إخفاء الملفات والأدلة من التطبيقات على مستوى النواة</string>
+    <string name="path_hide_paths_label">المسارات المخفية (واحد في كل سطر)</string>
+    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+    <string name="path_hide_paths_helper">أدخل مساراً واحداً في كل سطر. المسارات المتطابقة ستعيد ENOENT.</string>
+    <string name="path_hide_save">حفظ</string>
+    <string name="path_hide_enabled">تم تفعيل إخفاء المسار</string>
+    <string name="path_hide_disabled">تم تعطيل إخفاء المسار</string>
+    <string name="path_hide_applied">تم تطبيق إعدادات إخفاء المسار</string>
+    <string name="path_hide_failed">فشلت عملية إخفاء المسار: %d</string>
+    <string name="path_hide_uid_mode">وضع تنفيذ UID</string>
+    <string name="path_hide_uid_mode_summary">إخفاء المسارات لتطبيقات محددة فقط بواسطة UID</string>
+    <string name="path_hide_uids_label">معرّفات UID المستهدفة (واحد في كل سطر)</string>
+    <string name="path_hide_uids_helper">أدخل معرّفات UID للتطبيقات. فقط هذه التطبيقات سيتم إخفاء مساراتها.</string>
+    <string name="path_hide_uid_save">حفظ معرّفات UID</string>
+    <string name="path_hide_uid_mode_enabled">تم تفعيل وضع تنفيذ UID</string>
+    <string name="path_hide_uid_mode_disabled">تم تعطيل وضع تنفيذ UID</string>
+    <string name="path_hide_uid_applied">تم تطبيق القائمة البيضاء لـ UID</string>
 </resources>

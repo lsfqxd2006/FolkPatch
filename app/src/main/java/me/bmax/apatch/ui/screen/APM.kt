@@ -10,10 +10,11 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import android.util.Patterns
-import android.widget.Toast
+import me.bmax.apatch.util.ui.showToast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.Crossfade
@@ -40,10 +41,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.ExperimentalMaterialApi
@@ -92,7 +89,10 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
+import me.bmax.apatch.ui.component.ExpressiveSwitch
+import me.bmax.apatch.ui.component.LocalInsideSplicedGroup
+import me.bmax.apatch.ui.component.TwoColumnGrid
+import me.bmax.apatch.ui.component.splicedLazyColumnGroup
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
@@ -201,6 +201,7 @@ fun APModuleScreen(navigator: DestinationsNavigator) {
     var showMoreModuleInfo by remember { mutableStateOf(prefs.getBoolean("show_more_module_info", true)) }
     var foldSystemModule by remember { mutableStateOf(prefs.getBoolean("fold_system_module", true)) }
     var simpleListBottomBar by remember { mutableStateOf(prefs.getBoolean("simple_list_bottom_bar", false)) }
+    var splicedCardGroup by remember { mutableStateOf(prefs.getBoolean("spliced_card_group", true)) }
 
     val viewModel = viewModel<APModuleViewModel>()
 
@@ -212,6 +213,8 @@ fun APModuleScreen(navigator: DestinationsNavigator) {
                 foldSystemModule = sharedPrefs.getBoolean("fold_system_module", false)
             } else if (key == "simple_list_bottom_bar") {
                 simpleListBottomBar = sharedPrefs.getBoolean("simple_list_bottom_bar", false)
+            } else if (key == "spliced_card_group") {
+                splicedCardGroup = sharedPrefs.getBoolean("spliced_card_group", true)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -456,6 +459,7 @@ fun APModuleScreen(navigator: DestinationsNavigator) {
                     showMoreModuleInfo = showMoreModuleInfo,
                     foldSystemModule = foldSystemModule,
                     simpleListBottomBar = simpleListBottomBar,
+                    splicedCardGroup = splicedCardGroup,
                     checkStrongBiometric = ::checkStrongBiometric,
                     modifier = Modifier
                         .padding(innerPadding)
@@ -561,6 +565,7 @@ private fun ModuleList(
     showMoreModuleInfo: Boolean,
     foldSystemModule: Boolean,
     simpleListBottomBar: Boolean,
+    splicedCardGroup: Boolean,
     checkStrongBiometric: suspend () -> Boolean,
     modifier: Modifier = Modifier,
     state: LazyListState,
@@ -645,9 +650,7 @@ private fun ModuleList(
         }
 
         withContext(Dispatchers.Main) {
-            Toast.makeText(
-                context, startDownloadingText.format(module.name), Toast.LENGTH_SHORT
-            ).show()
+            showToast(context, startDownloadingText.format(module.name))
         }
 
         val downloading = downloadingText.format(module.name)
@@ -660,7 +663,7 @@ private fun ModuleList(
                 onDownloaded = onInstallModule,
                 onDownloading = {
                     launch(Dispatchers.Main) {
-                        Toast.makeText(context, downloading, Toast.LENGTH_SHORT).show()
+                        showToast(context, downloading)
                     }
                 })
         }
@@ -731,11 +734,12 @@ private fun ModuleList(
         val isWideScreen = configuration.screenWidthDp >= 600
 
         if (isWideScreen) {
-            LazyVerticalStaggeredGrid(
+            TwoColumnGrid(
                 modifier = Modifier.fillMaxSize(),
-                columns = StaggeredGridCells.Fixed(2),
-                verticalItemSpacing = 16.dp,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                items = if (modules.isEmpty()) emptyList() else modules,
+                key = { module -> module.id },
+                verticalSpacing = 16.dp,
+                horizontalSpacing = 16.dp,
                 contentPadding = remember {
                     PaddingValues(
                         start = 16.dp,
@@ -744,12 +748,12 @@ private fun ModuleList(
                         bottom = 16.dp + 16.dp + 56.dp
                     )
                 },
-            ) {
-                // Warning Banner (full span)
-                if (showMountWarning) {
-                    item(span = StaggeredGridItemSpan.FullLine) {
+                beforeItems = {
+                    if (showMountWarning) {
                         Surface(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
                             color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
                             shape = RoundedCornerShape(16.dp),
                             tonalElevation = 2.dp
@@ -810,102 +814,93 @@ private fun ModuleList(
                             }
                         }
                     }
-                }
+                    if (modules.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .defaultMinSize(minHeight = 300.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                stringResource(R.string.apm_empty), textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                },
+                itemContent = { module ->
+                    var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
+                    val scope = rememberCoroutineScope()
+                    val updatedModule = viewModel.getCachedUpdate(module.id)
 
-                when {
-                    modules.isEmpty() -> {
-                        item(span = StaggeredGridItemSpan.FullLine) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .defaultMinSize(minHeight = 300.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    stringResource(R.string.apm_empty), textAlign = TextAlign.Center
+                    ModuleItem(
+                        navigator,
+                        module,
+                        isChecked,
+                        updatedModule.first,
+                        showMoreModuleInfo = showMoreModuleInfo,
+                        foldSystemModule = foldSystemModule,
+                        simpleListBottomBar = simpleListBottomBar,
+                        enableModuleShortcutAdd = enableModuleShortcutAdd,
+                        expanded = expandedModuleId == module.id,
+                        onExpandToggle = {
+                            expandedModuleId = if (expandedModuleId == module.id) null else module.id
+                        },
+                        onUninstall = {
+                            scope.launch { onModuleUninstall(module) }
+                        },
+                        onUndoUninstall = {
+                            scope.launch { onModuleUndoUninstall(module) }
+                        },
+                        onCheckChanged = { checked ->
+                            scope.launch {
+                                if (!checkStrongBiometric()) return@launch
+                                val success = loadingDialog.withLoading {
+                                    withContext(Dispatchers.IO) {
+                                        toggleModule(module.id, !isChecked)
+                                    }
+                                }
+                                if (success) {
+                                    isChecked = checked
+                                    viewModel.fetchModuleList()
+
+                                    val result = snackBarHost.showSnackbar(
+                                        message = rebootToApply,
+                                        actionLabel = reboot,
+                                        duration = SnackbarDuration.Long
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        reboot()
+                                    }
+                                } else {
+                                    val message = if (isChecked) failedDisable else failedEnable
+                                    snackBarHost.showSnackbar(message.format(module.name))
+                                }
+                            }
+                        },
+                        onUpdate = {
+                            scope.launch {
+                                onModuleUpdate(
+                                    module,
+                                    updatedModule.third,
+                                    updatedModule.first,
+                                    "${module.name}-${updatedModule.second}.zip"
                                 )
                             }
-                        }
-                    }
-
-                    else -> {
-                        items(modules, key = { module -> module.id }) { module ->
-                            var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
-                            val scope = rememberCoroutineScope()
-                            val updatedModule = viewModel.getCachedUpdate(module.id)
-
-                            ModuleItem(
-                                navigator,
-                                module,
-                                isChecked,
-                                updatedModule.first,
-                                showMoreModuleInfo = showMoreModuleInfo,
-                                foldSystemModule = foldSystemModule,
-                                simpleListBottomBar = simpleListBottomBar,
-                                enableModuleShortcutAdd = enableModuleShortcutAdd,
-                                expanded = expandedModuleId == module.id,
-                                onExpandToggle = {
-                                    expandedModuleId = if (expandedModuleId == module.id) null else module.id
-                                },
-                                onUninstall = {
-                                    scope.launch { onModuleUninstall(module) }
-                                },
-                                onUndoUninstall = {
-                                    scope.launch { onModuleUndoUninstall(module) }
-                                },
-                                onCheckChanged = { checked ->
-                                    scope.launch {
-                                        if (!checkStrongBiometric()) return@launch
-                                        val success = loadingDialog.withLoading {
-                                            withContext(Dispatchers.IO) {
-                                                toggleModule(module.id, !isChecked)
-                                            }
-                                        }
-                                        if (success) {
-                                            isChecked = checked
-                                            viewModel.fetchModuleList()
-
-                                            val result = snackBarHost.showSnackbar(
-                                                message = rebootToApply,
-                                                actionLabel = reboot,
-                                                duration = SnackbarDuration.Long
-                                            )
-                                            if (result == SnackbarResult.ActionPerformed) {
-                                                reboot()
-                                            }
-                                        } else {
-                                            val message = if (isChecked) failedDisable else failedEnable
-                                            snackBarHost.showSnackbar(message.format(module.name))
-                                        }
-                                    }
-                                },
-                                onUpdate = {
-                                    scope.launch {
-                                        onModuleUpdate(
-                                            module,
-                                            updatedModule.third,
-                                            updatedModule.first,
-                                            "${module.name}-${updatedModule.second}.zip"
-                                        )
-                                    }
-                                },
-                                onClick = { clickedModule ->
-                                    onClickModule(clickedModule.id, clickedModule.name, clickedModule.hasWebUi)
-                                })
-                        }
-                    }
+                        },
+                        onClick = { clickedModule ->
+                            onClickModule(clickedModule.id, clickedModule.name, clickedModule.hasWebUi)
+                        })
                 }
-            }
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = state,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = remember {
                     PaddingValues(
-                        start = 16.dp,
+                        start = 0.dp,
                         top = 16.dp,
-                        end = 16.dp,
+                        end = 0.dp,
                         bottom = 16.dp + 16.dp + 56.dp /*  Scaffold Fab Spacing + Fab container height */
                     )
                 },
@@ -994,71 +989,147 @@ private fun ModuleList(
                     }
 
                     else -> {
-                        itemsIndexed(modules, key = { _, module -> module.id }) { index, module ->
-                            var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
-                            val scope = rememberCoroutineScope()
-                            val updatedModule = viewModel.getCachedUpdate(module.id)
+                        if (splicedCardGroup) {
+                            item { Spacer(Modifier.height(8.dp)) }
+                            splicedLazyColumnGroup(
+                                items = modules,
+                                key = { _, module -> module.id },
+                                contentType = { _, _ -> "ModuleItem" },
+                            ) { _, module ->
+                                var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
+                                val scope = rememberCoroutineScope()
+                                val updatedModule = viewModel.getCachedUpdate(module.id)
 
-                            ModuleItem(
-                                navigator,
-                                module,
-                                isChecked,
-                                updatedModule.first,
-                                showMoreModuleInfo = showMoreModuleInfo,
-                                foldSystemModule = foldSystemModule,
-                                simpleListBottomBar = simpleListBottomBar,
-                                enableModuleShortcutAdd = enableModuleShortcutAdd,
-                                expanded = expandedModuleId == module.id,
-                                onExpandToggle = {
-                                    expandedModuleId = if (expandedModuleId == module.id) null else module.id
-                                },
-                                onUninstall = {
-                                    scope.launch { onModuleUninstall(module) }
-                                },
-                                onUndoUninstall = {
-                                    scope.launch { onModuleUndoUninstall(module) }
-                                },
-                                onCheckChanged = { checked ->
-                                    scope.launch {
-                                        if (!checkStrongBiometric()) return@launch
-                                        val success = loadingDialog.withLoading {
-                                            withContext(Dispatchers.IO) {
-                                                toggleModule(module.id, !isChecked)
+                                ModuleItem(
+                                    navigator,
+                                    module,
+                                    isChecked,
+                                    updatedModule.first,
+                                    showMoreModuleInfo = showMoreModuleInfo,
+                                    foldSystemModule = foldSystemModule,
+                                    simpleListBottomBar = simpleListBottomBar,
+                                    enableModuleShortcutAdd = enableModuleShortcutAdd,
+                                    expanded = expandedModuleId == module.id,
+                                    onExpandToggle = {
+                                        expandedModuleId = if (expandedModuleId == module.id) null else module.id
+                                    },
+                                    onUninstall = {
+                                        scope.launch { onModuleUninstall(module) }
+                                    },
+                                    onUndoUninstall = {
+                                        scope.launch { onModuleUndoUninstall(module) }
+                                    },
+                                    onCheckChanged = { checked ->
+                                        scope.launch {
+                                            if (!checkStrongBiometric()) return@launch
+                                            val success = loadingDialog.withLoading {
+                                                withContext(Dispatchers.IO) {
+                                                    toggleModule(module.id, !isChecked)
+                                                }
+                                            }
+                                            if (success) {
+                                                isChecked = checked
+                                                viewModel.fetchModuleList()
+
+                                                val result = snackBarHost.showSnackbar(
+                                                    message = rebootToApply,
+                                                    actionLabel = reboot,
+                                                    duration = SnackbarDuration.Long
+                                                )
+                                                if (result == SnackbarResult.ActionPerformed) {
+                                                    reboot()
+                                                }
+                                            } else {
+                                                val message = if (isChecked) failedDisable else failedEnable
+                                                snackBarHost.showSnackbar(message.format(module.name))
                                             }
                                         }
-                                        if (success) {
-                                            isChecked = checked
-                                            viewModel.fetchModuleList()
-
-                                            val result = snackBarHost.showSnackbar(
-                                                message = rebootToApply,
-                                                actionLabel = reboot,
-                                                duration = SnackbarDuration.Long
+                                    },
+                                    onUpdate = {
+                                        scope.launch {
+                                            onModuleUpdate(
+                                                module,
+                                                updatedModule.third,
+                                                updatedModule.first,
+                                                "${module.name}-${updatedModule.second}.zip"
                                             )
-                                            if (result == SnackbarResult.ActionPerformed) {
-                                                reboot()
-                                            }
-                                        } else {
-                                            val message = if (isChecked) failedDisable else failedEnable
-                                            snackBarHost.showSnackbar(message.format(module.name))
                                         }
-                                    }
-                                },
-                                onUpdate = {
-                                    scope.launch {
-                                        onModuleUpdate(
-                                            module,
-                                            updatedModule.third,
-                                            updatedModule.first,
-                                            "${module.name}-${updatedModule.second}.zip"
-                                        )
-                                    }
-                                },
-                                onClick = { clickedModule ->
-                                    onClickModule(clickedModule.id, clickedModule.name, clickedModule.hasWebUi)
-                                })
-                            // fix last item shadow incomplete in LazyColumn
-                            Spacer(Modifier.height(1.dp))
+                                    },
+                                    onClick = { clickedModule ->
+                                        onClickModule(clickedModule.id, clickedModule.name, clickedModule.hasWebUi)
+                                    })
+                            }
+                            item { Spacer(Modifier.height(88.dp)) }
+                        } else {
+                            item { Spacer(Modifier.height(8.dp)) }
+                            itemsIndexed(modules, key = { _, module -> module.id }) { _, module ->
+                                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                                var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
+                                val scope = rememberCoroutineScope()
+                                val updatedModule = viewModel.getCachedUpdate(module.id)
+
+                                ModuleItem(
+                                    navigator,
+                                    module,
+                                    isChecked,
+                                    updatedModule.first,
+                                    showMoreModuleInfo = showMoreModuleInfo,
+                                    foldSystemModule = foldSystemModule,
+                                    simpleListBottomBar = simpleListBottomBar,
+                                    enableModuleShortcutAdd = enableModuleShortcutAdd,
+                                    expanded = expandedModuleId == module.id,
+                                    onExpandToggle = {
+                                        expandedModuleId = if (expandedModuleId == module.id) null else module.id
+                                    },
+                                    onUninstall = {
+                                        scope.launch { onModuleUninstall(module) }
+                                    },
+                                    onUndoUninstall = {
+                                        scope.launch { onModuleUndoUninstall(module) }
+                                    },
+                                    onCheckChanged = { checked ->
+                                        scope.launch {
+                                            if (!checkStrongBiometric()) return@launch
+                                            val success = loadingDialog.withLoading {
+                                                withContext(Dispatchers.IO) {
+                                                    toggleModule(module.id, !isChecked)
+                                                }
+                                            }
+                                            if (success) {
+                                                isChecked = checked
+                                                viewModel.fetchModuleList()
+
+                                                val result = snackBarHost.showSnackbar(
+                                                    message = rebootToApply,
+                                                    actionLabel = reboot,
+                                                    duration = SnackbarDuration.Long
+                                                )
+                                                if (result == SnackbarResult.ActionPerformed) {
+                                                    reboot()
+                                                }
+                                            } else {
+                                                val message = if (isChecked) failedDisable else failedEnable
+                                                snackBarHost.showSnackbar(message.format(module.name))
+                                            }
+                                        }
+                                    },
+                                    onUpdate = {
+                                        scope.launch {
+                                            onModuleUpdate(
+                                                module,
+                                                updatedModule.third,
+                                                updatedModule.first,
+                                                "${module.name}-${updatedModule.second}.zip"
+                                            )
+                                        }
+                                    },
+                                    onClick = { clickedModule ->
+                                        onClickModule(clickedModule.id, clickedModule.name, clickedModule.hasWebUi)
+                                    })
+
+                                }
+                            }
+                            item { Spacer(Modifier.height(88.dp)) }
                         }
                     }
                 }
@@ -1519,6 +1590,8 @@ private fun ModuleItem(
         }
     }
 
+    val insideSplicedGroup = LocalInsideSplicedGroup.current
+
     val cardColor = if (isWallpaperMode) {
         MaterialTheme.colorScheme.surface.copy(alpha = opacity)
     } else {
@@ -1526,29 +1599,26 @@ private fun ModuleItem(
     }
 
     val cardShape = RoundedCornerShape(20.dp)
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .clip(cardShape)
-            .combinedClickable(
-                onClick = {
-                    if (foldSystemModule) {
-                        onExpandToggle()
-                    } else {
-                        onClick(module)
-                    }
-                },
-                onLongClick = {
-                    if (BackgroundConfig.isBannerEnabled && BackgroundConfig.isFolkBannerEnabled) {
-                        showFolkBannerDialog = true
-                    }
+
+    val clickModifier = Modifier
+        .fillMaxWidth()
+        .animateContentSize()
+        .combinedClickable(
+            onClick = {
+                if (foldSystemModule) {
+                    onExpandToggle()
+                } else {
+                    onClick(module)
                 }
-            ),
-        shape = cardShape,
-        color = cardColor,
-        tonalElevation = 0.dp
-    ) {
+            },
+            onLongClick = {
+                if (BackgroundConfig.isBannerEnabled && BackgroundConfig.isFolkBannerEnabled) {
+                    showFolkBannerDialog = true
+                }
+            }
+        )
+
+    val contentBlock: @Composable () -> Unit = {
         Box(modifier = Modifier.fillMaxWidth()) {
             val bannerUrl = bannerInfo?.url
             val bannerData = bannerInfo?.bytes
@@ -1693,7 +1763,7 @@ private fun ModuleItem(
                         )
                     }
 
-                    Switch(
+                    ExpressiveSwitch(
                         enabled = !module.update,
                         checked = isChecked,
                         onCheckedChange = onCheckChanged
@@ -1798,6 +1868,22 @@ private fun ModuleItem(
                     )
                 }
             }
+        }
+    }
+
+    // Render: inside spliced group → no Surface wrapper; standalone → Surface card
+    if (insideSplicedGroup) {
+        Box(modifier = modifier.then(clickModifier)) {
+            contentBlock()
+        }
+    } else {
+        Surface(
+            modifier = modifier.then(clickModifier),
+            shape = cardShape,
+            color = cardColor,
+            tonalElevation = 0.dp
+        ) {
+            contentBlock()
         }
     }
 

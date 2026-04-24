@@ -610,4 +610,74 @@ static inline long sc_uts_reset(const char *key)
     return ret;
 }
 
+static inline long sc_pathhide_add(const char *key, const char *path)
+{
+    if (!key || !key[0]) return -EINVAL;
+    if (!path || !path[0]) return -EINVAL;
+    return syscall(__NR_supercall, key, ver_and_cmd(key, SUPERCALL_PATHHIDE_ADD), path);
+}
+
+static inline long sc_pathhide_remove(const char *key, const char *path)
+{
+    if (!key || !key[0]) return -EINVAL;
+    if (!path || !path[0]) return -EINVAL;
+    return syscall(__NR_supercall, key, ver_and_cmd(key, SUPERCALL_PATHHIDE_REMOVE), path);
+}
+
+static inline long sc_pathhide_list(const char *key, char *out_buf, int outlen)
+{
+    if (!key || !key[0]) return -EINVAL;
+    if (!out_buf || outlen <= 0) return -EINVAL;
+    return syscall(__NR_supercall, key, ver_and_cmd(key, SUPERCALL_PATHHIDE_LIST), out_buf, outlen);
+}
+
+static inline long sc_pathhide_clear(const char *key)
+{
+    if (!key || !key[0]) return -EINVAL;
+    return syscall(__NR_supercall, key, ver_and_cmd(key, SUPERCALL_PATHHIDE_CLEAR));
+}
+
+static inline long sc_pathhide_enable(const char *key, int enable)
+{
+    if (!key || !key[0]) return -EINVAL;
+    return syscall(__NR_supercall, key, ver_and_cmd(key, SUPERCALL_PATHHIDE_ENABLE), (long)enable);
+}
+
+static inline long sc_pathhide_status(const char *key)
+{
+    if (!key || !key[0]) return -EINVAL;
+    return syscall(__NR_supercall, key, ver_and_cmd(key, SUPERCALL_PATHHIDE_STATUS));
+}
+
+static inline long sc_pathhide_uid_add(const char *key, int uid)
+{
+    if (!key || !key[0]) return -EINVAL;
+    return syscall(__NR_supercall, key, ver_and_cmd(key, SUPERCALL_PATHHIDE_UID_ADD), (long)uid);
+}
+
+static inline long sc_pathhide_uid_remove(const char *key, int uid)
+{
+    if (!key || !key[0]) return -EINVAL;
+    return syscall(__NR_supercall, key, ver_and_cmd(key, SUPERCALL_PATHHIDE_UID_REMOVE), (long)uid);
+}
+
+static inline long sc_pathhide_uid_list(const char *key, char *out_buf, int outlen)
+{
+    if (!key || !key[0]) return -EINVAL;
+    if (!out_buf || outlen <= 0) return -EINVAL;
+    return syscall(__NR_supercall, key, ver_and_cmd(key, SUPERCALL_PATHHIDE_UID_LIST), out_buf, outlen);
+}
+
+static inline long sc_pathhide_uid_clear(const char *key)
+{
+    if (!key || !key[0]) return -EINVAL;
+    return syscall(__NR_supercall, key, ver_and_cmd(key, SUPERCALL_PATHHIDE_UID_CLEAR));
+}
+
+static inline long sc_pathhide_uid_mode(const char *key, int enable)
+{
+    if (!key || !key[0]) return -EINVAL;
+    return syscall(__NR_supercall, key, ver_and_cmd(key, SUPERCALL_PATHHIDE_UID_MODE), (long)enable);
+}
+
 #endif

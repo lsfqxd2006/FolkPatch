@@ -1,11 +1,19 @@
 package me.bmax.apatch.ui.screen.settings
 
 import androidx.biometric.BiometricPrompt
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -19,6 +27,7 @@ import androidx.fragment.app.FragmentActivity
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
+import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.ToggleSettingCard
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.util.APatchKeyHelper
@@ -41,10 +50,11 @@ fun SecuritySettingsContent(
                 androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
     ) == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS
 
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (canAuthenticate) {
+    SplicedColumnGroup(flat = flat) {
+        item(visible = canAuthenticate) {
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.Fingerprint,
                 title = stringResource(id = R.string.settings_biometric_login),
                 description = stringResource(id = R.string.settings_biometric_login_summary),
                 checked = biometricLogin,
@@ -84,10 +94,11 @@ fun SecuritySettingsContent(
             )
         }
 
-        if (biometricLogin && canAuthenticate) {
+        item(visible = biometricLogin && canAuthenticate) {
             var strongBiometric by remember { mutableStateOf(prefs.getBoolean("strong_biometric", false)) }
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.Shield,
                 title = stringResource(id = R.string.settings_strong_biometric),
                 description = stringResource(id = R.string.settings_strong_biometric_summary),
                 checked = strongBiometric,
@@ -98,7 +109,7 @@ fun SecuritySettingsContent(
             )
         }
 
-        if (kPatchReady) {
+        item(visible = kPatchReady) {
             val clearSuperKeyTitle = stringResource(id = R.string.clear_super_key)
             val clearSuperKeyDialog = rememberConfirmDialog(
                 onConfirm = {
@@ -121,15 +132,25 @@ fun SecuritySettingsContent(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(text = clearSuperKeyTitle)
+                    Icon(
+                        imageVector = Icons.Filled.DeleteForever,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Spacer(Modifier.width(16.dp))
+                    Text(text = clearSuperKeyTitle,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         }
 
-        if (kPatchReady) {
+        item(visible = kPatchReady) {
             var noStoreKey by remember { mutableStateOf(APatchKeyHelper.shouldSkipStoreSuperKey()) }
             ToggleSettingCard(
                 flat = flat,
+                icon = Icons.Filled.Key,
                 title = stringResource(id = R.string.settings_donot_store_superkey),
                 description = stringResource(id = R.string.settings_donot_store_superkey_summary),
                 checked = noStoreKey,
