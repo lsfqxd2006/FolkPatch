@@ -2176,8 +2176,8 @@ fun HomeLayoutChooseDialog(showDialog: MutableState<Boolean>, onLayoutSelected: 
                                 )
                             },
                             modifier = Modifier.clickable {
-                                prefs.edit().putString("home_layout_style", "circle").apply()
-                                onLayoutSelected("circle")
+                                prefs.edit().putString("home_layout_style", "stats").apply()
+                                onLayoutSelected("stats")
                                 showDialog.value = false
                             }
                         )
