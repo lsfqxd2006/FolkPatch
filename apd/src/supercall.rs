@@ -565,14 +565,7 @@ pub fn apply_pathhide(superkey: &Option<String>) {
         }
     };
 
-    // Enable pathhide in kernel
-    let rc = sc_pathhide_enable(&key, true);
-    if rc < 0 {
-        warn!("[pathhide] enable failed: {}", rc);
-        return;
-    }
-
-    // Load and apply paths
+    // Step 1: Clear and populate blocklist (pathhide not yet enabled, hooks are no-ops)
     match std::fs::read_to_string(crate::defs::PATHHIDE_PATHS_FILE) {
         Ok(paths) => {
             sc_pathhide_clear(&key);
@@ -604,13 +597,8 @@ pub fn apply_pathhide(superkey: &Option<String>) {
         }
     }
 
-    // Restore UID mode if enabled
+    // Step 2: Configure UID whitelist BEFORE enabling (so filters are ready)
     if std::path::Path::new(crate::defs::PATHHIDE_UID_MODE_FILE).exists() {
-        let rc = sc_pathhide_uid_mode(&key, true);
-        if rc < 0 {
-            warn!("[pathhide] uid mode enable failed: {}", rc);
-        }
-
         match std::fs::read_to_string(crate::defs::PATHHIDE_UIDS_FILE) {
             Ok(uids) => {
                 sc_pathhide_uid_clear(&key);
@@ -640,6 +628,18 @@ pub fn apply_pathhide(superkey: &Option<String>) {
                 info!("[pathhide] no uids file");
             }
         }
+
+        let rc = sc_pathhide_uid_mode(&key, true);
+        if rc < 0 {
+            warn!("[pathhide] uid mode enable failed: {}", rc);
+        }
+    }
+
+    // Step 3: Enable pathhide LAST (all config is now in place)
+    let rc = sc_pathhide_enable(&key, true);
+    if rc < 0 {
+        warn!("[pathhide] enable failed: {}", rc);
+        return;
     }
 
     info!("[pathhide] auto-apply completed");
