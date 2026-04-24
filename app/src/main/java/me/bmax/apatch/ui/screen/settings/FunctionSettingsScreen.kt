@@ -54,6 +54,7 @@ import me.bmax.apatch.util.writePathHidePaths
 import me.bmax.apatch.util.readPathHidePaths
 import me.bmax.apatch.util.writePathHideUids
 import me.bmax.apatch.util.setPathHideUidMode
+import me.bmax.apatch.util.getRootShell
 import me.bmax.apatch.util.ui.LocalSnackbarHost
 import me.bmax.apatch.util.ui.NavigationBarsSpacer
 import androidx.compose.ui.platform.LocalContext
@@ -76,6 +77,7 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
     var isPathHideEnabled by rememberSaveable { mutableStateOf(false) }
     var pathHidePaths by rememberSaveable { mutableStateOf("") }
     var isPathHideUidMode by rememberSaveable { mutableStateOf(false) }
+    var isAutoExcludeEnabled by rememberSaveable { mutableStateOf(false) }
     var selectedUids by rememberSaveable { mutableStateOf(emptySet<Int>()) }
 
     val scope = rememberCoroutineScope()
@@ -104,6 +106,8 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                 }
                 // Load UID mode state
                 isPathHideUidMode = APApplication.sharedPreferences.getBoolean("pathhide_uid_mode", false)
+                // Load auto-exclude state
+                isAutoExcludeEnabled = APApplication.sharedPreferences.getBoolean(APApplication.PREF_PATHHIDE_AUTO_EXCLUDE, false)
                 val pm = context.packageManager
                 val uidSource = Natives.pathHideUidList().ifBlank {
                     me.bmax.apatch.util.readPathHideUids()
@@ -299,6 +303,39 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                             withContext(Dispatchers.Main) {
                                 snackBarHost.showSnackbar(
                                     context.getString(if (enabled) R.string.path_hide_uid_mode_enabled else R.string.path_hide_uid_mode_disabled)
+                                )
+                            }
+                        }
+                    },
+                    isAutoExcludeEnabled = isAutoExcludeEnabled,
+                    onAutoExcludeChange = { enabled ->
+                        isAutoExcludeEnabled = enabled
+                        scope.launch(Dispatchers.IO) {
+                            APApplication.sharedPreferences.edit()
+                                .putBoolean(APApplication.PREF_PATHHIDE_AUTO_EXCLUDE, enabled)
+                                .apply()
+                            val shell = getRootShell()
+                            shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
+                            shell.newJob().add(
+                                "${if (enabled) "touch" else "rm -f"} ${APApplication.PATHHIDE_AUTO_EXCLUDE_FILE}"
+                            ).exec()
+                            // When enabling for the first time, seed the daemon snapshot
+                            // with current user app UIDs so existing apps are not treated as "new"
+                            if (enabled) {
+                                val snapshotResult = shell.newJob().add(
+                                    "awk '\$2 >= 10000 {print \$2}' /data/system/packages.list | sort -u"
+                                ).to(ArrayList<String>(), null).exec()
+                                val snapshotContent = snapshotResult.out.joinToString("\n")
+                                shell.newJob().add(
+                                    "echo -n '${snapshotContent.replace("'", "'\\''")}' > ${APApplication.PATHHIDE_UID_SNAPSHOT_FILE}"
+                                ).exec()
+                            }
+                            withContext(Dispatchers.Main) {
+                                snackBarHost.showSnackbar(
+                                    context.getString(
+                                        if (enabled) R.string.path_hide_auto_exclude_enabled
+                                        else R.string.path_hide_auto_exclude_disabled
+                                    )
                                 )
                             }
                         }
