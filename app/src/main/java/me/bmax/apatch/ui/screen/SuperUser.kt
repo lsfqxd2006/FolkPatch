@@ -16,13 +16,14 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,11 +31,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.PlaylistAddCheck
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.automirrored.filled.PlaylistAddCheck
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
@@ -48,13 +50,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import me.bmax.apatch.ui.component.ExpressiveSwitch
-import me.bmax.apatch.ui.component.SwitchItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -65,12 +70,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
@@ -90,13 +97,14 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.Natives
 import me.bmax.apatch.R
 import me.bmax.apatch.apApp
-import me.bmax.apatch.ui.component.SearchAppBar
-import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenu
-import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenuItem
 import me.bmax.apatch.ui.LocalBottomBarVisible
 import me.bmax.apatch.ui.LocalIsFloatingNavMode
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import me.bmax.apatch.ui.component.ExpressiveSwitch
+import me.bmax.apatch.ui.component.SearchAppBar
+import me.bmax.apatch.ui.component.SwitchItem
+import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenu
+import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenuItem
+import me.bmax.apatch.ui.component.splicedLazyColumnGroup
 import me.bmax.apatch.ui.viewmodel.SuperUserViewModel
 import me.bmax.apatch.util.PkgConfig
 import me.bmax.apatch.util.SuAuditLog
@@ -136,6 +144,7 @@ private fun SuperUserScreenModern(navigator: DestinationsNavigator, useLegacySuP
     var showBatchExcludeDialog by remember { mutableStateOf(false) }
     var showAppActionDialog by remember { mutableStateOf(false) }
     var selectedApp by remember { mutableStateOf<SuperUserViewModel.AppInfo?>(null) }
+    var showOptionsSheet by remember { mutableStateOf(false) }
 
     if (showBatchExcludeDialog) {
         BatchExcludeDialog(
@@ -159,7 +168,6 @@ private fun SuperUserScreenModern(navigator: DestinationsNavigator, useLegacySuP
                 val success = viewModel.launchApp(context, selectedApp!!.packageName)
                 if (success) {
                     scope.launch {
-                        // Show toast for launch success
                         showToast(context, context.getString(R.string.su_app_action_launch_success, selectedApp!!.label))
                     }
                 } else {
@@ -185,6 +193,29 @@ private fun SuperUserScreenModern(navigator: DestinationsNavigator, useLegacySuP
         )
     }
 
+    if (showOptionsSheet) {
+        SuperUserOptionsSheet(
+            onDismiss = { showOptionsSheet = false },
+            onRefresh = {
+                scope.launch { viewModel.fetchAppList() }
+                showOptionsSheet = false
+            },
+            onToggleSystemApps = {
+                viewModel.showSystemApps = !viewModel.showSystemApps
+                showOptionsSheet = false
+            },
+            showSystemApps = viewModel.showSystemApps,
+            onBackup = {
+                backupLauncher.launch("FolkPatch_list_backup.json")
+                showOptionsSheet = false
+            },
+            onRestore = {
+                restoreLauncher.launch(arrayOf("application/json", "*/*"))
+                showOptionsSheet = false
+            },
+        )
+    }
+
     LaunchedEffect(Unit) {
         if (viewModel.appList.isEmpty()) {
             viewModel.fetchAppList()
@@ -206,63 +237,11 @@ private fun SuperUserScreenModern(navigator: DestinationsNavigator, useLegacySuP
                     }
                 },
                 dropdownContent = {
-                    var showDropdown by remember { mutableStateOf(false) }
-
-                    IconButton(
-                        onClick = { showDropdown = true },
-                    ) {
+                    IconButton(onClick = { showOptionsSheet = true }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = stringResource(id = R.string.settings)
                         )
-
-                        WallpaperAwareDropdownMenu(
-                            expanded = showDropdown,
-                            onDismissRequest = { showDropdown = false },
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            WallpaperAwareDropdownMenuItem(
-                                text = { Text(stringResource(R.string.su_refresh)) },
-                                onClick = {
-                                    scope.launch {
-                                        viewModel.fetchAppList()
-                                    }
-                                    showDropdown = false
-                                }
-                            )
-
-                            WallpaperAwareDropdownMenuItem(
-                                text = {
-                                    Text(
-                                        if (viewModel.showSystemApps) {
-                                            stringResource(R.string.su_hide_system_apps)
-                                        } else {
-                                            stringResource(R.string.su_show_system_apps)
-                                        }
-                                    )
-                                },
-                                onClick = {
-                                    viewModel.showSystemApps = !viewModel.showSystemApps
-                                    showDropdown = false
-                                }
-                            )
-
-                            WallpaperAwareDropdownMenuItem(
-                                text = { Text(stringResource(R.string.su_backup_list)) },
-                                onClick = {
-                                    backupLauncher.launch("FolkPatch_list_backup.json")
-                                    showDropdown = false
-                                }
-                            )
-
-                            WallpaperAwareDropdownMenuItem(
-                                text = { Text(stringResource(R.string.su_restore_list)) },
-                                onClick = {
-                                    restoreLauncher.launch(arrayOf("application/json", "*/*"))
-                                    showDropdown = false
-                                }
-                            )
-                        }
                     }
                 },
             )
@@ -353,12 +332,24 @@ private fun SuperUserScreenModern(navigator: DestinationsNavigator, useLegacySuP
             state = pullToRefreshState,
             indicator = { PullToRefreshDefaults.LoadingIndicator(state = pullToRefreshState, isRefreshing = viewModel.isRefreshing, modifier = Modifier.align(Alignment.TopCenter)) }
         ) {
+            val filteredApps = viewModel.appList.filter { it.packageName != apApp.packageName }
+
             LazyColumn(Modifier.fillMaxSize()) {
-                items(viewModel.appList.filter { it.packageName != apApp.packageName }, key = { it.packageName + it.uid }) { app ->
-                    if (useLegacySuPage) {
+                if (useLegacySuPage) {
+                    items(
+                        filteredApps,
+                        key = { it.packageName + it.uid }
+                    ) { app ->
                         AppItemLegacy(app)
-                    } else {
-                        AppItem(
+                    }
+                } else {
+                    item { Spacer(Modifier.height(8.dp)) }
+                    splicedLazyColumnGroup(
+                        items = filteredApps,
+                        key = { _, app -> app.packageName + app.uid },
+                        contentType = { _, _ -> "AppItem" },
+                    ) { _, app ->
+                        AppItemM3E(
                             app = app,
                             onClick = {
                                 navigator.navigate(AppProfileScreenDestination(app.packageName, app.uid))
@@ -369,15 +360,18 @@ private fun SuperUserScreenModern(navigator: DestinationsNavigator, useLegacySuP
                             }
                         )
                     }
+                    item { Spacer(Modifier.height(88.dp)) }
                 }
             }
         }
     }
 }
 
+// ── M3E App Item ──────────────────────────────────────────────────────────
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AppItem(
+private fun AppItemM3E(
     app: SuperUserViewModel.AppInfo,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
@@ -386,48 +380,66 @@ private fun AppItem(
     val rootGranted = config.allow != 0
     val excludeApp = config.exclude == 1
 
-    ListItem(
-        modifier = Modifier.combinedClickable(
-            onClick = onClick,
-            onLongClick = onLongClick
-        ),
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        headlineContent = { Text(app.label) },
-        leadingContent = {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current).data(app.packageInfo)
-                    .crossfade(true).build(),
-                contentDescription = app.label,
-                modifier = Modifier
-                    .padding(4.dp)
-                    .width(48.dp)
-                    .height(48.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
             )
-        },
-        supportingContent = {
-            Column {
-                Text(app.packageName)
-                FlowRow {
-                    if (excludeApp) {
-                        LabelText(label = stringResource(id = R.string.su_pkg_excluded_label))
-                    }
-                    if (rootGranted) {
-                        // LabelText(label = config.profile.uid.toString())
-                        LabelText(label = "ROOT")
-                        // LabelText(label = config.profile.toUid.toString())
-                        // LabelText(
-                        //     label = when {
-                        //         // todo: valid scontext ?
-                        //         config.profile.scontext.isNotEmpty() -> config.profile.scontext
-                        //         else -> stringResource(id = R.string.su_selinux_via_hook)
-                        //     }
-                        // )
-                    }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(app.packageInfo)
+                .crossfade(true)
+                .build(),
+            contentDescription = app.label,
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape),
+        )
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 16.dp),
+        ) {
+            Text(
+                text = app.label,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = app.packageName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            FlowRow(modifier = Modifier.padding(top = 4.dp)) {
+                if (rootGranted) {
+                    LabelText(label = "ROOT", containerColor = MaterialTheme.colorScheme.primaryContainer)
+                }
+                if (excludeApp) {
+                    LabelText(
+                        label = stringResource(id = R.string.su_pkg_excluded_label),
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    )
                 }
             }
         }
-    )
+
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(20.dp),
+        )
+    }
 }
+
+// ── Legacy App Item ───────────────────────────────────────────────────────
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -469,7 +481,10 @@ private fun AppItemLegacy(
                 Text(app.packageName)
                 FlowRow {
                     if (excludeApp == 1) {
-                        LabelText(label = stringResource(id = R.string.su_pkg_excluded_label))
+                        LabelText(
+                            label = stringResource(id = R.string.su_pkg_excluded_label),
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        )
                     }
                     if (rootGranted) {
                         LabelText(label = config.profile.uid.toString())
@@ -538,25 +553,144 @@ private fun AppItemLegacy(
     }
 }
 
+// ── Label Text Badge ──────────────────────────────────────────────────────
+
 @Composable
-fun LabelText(label: String) {
-    Box(
-        modifier = Modifier
-            .padding(top = 4.dp, end = 4.dp)
-            .background(
-                Color.Black, shape = RoundedCornerShape(4.dp)
-            )
+fun LabelText(
+    label: String,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+) {
+    Surface(
+        modifier = Modifier.padding(end = 4.dp),
+        shape = RoundedCornerShape(4.dp),
+        color = containerColor,
     ) {
         Text(
             text = label,
-            modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-            style = TextStyle(
-                fontSize = 8.sp,
-                color = Color.White,
-            )
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+            color = contentColorFor(containerColor),
+            fontWeight = FontWeight.Medium,
         )
     }
 }
+
+// ── Options Bottom Sheet ──────────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SuperUserOptionsSheet(
+    onDismiss: () -> Unit,
+    onRefresh: () -> Unit,
+    onToggleSystemApps: () -> Unit,
+    showSystemApps: Boolean,
+    onBackup: () -> Unit,
+    onRestore: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 32.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.su_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
+
+            // Refresh
+            Surface(
+                onClick = onRefresh,
+                shape = RoundedCornerShape(12.dp),
+                color = Color.Transparent,
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.su_refresh),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
+
+            // Show/Hide System Apps
+            Surface(
+                onClick = onToggleSystemApps,
+                shape = RoundedCornerShape(12.dp),
+                color = Color.Transparent,
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = if (showSystemApps) {
+                            stringResource(R.string.su_hide_system_apps)
+                        } else {
+                            stringResource(R.string.su_show_system_apps)
+                        },
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
+
+            // Backup
+            Surface(
+                onClick = onBackup,
+                shape = RoundedCornerShape(12.dp),
+                color = Color.Transparent,
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.su_backup_list),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
+
+            // Restore
+            Surface(
+                onClick = onRestore,
+                shape = RoundedCornerShape(12.dp),
+                color = Color.Transparent,
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.su_restore_list),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ── Dialogs ───────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
