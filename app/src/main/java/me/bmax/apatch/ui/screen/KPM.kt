@@ -9,6 +9,7 @@ import me.bmax.apatch.util.ui.showToast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -37,10 +38,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.KeyboardActions
@@ -116,6 +113,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import me.bmax.apatch.ui.component.ConfirmResult
 import me.bmax.apatch.ui.component.KpmAutoLoadManager
 import me.bmax.apatch.ui.component.LoadingDialogHandle
+import me.bmax.apatch.ui.component.TwoColumnGrid
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.ui.viewmodel.KPModel
@@ -709,11 +707,12 @@ private fun KPModuleList(
         val isWideScreen = configuration.screenWidthDp >= 600
 
         if (isWideScreen) {
-            LazyVerticalStaggeredGrid(
+            TwoColumnGrid(
                 modifier = Modifier.fillMaxSize(),
-                columns = StaggeredGridCells.Fixed(2),
-                verticalItemSpacing = 16.dp,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                items = if (moduleList.isEmpty()) emptyList() else moduleList,
+                key = { module -> module.name },
+                verticalSpacing = 16.dp,
+                horizontalSpacing = 16.dp,
                 contentPadding = remember {
                     PaddingValues(
                         start = 16.dp,
@@ -722,10 +721,9 @@ private fun KPModuleList(
                         bottom = 16.dp + 16.dp + 56.dp
                     )
                 },
-            ) {
-                when {
-                    moduleList.isEmpty() -> {
-                        item(span = StaggeredGridItemSpan.FullLine) {
+                beforeItems = {
+                    if (moduleList.isEmpty()) {
+                        item("empty") {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -738,35 +736,32 @@ private fun KPModuleList(
                             }
                         }
                     }
-
-                    else -> {
-                        items(moduleList, key = { module -> module.name }) { module ->
-                            val scope = rememberCoroutineScope()
-                            KPModuleItem(
-                                module,
-                                onUninstall = {
-                                    scope.launch { onModuleUninstall(module) }
-                                },
-                                onControl = {
-                                    scope.launch {
-                                        if (checkStrongBiometric()) {
-                                            targetKPMToControl = module
-                                            showKPMControlDialog.value = true
-                                        }
-                                    }
-                                },
-                                showMoreModuleInfo = showMoreModuleInfo,
-                                simpleListBottomBar = simpleListBottomBar,
-                                foldSystemModule = foldSystemModule,
-                                expanded = expandedModuleId == module.name,
-                                onExpandToggle = {
-                                    expandedModuleId = if (expandedModuleId == module.name) null else module.name
+                },
+                itemContent = { module ->
+                    val scope = rememberCoroutineScope()
+                    KPModuleItem(
+                        module,
+                        onUninstall = {
+                            scope.launch { onModuleUninstall(module) }
+                        },
+                        onControl = {
+                            scope.launch {
+                                if (checkStrongBiometric()) {
+                                    targetKPMToControl = module
+                                    showKPMControlDialog.value = true
                                 }
-                            )
+                            }
+                        },
+                        showMoreModuleInfo = showMoreModuleInfo,
+                        simpleListBottomBar = simpleListBottomBar,
+                        foldSystemModule = foldSystemModule,
+                        expanded = expandedModuleId == module.name,
+                        onExpandToggle = {
+                            expandedModuleId = if (expandedModuleId == module.name) null else module.name
                         }
-                    }
+                    )
                 }
-            }
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -1081,7 +1076,7 @@ private fun KPModuleItem(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .fillMaxHeight()
+            .animateContentSize()
             .clip(cardShape)
             .combinedClickable(
                 onClick = {

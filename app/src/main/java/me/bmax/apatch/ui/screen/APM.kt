@@ -14,6 +14,7 @@ import me.bmax.apatch.util.ui.showToast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.Crossfade
@@ -40,10 +41,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.ExperimentalMaterialApi
@@ -93,6 +90,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import me.bmax.apatch.ui.component.ExpressiveSwitch
+import me.bmax.apatch.ui.component.TwoColumnGrid
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
@@ -729,11 +727,12 @@ private fun ModuleList(
         val isWideScreen = configuration.screenWidthDp >= 600
 
         if (isWideScreen) {
-            LazyVerticalStaggeredGrid(
+            TwoColumnGrid(
                 modifier = Modifier.fillMaxSize(),
-                columns = StaggeredGridCells.Fixed(2),
-                verticalItemSpacing = 16.dp,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                items = if (modules.isEmpty()) emptyList() else modules,
+                key = { module -> module.id },
+                verticalSpacing = 16.dp,
+                horizontalSpacing = 16.dp,
                 contentPadding = remember {
                     PaddingValues(
                         start = 16.dp,
@@ -742,77 +741,74 @@ private fun ModuleList(
                         bottom = 16.dp + 16.dp + 56.dp
                     )
                 },
-            ) {
-                // Warning Banner (full span)
-                if (showMountWarning) {
-                    item(span = StaggeredGridItemSpan.FullLine) {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
-                            shape = RoundedCornerShape(16.dp),
-                            tonalElevation = 2.dp
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
+                beforeItems = {
+                    if (showMountWarning) {
+                        item("mount_warning") {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                                shape = RoundedCornerShape(16.dp),
+                                tonalElevation = 2.dp
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth()
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Delete,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.error,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = stringResource(R.string.apm_mount_warning_title),
-                                        style = MaterialTheme.typography.titleSmall,
-                                        color = MaterialTheme.colorScheme.error,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(12.dp))
-
-                                Text(
-                                    text = stringResource(R.string.apm_mount_warning_message),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onErrorContainer
-                                )
-
-                                Spacer(modifier = Modifier.height(12.dp))
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    FilledTonalButton(
-                                        onClick = {
-                                            prefs.edit()
-                                                .putBoolean("apm_mount_warning_shown", true)
-                                                .apply()
-                                            showMountWarning = false
-                                        },
-                                        colors = ButtonDefaults.filledTonalButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.error,
-                                            contentColor = MaterialTheme.colorScheme.onError
-                                        )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text(stringResource(R.string.apm_mount_warning_button))
+                                        Icon(
+                                            imageVector = Icons.Outlined.Delete,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.error,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text(
+                                            text = stringResource(R.string.apm_mount_warning_title),
+                                            style = MaterialTheme.typography.titleSmall,
+                                            color = MaterialTheme.colorScheme.error,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(12.dp))
+
+                                    Text(
+                                        text = stringResource(R.string.apm_mount_warning_message),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+
+                                    Spacer(modifier = Modifier.height(12.dp))
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.End
+                                    ) {
+                                        FilledTonalButton(
+                                            onClick = {
+                                                prefs.edit()
+                                                    .putBoolean("apm_mount_warning_shown", true)
+                                                    .apply()
+                                                showMountWarning = false
+                                            },
+                                            colors = ButtonDefaults.filledTonalButtonColors(
+                                                containerColor = MaterialTheme.colorScheme.error,
+                                                contentColor = MaterialTheme.colorScheme.onError
+                                            )
+                                        ) {
+                                            Text(stringResource(R.string.apm_mount_warning_button))
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-
-                when {
-                    modules.isEmpty() -> {
-                        item(span = StaggeredGridItemSpan.FullLine) {
+                    if (modules.isEmpty()) {
+                        item("empty") {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -825,75 +821,72 @@ private fun ModuleList(
                             }
                         }
                     }
+                },
+                itemContent = { module ->
+                    var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
+                    val scope = rememberCoroutineScope()
+                    val updatedModule = viewModel.getCachedUpdate(module.id)
 
-                    else -> {
-                        items(modules, key = { module -> module.id }) { module ->
-                            var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
-                            val scope = rememberCoroutineScope()
-                            val updatedModule = viewModel.getCachedUpdate(module.id)
-
-                            ModuleItem(
-                                navigator,
-                                module,
-                                isChecked,
-                                updatedModule.first,
-                                showMoreModuleInfo = showMoreModuleInfo,
-                                foldSystemModule = foldSystemModule,
-                                simpleListBottomBar = simpleListBottomBar,
-                                enableModuleShortcutAdd = enableModuleShortcutAdd,
-                                expanded = expandedModuleId == module.id,
-                                onExpandToggle = {
-                                    expandedModuleId = if (expandedModuleId == module.id) null else module.id
-                                },
-                                onUninstall = {
-                                    scope.launch { onModuleUninstall(module) }
-                                },
-                                onUndoUninstall = {
-                                    scope.launch { onModuleUndoUninstall(module) }
-                                },
-                                onCheckChanged = { checked ->
-                                    scope.launch {
-                                        if (!checkStrongBiometric()) return@launch
-                                        val success = loadingDialog.withLoading {
-                                            withContext(Dispatchers.IO) {
-                                                toggleModule(module.id, !isChecked)
-                                            }
-                                        }
-                                        if (success) {
-                                            isChecked = checked
-                                            viewModel.fetchModuleList()
-
-                                            val result = snackBarHost.showSnackbar(
-                                                message = rebootToApply,
-                                                actionLabel = reboot,
-                                                duration = SnackbarDuration.Long
-                                            )
-                                            if (result == SnackbarResult.ActionPerformed) {
-                                                reboot()
-                                            }
-                                        } else {
-                                            val message = if (isChecked) failedDisable else failedEnable
-                                            snackBarHost.showSnackbar(message.format(module.name))
-                                        }
+                    ModuleItem(
+                        navigator,
+                        module,
+                        isChecked,
+                        updatedModule.first,
+                        showMoreModuleInfo = showMoreModuleInfo,
+                        foldSystemModule = foldSystemModule,
+                        simpleListBottomBar = simpleListBottomBar,
+                        enableModuleShortcutAdd = enableModuleShortcutAdd,
+                        expanded = expandedModuleId == module.id,
+                        onExpandToggle = {
+                            expandedModuleId = if (expandedModuleId == module.id) null else module.id
+                        },
+                        onUninstall = {
+                            scope.launch { onModuleUninstall(module) }
+                        },
+                        onUndoUninstall = {
+                            scope.launch { onModuleUndoUninstall(module) }
+                        },
+                        onCheckChanged = { checked ->
+                            scope.launch {
+                                if (!checkStrongBiometric()) return@launch
+                                val success = loadingDialog.withLoading {
+                                    withContext(Dispatchers.IO) {
+                                        toggleModule(module.id, !isChecked)
                                     }
-                                },
-                                onUpdate = {
-                                    scope.launch {
-                                        onModuleUpdate(
-                                            module,
-                                            updatedModule.third,
-                                            updatedModule.first,
-                                            "${module.name}-${updatedModule.second}.zip"
-                                        )
+                                }
+                                if (success) {
+                                    isChecked = checked
+                                    viewModel.fetchModuleList()
+
+                                    val result = snackBarHost.showSnackbar(
+                                        message = rebootToApply,
+                                        actionLabel = reboot,
+                                        duration = SnackbarDuration.Long
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        reboot()
                                     }
-                                },
-                                onClick = { clickedModule ->
-                                    onClickModule(clickedModule.id, clickedModule.name, clickedModule.hasWebUi)
-                                })
-                        }
-                    }
+                                } else {
+                                    val message = if (isChecked) failedDisable else failedEnable
+                                    snackBarHost.showSnackbar(message.format(module.name))
+                                }
+                            }
+                        },
+                        onUpdate = {
+                            scope.launch {
+                                onModuleUpdate(
+                                    module,
+                                    updatedModule.third,
+                                    updatedModule.first,
+                                    "${module.name}-${updatedModule.second}.zip"
+                                )
+                            }
+                        },
+                        onClick = { clickedModule ->
+                            onClickModule(clickedModule.id, clickedModule.name, clickedModule.hasWebUi)
+                        })
                 }
-            }
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -1527,7 +1520,7 @@ private fun ModuleItem(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .fillMaxHeight()
+            .animateContentSize()
             .clip(cardShape)
             .combinedClickable(
                 onClick = {
