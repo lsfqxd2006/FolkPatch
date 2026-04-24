@@ -428,21 +428,6 @@ fun GeneralSettingsContent(
             )
         }
 
-        item {
-            ToggleSettingCard(
-            flat = flat,
-            icon = Icons.Filled.Android,
-            title = launcherIconTitle,
-            description = launcherIconSummary,
-            checked = useAltIcon.value,
-            onCheckedChange = {
-                prefs.edit { putBoolean("use_alt_icon", it) }
-                LauncherIconUtils.updateLauncherState(context)
-                useAltIcon.value = it
-            }
-        )
-        }
-
         item(visible = kPatchReady) {
             ExpressiveCard(flat = flat, onClick = { showResetSuPathDialog.value = true }) {
                 Row(
