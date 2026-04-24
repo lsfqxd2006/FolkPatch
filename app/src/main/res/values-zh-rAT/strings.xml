@@ -1022,7 +1022,7 @@
     <string name="settings_path_hide">路径圣隐匿</string>
     <string name="settings_path_hide_summary">于灵魂之力层面施展圣隐匿，令凡俗应用无法感知文件与目录</string>
     <string name="path_hide_paths_label">隐匿路径（每行一道）</string>
-    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+   <string name="path_hide_paths_placeholder_global">/storage/emulated/0/Android/data\n/storage/emulated/0/Download</string>
     <string name="path_hide_paths_helper">每行书写一个路径，匹配之路径将被圣光笼罩，查无可寻</string>
     <string name="path_hide_save">圣光封存</string>
     <string name="path_hide_enabled">路径圣隐匿已开启</string>
@@ -1037,4 +1037,9 @@
     <string name="path_hide_uid_mode_enabled">UID 圣裁模式已开启</string>
     <string name="path_hide_uid_mode_disabled">UID 圣裁模式已关闭</string>
     <string name="path_hide_uid_applied">UID 圣选名录已降临生效</string>
+    <string name="path_hide_select_apps">遴选应用</string>
+    <string name="path_hide_no_apps_selected">未遴选任何应用</string>
+    <string name="path_hide_app_removed">已涤除 %d 个已废黜应用之旧制</string>
+    <string name="path_hide_search_apps">搜寻应用…</string>
+    <string name="path_hide_show_system">昭示系统应用</string>
 </resources>

@@ -1049,7 +1049,7 @@
     <string name="settings_path_hide">경로 숨기기</string>
     <string name="settings_path_hide_summary">커널 수준에서 앱에 파일 및 디렉터리 숨기기</string>
     <string name="path_hide_paths_label">숨길 경로 (한 줄에 하나씩)</string>
-    <string name="path_hide_paths_placeholder">/data/adb\n/system/bin/su</string>
+   <string name="path_hide_paths_placeholder_global">/storage/emulated/0/Android/data\n/storage/emulated/0/Download</string>
     <string name="path_hide_paths_helper">한 줄에 하나의 경로를 입력하세요. 일치하는 경로는 ENOENT를 반환합니다.</string>
     <string name="path_hide_save">저장</string>
     <string name="path_hide_enabled">경로 숨기기 활성화됨</string>
@@ -1064,4 +1064,9 @@
     <string name="path_hide_uid_mode_enabled">UID 실행 모드가 활성화되었습니다</string>
     <string name="path_hide_uid_mode_disabled">UID 실행 모드가 비활성화되었습니다</string>
     <string name="path_hide_uid_applied">UID 허용 목록이 적용되었습니다</string>
+    <string name="path_hide_select_apps">앱 선택</string>
+    <string name="path_hide_no_apps_selected">선택된 앱 없음</string>
+    <string name="path_hide_app_removed">설치 제거된 %d개 앱의 설정을 제거했습니다</string>
+    <string name="path_hide_search_apps">앱 검색…</string>
+    <string name="path_hide_show_system">시스템 앱 표시</string>
 </resources>

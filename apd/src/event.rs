@@ -22,7 +22,7 @@ use std::{
 
 use crate::{
     assets, defs, lua, metamodule, module, restorecon, supercall,
-    supercall::{init_load_su_path, refresh_ap_package_list},
+    supercall::{init_load_su_path, refresh_ap_package_list, auto_exclude_new_pathhide_uids},
     utils::{self, switch_cgroups},
 };
 
@@ -324,6 +324,12 @@ fn run_uid_monitor() {
 pub fn on_boot_completed(superkey: Option<String>) -> Result<()> {
     info!("on_boot_completed triggered!");
 
+    // Clear UTS spoof boot safety flag — boot completed successfully
+    if Path::new(defs::UTS_SPOOF_BOOT_PENDING).exists() {
+        let _ = std::fs::remove_file(defs::UTS_SPOOF_BOOT_PENDING);
+        info!("UTS spoof boot safety flag cleared");
+    }
+
     run_stage("boot-completed", superkey, false);
 
     // Execute Umount Service if enabled
@@ -400,6 +406,7 @@ pub fn start_uid_listener() -> Result<()> {
                 let skey = CStr::from_bytes_with_nul(b"su\0")
                     .expect("[shutdown_listener] CStr::from_bytes_with_nul failed");
                 refresh_ap_package_list(&skey, &mutex_clone);
+                auto_exclude_new_pathhide_uids(&Some("su".to_string()));
                 break;
             }
         });
@@ -430,6 +437,7 @@ pub fn start_uid_listener() -> Result<()> {
             .expect("[start_uid_listener] CStr::from_bytes_with_nul failed");
         info!("[uid_monitor] Performing initial refresh on startup...");
         refresh_ap_package_list(&skey, &mutex);
+        auto_exclude_new_pathhide_uids(&Some("su".to_string()));
     }
 
     let mut debounce = false;
@@ -439,6 +447,7 @@ pub fn start_uid_listener() -> Result<()> {
             let skey = CStr::from_bytes_with_nul(b"su\0")
                 .expect("[start_uid_listener] CStr::from_bytes_with_nul failed");
             refresh_ap_package_list(&skey, &mutex);
+            auto_exclude_new_pathhide_uids(&Some("su".to_string()));
             report_kernel(None, "uid_listener", "package-list-updated").unwrap_or_else(|e| {
                 warn!("Failed to report kernel about package list update: {e}");
             });
