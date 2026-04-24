@@ -469,6 +469,9 @@
     <string name="about_telegram_channel">魔法少女通讯频道</string>
 
     <string name="settings_app_dpi">魔法使清晰度</string>
+    <string name="dpi_apply_settings">适月</string>
+    <string name="dpi_confirm_title">确认更改DPI</string>
+    <string name="dpi_confirm_message">将应用DPI从%1$s更改为%2$s？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">启用内置的魔法阵挂载系统</string>
     <string name="settings_hide_service">FolkPatch Hide</string>

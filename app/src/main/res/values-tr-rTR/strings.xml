@@ -470,6 +470,9 @@ Bol şans! Ayrıca, aşağıdaki belge butonuna tıklamak kesinlikle doğru!</st
     <string name="app_title_magicpatch">MagicPatch</string>
 
     <string name="settings_app_dpi">Uygulama DPI</string>
+    <string name="dpi_apply_settings">Uygula</string>
+    <string name="dpi_confirm_title">DPI değişikliğini onayla</string>
+    <string name="dpi_confirm_message">Uygulama DPI değerini %1$s ile %2$s arasında değiştirmek ister misiniz?</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Dahili modül bağlama sistemini etkinleştir</string>
     <string name="settings_hide_service">FolkPatch Hide</string>

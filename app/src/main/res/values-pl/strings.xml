@@ -404,6 +404,9 @@
     <string name="about_github">GitHub</string>
     <string name="about_telegram_channel">Kanał na Telegramie</string>
     <string name="settings_app_dpi">DPI aplikacji</string>
+    <string name="dpi_apply_settings">Zastosuj</string>
+    <string name="dpi_confirm_title">Potwierdź zmianę DPI</string>
+    <string name="dpi_confirm_message">Zmienić DPI aplikacji z %1$s na %2$s?</string>
     <string name="settings_alt_icon">Alternatywna ikona</string>
     <string name="alt_icon_summary">Użyj alternatywnej ikony programu uruchamiającego</string>
     <string name="settings_magic_mount">API montowania Folk</string>

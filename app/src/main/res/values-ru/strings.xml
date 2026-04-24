@@ -471,6 +471,9 @@
     <string name="about_telegram_channel">Канал в Telegram</string>
 
     <string name="settings_app_dpi">DPI приложения</string>
+    <string name="dpi_apply_settings">Применить</string>
+    <string name="dpi_confirm_title">Подтверждение изменения DPI</string>
+    <string name="dpi_confirm_message">Изменить DPI приложения с %1$s на %2$s?</string>
     <string name="settings_alt_icon">Альтернативная иконка</string>
     <string name="alt_icon_summary">Использовать альтернативный значок запуска</string>
     <string name="settings_magic_mount">Folk Mount API</string>

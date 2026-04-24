@@ -451,6 +451,9 @@
     <string name="about_telegram_channel">Telegram 频道</string>
 
     <string name="settings_app_dpi">软件 DPI</string>
+    <string name="dpi_apply_settings">确定</string>
+    <string name="dpi_confirm_title">确认更改软件DPI</string>
+    <string name="dpi_confirm_message">将软件DPI从%1$s更改为%2$s？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">启用招牌菜挂载系统</string>
     <string name="settings_hide_service">FolkPatch Hide</string>

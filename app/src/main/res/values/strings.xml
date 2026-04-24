@@ -476,6 +476,9 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="app_title_magicpatch">MagicPatch</string>
 
     <string name="settings_app_dpi">App DPI</string>
+    <string name="dpi_apply_settings">Apply</string>
+    <string name="dpi_confirm_title">Confirm DPI change</string>
+    <string name="dpi_confirm_message">Change app DPI from %1$s to %2$s?</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Enable the built-in module mounting system</string>
     <string name="settings_hide_service">FolkPatch Hide</string>

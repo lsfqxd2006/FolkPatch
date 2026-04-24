@@ -4,8 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import me.bmax.apatch.util.ui.showToast
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,11 +21,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
@@ -92,7 +97,7 @@ fun GeneralSettingsContent(
     val launcherIconSummary = stringResource(id = R.string.alt_icon_summary)
 
     val appTitleTitle = stringResource(id = R.string.settings_app_title)
-    val currentAppTitle = remember { prefs.getString("app_title", "folkpatch") }
+    var currentAppTitle by remember { mutableStateOf(prefs.getString("app_title", "folkpatch") ?: "folkpatch") }
     val appTitleLabel = when (currentAppTitle) {
         "custom" -> remember { prefs.getString("custom_app_title", "FolkPatch") } ?: stringResource(R.string.app_title_custom)
         "fpatch" -> stringResource(R.string.app_title_fpatch)
@@ -117,7 +122,7 @@ fun GeneralSettingsContent(
 
     val dpiTitle = stringResource(id = R.string.settings_app_dpi)
     val currentDpiVal = DPIUtils.currentDpi
-    val dpiValue = if (currentDpiVal == -1) stringResource(id = R.string.system_default) else "$currentDpiVal DPI"
+    val dpiValue = if (currentDpiVal == DPIUtils.DEFAULT_DPI) stringResource(id = R.string.system_default) else "${DPIUtils.getDpiFriendlyName(currentDpiVal)} ($currentDpiVal DPI)"
 
     val logTitle = stringResource(id = R.string.send_log)
 
@@ -636,7 +641,9 @@ fun GeneralSettingsContent(
     }
 
     if (showAppTitleDialog.value) {
-        AppTitleChooseDialog(showAppTitleDialog)
+        AppTitleChooseDialog(showAppTitleDialog) { newTitle ->
+            currentAppTitle = newTitle
+        }
     }
 
     if (showCustomAppTitleDialog.value) {
@@ -718,29 +725,165 @@ fun DpiChooseDialog(showDialog: MutableState<Boolean>) {
     val context = LocalContext.current
     val activity = context as? Activity
 
+    val savedDpi = DPIUtils.currentDpi
+    var tempDpi by remember { mutableIntStateOf(if (savedDpi == DPIUtils.DEFAULT_DPI) DPIUtils.systemDpi else savedDpi) }
+    var isSystemDefault by remember { mutableStateOf(savedDpi == DPIUtils.DEFAULT_DPI) }
+
     BasicAlertDialog(
-        onDismissRequest = { showDialog.value = false }, properties = DialogProperties(
+        onDismissRequest = { showDialog.value = false },
+        properties = DialogProperties(
             decorFitsSystemWindows = true,
             usePlatformDefaultWidth = false,
         )
     ) {
         Surface(
             modifier = Modifier
-                .width(310.dp)
+                .width(340.dp)
                 .wrapContentHeight(),
             shape = RoundedCornerShape(30.dp),
             tonalElevation = AlertDialogDefaults.TonalElevation,
             color = AlertDialogDefaults.containerColor,
         ) {
-            LazyColumn {
-                items(DPIUtils.presets) { preset ->
-                    ListItem(
-                        headlineContent = { Text(text = preset.name) },
-                        modifier = Modifier.clickable {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Text(
+                    text = stringResource(id = R.string.settings_app_dpi),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                // System default toggle
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (isSystemDefault) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        .clickable {
+                            isSystemDefault = !isSystemDefault
+                            if (isSystemDefault) {
+                                tempDpi = DPIUtils.systemDpi
+                            }
+                        }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.system_default),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (isSystemDefault)
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    if (isSystemDefault) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                }
+
+                AnimatedVisibility(visible = !isSystemDefault) {
+                    Column {
+                        Spacer(Modifier.height(16.dp))
+
+                        // Slider
+                        val sliderValue by animateFloatAsState(
+                            targetValue = tempDpi.toFloat(),
+                            label = "DpiSlider",
+                        )
+                        Slider(
+                            value = sliderValue,
+                            onValueChange = { newValue ->
+                                tempDpi = newValue.toInt()
+                            },
+                            valueRange = DPIUtils.DPI_MIN.toFloat()..DPIUtils.DPI_MAX.toFloat(),
+                            steps = 10,
+                            colors = SliderDefaults.colors(
+                                thumbColor = MaterialTheme.colorScheme.primary,
+                                activeTrackColor = MaterialTheme.colorScheme.primary,
+                            ),
+                        )
+
+                        // Current value display
+                        Text(
+                            text = "${DPIUtils.getDpiFriendlyName(tempDpi)} ($tempDpi DPI)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 12.dp),
+                        )
+
+                        // Preset pills
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            DPIUtils.presets.forEach { preset ->
+                                val isSelected = tempDpi == preset.value
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(
+                                            if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                            else MaterialTheme.colorScheme.surfaceVariant
+                                        )
+                                        .clickable { tempDpi = preset.value }
+                                        .padding(vertical = 8.dp, horizontal = 4.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        text = preset.name,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = if (isSelected)
+                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                // Apply button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    TextButton(onClick = { showDialog.value = false }) {
+                        Text(stringResource(android.R.string.cancel))
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            val finalDpi = if (isSystemDefault) DPIUtils.DEFAULT_DPI else tempDpi
                             showDialog.value = false
-                            DPIUtils.setDpi(context, preset.value)
+                            DPIUtils.setDpi(context, finalDpi)
                             activity?.recreate()
-                        })
+                        },
+                    ) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.dpi_apply_settings))
+                    }
                 }
             }
 
@@ -858,7 +1001,7 @@ fun SELinuxModeDialog(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppTitleChooseDialog(showDialog: MutableState<Boolean>) {
+fun AppTitleChooseDialog(showDialog: MutableState<Boolean>, onTitleChanged: (String) -> Unit = {}) {
     val prefs = APApplication.sharedPreferences
     val currentTitle = remember { prefs.getString("app_title", "folkpatch") }
     val titles = listOf(
@@ -899,6 +1042,7 @@ fun AppTitleChooseDialog(showDialog: MutableState<Boolean>) {
                         modifier = Modifier.clickable {
                             showDialog.value = false
                             prefs.edit { putString("app_title", key) }
+                            onTitleChanged(key)
                         },
                         trailingContent = {
                             if (currentTitle == key) {

@@ -471,6 +471,9 @@ Aqui estão algumas possíveis razões para a falha de autenticação—verifiqu
     <string name="about_telegram_channel">Canal do Telegram</string>
 
     <string name="settings_app_dpi">DPI do App</string>
+    <string name="dpi_apply_settings">Aplicar</string>
+    <string name="dpi_confirm_title">Confirmar alteração de DPI</string>
+    <string name="dpi_confirm_message">Alterar DPI do app de %1$s para %2$s?</string>
     <string name="settings_alt_icon">Ícone alternativo</string>
     <string name="alt_icon_summary">Usar ícone alternativo do lançador</string>
     <string name="settings_magic_mount">Folk Mount API</string>

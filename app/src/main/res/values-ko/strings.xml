@@ -471,6 +471,9 @@
     <string name="app_title_magicpatch">MagicPatch</string>
 
     <string name="settings_app_dpi">앱 DPI</string>
+    <string name="dpi_apply_settings">적용</string>
+    <string name="dpi_confirm_title">DPI 변경 확인</string>
+    <string name="dpi_confirm_message">앱 DPI를 %1$s에서 %2$s(으)로 변경하시겠습니까?</string>
     <string name="settings_magic_mount">Folk 마운트 API</string>
     <string name="settings_magic_mount_summary">내장된 모듈 마운트 시스템을 활성화합니다.</string>
     <string name="settings_hide_service">FolkPatch 숨김</string>

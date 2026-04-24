@@ -473,6 +473,9 @@ Aquí hay algunas posibles razones para el fallo de autenticación—por favor v
     <string name="about_telegram_channel">Canal de Telegram</string>
 
     <string name="settings_app_dpi">DPI de la App</string>
+    <string name="dpi_apply_settings">Aplicar</string>
+    <string name="dpi_confirm_title">Confirmar cambio de DPI</string>
+    <string name="dpi_confirm_message">¿Cambiar DPI de la app de %1$s a %2$s?</string>
     <string name="settings_alt_icon">Icono alternativo</string>
     <string name="alt_icon_summary">Usar icono de lanzador alternativo</string>
     <string name="settings_magic_mount">Folk Mount API</string>

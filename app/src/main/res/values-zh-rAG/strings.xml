@@ -474,6 +474,9 @@
     <string name="about_telegram_channel">Telegram频道哒</string>
 
     <string name="settings_app_dpi">应用DPI喵</string>
+    <string name="dpi_apply_settings">确定喵</string>
+    <string name="dpi_confirm_title">确认改应用DPI喵</string>
+    <string name="dpi_confirm_message">要把应用DPI从%1$s改成%2$s吗喵？</string>
     <string name="settings_alt_icon">备用图标喵</string>
     <string name="alt_icon_summary">用备选启动器图标喵</string>
     <string name="settings_magic_mount">我要挂载喵</string>

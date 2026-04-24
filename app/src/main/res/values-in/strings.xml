@@ -466,6 +466,9 @@ Berikut adalah beberapa kemungkinan penyebab kegagalan autentikasi—silakan cek
     <string name="about_telegram_channel">Saluran Telegram</string>
 
     <string name="settings_app_dpi">DPI Aplikasi</string>
+    <string name="dpi_apply_settings">Terapkan</string>
+    <string name="dpi_confirm_title">Konfirmasi perubahan DPI</string>
+    <string name="dpi_confirm_message">Ubah DPI aplikasi dari %1$s ke %2$s?</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Aktifkan sistem pemasangan modul bawaan</string>
     <string name="settings_hide_service">FolkPatch Hide</string>

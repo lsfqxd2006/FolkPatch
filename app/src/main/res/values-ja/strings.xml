@@ -418,6 +418,9 @@
     <string name="app_title_superpatch">SuperPatch</string>
     <string name="app_title_magicpatch">MagicPatch</string>
     <string name="settings_app_dpi">アプリの DPI</string>
+    <string name="dpi_apply_settings">適用</string>
+    <string name="dpi_confirm_title">DPI変更の確認</string>
+    <string name="dpi_confirm_message">アプリのDPIを%1$sから%2$sに変更しますか？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">内蔵のモジュールマウントシステムを有効化します。</string>
     <string name="settings_hide_service">FolkPatch Hide</string>

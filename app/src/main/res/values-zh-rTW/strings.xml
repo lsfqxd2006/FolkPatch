@@ -466,6 +466,9 @@
     <string name="about_telegram_channel">Telegram 頻道</string>
 
     <string name="settings_app_dpi">應用程式 DPI</string>
+    <string name="dpi_apply_settings">套用</string>
+    <string name="dpi_confirm_title">確認變更 DPI</string>
+    <string name="dpi_confirm_message">將應用程式 DPI 從 %1$s 變更為 %2$s？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">啟用內建的模組掛載系統</string>
     <string name="settings_hide_service">FolkPatch Hide</string>

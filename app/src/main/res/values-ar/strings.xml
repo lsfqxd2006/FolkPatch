@@ -474,6 +474,9 @@
     <string name="about_telegram_channel">قناة تيليجرام</string>
 
     <string name="settings_app_dpi">DPI التطبيق</string>
+    <string name="dpi_apply_settings">تطبيق</string>
+    <string name="dpi_confirm_title">تأكيد تغيير DPI</string>
+    <string name="dpi_confirm_message">تغيير DPI التطبيق من %1$s إلى %2$s؟</string>
     <string name="settings_alt_icon">أيقونة بديلة</string>
     <string name="alt_icon_summary">استخدم أيقونة المشغل البديلة</string>
     <string name="settings_magic_mount">Folk Mount API</string>
