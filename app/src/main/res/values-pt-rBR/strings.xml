@@ -1038,4 +1038,12 @@ Por favor, certifique-se de fechar completamente o app e reabri-lo para que os c
     <string name="path_hide_disabled">Ocultar caminho desativado</string>
     <string name="path_hide_applied">Configuração de ocultar caminho aplicada</string>
     <string name="path_hide_failed">Falha na operação de ocultar caminho: %d</string>
+    <string name="path_hide_uid_mode">Modo de execução por UID</string>
+    <string name="path_hide_uid_mode_summary">Ocultar caminhos apenas para UIDs de aplicativos específicos</string>
+    <string name="path_hide_uids_label">UIDs de destino (um por linha)</string>
+    <string name="path_hide_uids_helper">Insira os UIDs dos aplicativos. Apenas estes aplicativos terão caminhos ocultos.</string>
+    <string name="path_hide_uid_save">Salvar UIDs</string>
+    <string name="path_hide_uid_mode_enabled">Modo de execução por UID ativado</string>
+    <string name="path_hide_uid_mode_disabled">Modo de execução por UID desativado</string>
+    <string name="path_hide_uid_applied">Lista de permissão de UIDs aplicada</string>
 </resources>

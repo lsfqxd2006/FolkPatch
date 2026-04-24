@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.FolderOff
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.HideSource
+import androidx.compose.material.icons.filled.PersonPin
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +61,11 @@ fun FunctionSettingsContent(
     pathHidePaths: String,
     onPathHidePathsChange: (String) -> Unit,
     onPathHideSave: () -> Unit,
+    isPathHideUidMode: Boolean,
+    onPathHideUidModeChange: (Boolean) -> Unit,
+    pathHideUids: String,
+    onPathHideUidsChange: (String) -> Unit,
+    onPathHideUidSave: () -> Unit,
     isUmountEnabled: Boolean,
     onUmountEnabledChange: (Boolean) -> Unit,
     umountPaths: String,
@@ -331,6 +337,75 @@ fun FunctionSettingsContent(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Text(stringResource(R.string.path_hide_save))
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // UID Execution Mode
+                            val uidModeTitle = stringResource(id = R.string.path_hide_uid_mode)
+                            val uidModeSummary = stringResource(id = R.string.path_hide_uid_mode_summary)
+                            val uidsLabel = stringResource(id = R.string.path_hide_uids_label)
+                            val uidsHelper = stringResource(id = R.string.path_hide_uids_helper)
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.PersonPin,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(20.dp),
+                                    )
+                                    Spacer(Modifier.width(12.dp))
+                                    Column {
+                                        Text(
+                                            text = uidModeTitle,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            fontWeight = FontWeight.SemiBold,
+                                        )
+                                        Text(
+                                            text = uidModeSummary,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                                ExpressiveSwitch(
+                                    checked = isPathHideUidMode,
+                                    onCheckedChange = onPathHideUidModeChange,
+                                )
+                            }
+
+                            AnimatedVisibility(visible = isPathHideUidMode) {
+                                Column(modifier = Modifier.padding(top = 8.dp)) {
+                                    OutlinedTextField(
+                                        value = pathHideUids,
+                                        onValueChange = onPathHideUidsChange,
+                                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                                        label = { Text(uidsLabel) },
+                                        placeholder = { Text("10134\n10087") },
+                                        supportingText = { Text(uidsHelper) },
+                                        minLines = 3,
+                                        maxLines = Int.MAX_VALUE,
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    )
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    Button(
+                                        onClick = onPathHideUidSave,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) {
+                                        Text(stringResource(R.string.path_hide_uid_save))
+                                    }
+                                }
                             }
                         }
                     }

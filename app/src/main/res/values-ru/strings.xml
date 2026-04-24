@@ -1037,4 +1037,12 @@
     <string name="path_hide_disabled">Скрытие путей отключено</string>
     <string name="path_hide_applied">Конфигурация скрытия путей применена</string>
     <string name="path_hide_failed">Ошибка операции скрытия путей: %d</string>
+    <string name="path_hide_uid_mode">Режим выполнения по UID</string>
+    <string name="path_hide_uid_mode_summary">Скрывать пути только для указанных UID приложений</string>
+    <string name="path_hide_uids_label">Целевые UID (по одному на строку)</string>
+    <string name="path_hide_uids_helper">Введите UID приложений. Пути будут скрыты только для этих приложений.</string>
+    <string name="path_hide_uid_save">Сохранить UID</string>
+    <string name="path_hide_uid_mode_enabled">Режим выполнения по UID включён</string>
+    <string name="path_hide_uid_mode_disabled">Режим выполнения по UID отключён</string>
+    <string name="path_hide_uid_applied">Белый список UID применён</string>
 </resources>

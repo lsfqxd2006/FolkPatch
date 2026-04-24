@@ -1023,4 +1023,12 @@
     <string name="path_hide_disabled">路径隐藏已熄火</string>
     <string name="path_hide_applied">路径隐藏已上菜</string>
     <string name="path_hide_failed">路径隐藏翻车了: %d</string>
+    <string name="path_hide_uid_mode">UID 精准火候模式</string>
+    <string name="path_hide_uid_mode_summary">只对指定应用的 UID 下隐藏路径</string>
+    <string name="path_hide_uids_label">目标 UID（每行一个，列好清单）</string>
+    <string name="path_hide_uids_helper">每行写一个应用 UID，只有这些应用的路径会被藏起来</string>
+    <string name="path_hide_uid_save">保存 UID 配方</string>
+    <string name="path_hide_uid_mode_enabled">UID 精准火候模式已开火</string>
+    <string name="path_hide_uid_mode_disabled">UID 精准火候模式已熄火</string>
+    <string name="path_hide_uid_applied">UID 白名单已上菜</string>
 </resources>

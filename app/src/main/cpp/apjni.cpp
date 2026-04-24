@@ -349,6 +349,58 @@ jlong nativePathHideStatus(JNIEnv *env, jobject /* this */, jstring super_key_js
     return rc;
 }
 
+jlong nativePathHideUidAdd(JNIEnv *env, jobject /* this */, jstring super_key_jstr, jint uid) {
+    ensureSuperKeyNonNull(super_key_jstr);
+    const auto super_key = JUTFString(env, super_key_jstr);
+    long rc = sc_pathhide_uid_add(super_key.get(), (int)uid);
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativePathHideUidAdd error: %ld", rc);
+    }
+    return rc;
+}
+
+jlong nativePathHideUidRemove(JNIEnv *env, jobject /* this */, jstring super_key_jstr, jint uid) {
+    ensureSuperKeyNonNull(super_key_jstr);
+    const auto super_key = JUTFString(env, super_key_jstr);
+    long rc = sc_pathhide_uid_remove(super_key.get(), (int)uid);
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativePathHideUidRemove error: %ld", rc);
+    }
+    return rc;
+}
+
+jstring nativePathHideUidList(JNIEnv *env, jobject /* this */, jstring super_key_jstr) {
+    ensureSuperKeyNonNull(super_key_jstr);
+    const auto super_key = JUTFString(env, super_key_jstr);
+    char buf[4096] = {0};
+    long rc = sc_pathhide_uid_list(super_key.get(), buf, sizeof(buf));
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativePathHideUidList error: %ld", rc);
+        return env->NewStringUTF("");
+    }
+    return env->NewStringUTF(buf);
+}
+
+jlong nativePathHideUidClear(JNIEnv *env, jobject /* this */, jstring super_key_jstr) {
+    ensureSuperKeyNonNull(super_key_jstr);
+    const auto super_key = JUTFString(env, super_key_jstr);
+    long rc = sc_pathhide_uid_clear(super_key.get());
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativePathHideUidClear error: %ld", rc);
+    }
+    return rc;
+}
+
+jlong nativePathHideUidMode(JNIEnv *env, jobject /* this */, jstring super_key_jstr, jint enable) {
+    ensureSuperKeyNonNull(super_key_jstr);
+    const auto super_key = JUTFString(env, super_key_jstr);
+    long rc = sc_pathhide_uid_mode(super_key.get(), (int)enable);
+    if (rc < 0) [[unlikely]] {
+        LOGE("nativePathHideUidMode error: %ld", rc);
+    }
+    return rc;
+}
+
 jstring nativeSuAuditList(JNIEnv *env, jobject /* this */, jstring super_key_jstr) {
     ensureSuperKeyNonNull(super_key_jstr);
 
@@ -445,6 +497,11 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void * /*reserved*/) {
         {"nativePathHideClear", "(Ljava/lang/String;)J", reinterpret_cast<void *>(&nativePathHideClear)},
         {"nativePathHideEnable", "(Ljava/lang/String;I)J", reinterpret_cast<void *>(&nativePathHideEnable)},
         {"nativePathHideStatus", "(Ljava/lang/String;)J", reinterpret_cast<void *>(&nativePathHideStatus)},
+        {"nativePathHideUidAdd", "(Ljava/lang/String;I)J", reinterpret_cast<void *>(&nativePathHideUidAdd)},
+        {"nativePathHideUidRemove", "(Ljava/lang/String;I)J", reinterpret_cast<void *>(&nativePathHideUidRemove)},
+        {"nativePathHideUidList", "(Ljava/lang/String;)Ljava/lang/String;", reinterpret_cast<void *>(&nativePathHideUidList)},
+        {"nativePathHideUidClear", "(Ljava/lang/String;)J", reinterpret_cast<void *>(&nativePathHideUidClear)},
+        {"nativePathHideUidMode", "(Ljava/lang/String;I)J", reinterpret_cast<void *>(&nativePathHideUidMode)},
         {"nativeSuAuditList", "(Ljava/lang/String;)Ljava/lang/String;", reinterpret_cast<void *>(&nativeSuAuditList)},
         {"nativeSuAuditClear", "(Ljava/lang/String;)J", reinterpret_cast<void *>(&nativeSuAuditClear)},
         {"nativeGetApiToken", "(Landroid/content/Context;)Ljava/lang/String;", reinterpret_cast<void *>(&nativeGetApiToken)},

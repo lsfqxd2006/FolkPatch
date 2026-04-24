@@ -1042,4 +1042,12 @@ Komutların çalışması için uygulamanın tamamen kapatılıp yeniden açıld
     <string name="path_hide_disabled">Yol gizleme devre dışı bırakıldı</string>
     <string name="path_hide_applied">Yol gizleme yapılandırması uygulandı</string>
     <string name="path_hide_failed">Yol gizleme işlemi başarısız: %d</string>
+    <string name="path_hide_uid_mode">UID Yürütme Modu</string>
+    <string name="path_hide_uid_mode_summary">Yolları yalnızca belirli uygulama UID\'leri için gizle</string>
+    <string name="path_hide_uids_label">Hedef UID\'ler (her satıra bir tane)</string>
+    <string name="path_hide_uids_helper">Uygulama UID\'lerini girin. Yalnızca bu uygulamaların yolları gizlenir.</string>
+    <string name="path_hide_uid_save">UID\'leri Kaydet</string>
+    <string name="path_hide_uid_mode_enabled">UID yürütme modu etkinleştirildi</string>
+    <string name="path_hide_uid_mode_disabled">UID yürütme modu devre dışı bırakıldı</string>
+    <string name="path_hide_uid_applied">UID beyaz liste uygulandı</string>
 </resources>

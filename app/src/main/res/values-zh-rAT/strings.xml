@@ -1024,4 +1024,12 @@
     <string name="path_hide_disabled">路径圣隐匿已关闭</string>
     <string name="path_hide_applied">路径圣隐匿已降临生效</string>
     <string name="path_hide_failed">路径圣隐匿失败: %d</string>
+    <string name="path_hide_uid_mode">UID 圣裁模式</string>
+    <string name="path_hide_uid_mode_summary">仅对受圣光选中之 UID 施以圣隐匿</string>
+    <string name="path_hide_uids_label">圣选 UID（每行一道）</string>
+    <string name="path_hide_uids_helper">书写应用 UID，唯蒙圣光眷顾者方受圣隐匿庇护</string>
+    <string name="path_hide_uid_save">圣光封存 UID</string>
+    <string name="path_hide_uid_mode_enabled">UID 圣裁模式已开启</string>
+    <string name="path_hide_uid_mode_disabled">UID 圣裁模式已关闭</string>
+    <string name="path_hide_uid_applied">UID 圣选名录已降临生效</string>
 </resources>

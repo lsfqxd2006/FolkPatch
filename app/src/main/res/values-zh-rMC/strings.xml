@@ -1012,4 +1012,12 @@
     <string name="path_hide_disabled">路径隐藏已禁用（方块恢复可见）</string>
     <string name="path_hide_applied">路径隐藏配置已应用（隐身效果已生效）</string>
     <string name="path_hide_failed">路径隐藏操作失败: %d</string>
+    <string name="path_hide_uid_mode">UID 指定模式（精准选择方块）</string>
+    <string name="path_hide_uid_mode_summary">只对指定 UID 的应用隐藏路径（像选择特定方块）</string>
+    <string name="path_hide_uids_label">目标 UID（每行一个，像列清单）</string>
+    <string name="path_hide_uids_helper">每行输入一个应用 UID，只有这些应用的路径会被隐藏</string>
+    <string name="path_hide_uid_save">保存 UID（存档）</string>
+    <string name="path_hide_uid_mode_enabled">UID 指定模式已启用（精准选择已激活）</string>
+    <string name="path_hide_uid_mode_disabled">UID 指定模式已禁用（精准选择已关闭）</string>
+    <string name="path_hide_uid_applied">UID 白名单已应用（选择列表已生效）</string>
 </resources>

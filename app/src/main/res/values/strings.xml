@@ -496,6 +496,14 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="path_hide_disabled">Path hide disabled</string>
     <string name="path_hide_applied">Path hide configuration applied</string>
     <string name="path_hide_failed">Path hide operation failed: %d</string>
+    <string name="path_hide_uid_mode">UID Execution Mode</string>
+    <string name="path_hide_uid_mode_summary">Only hide paths for specific app UIDs</string>
+    <string name="path_hide_uids_label">Target UIDs (one per line)</string>
+    <string name="path_hide_uids_helper">Enter app UIDs. Only these apps will have paths hidden.</string>
+    <string name="path_hide_uid_save">Save UIDs</string>
+    <string name="path_hide_uid_mode_enabled">UID execution mode enabled</string>
+    <string name="path_hide_uid_mode_disabled">UID execution mode disabled</string>
+    <string name="path_hide_uid_applied">UID whitelist applied</string>
     <!-- Umount Service -->
     <string name="settings_umount_service">Umount Service</string>
     <string name="settings_umount_service_summary">Configure mount points to auto-unmount at boot</string>

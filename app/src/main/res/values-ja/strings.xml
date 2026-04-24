@@ -949,4 +949,12 @@
     <string name="path_hide_disabled">パス非表示が無効になりました</string>
     <string name="path_hide_applied">パス非表示設定が適用されました</string>
     <string name="path_hide_failed">パス非表示操作に失敗しました: %d</string>
+    <string name="path_hide_uid_mode">UID 実行モード</string>
+    <string name="path_hide_uid_mode_summary">指定したアプリの UID のみパスを非表示にします</string>
+    <string name="path_hide_uids_label">対象 UID（1行に1つ）</string>
+    <string name="path_hide_uids_helper">アプリの UID を入力してください。これらのアプリのみパスが非表示になります。</string>
+    <string name="path_hide_uid_save">UID を保存</string>
+    <string name="path_hide_uid_mode_enabled">UID 実行モードが有効になりました</string>
+    <string name="path_hide_uid_mode_disabled">UID 実行モードが無効になりました</string>
+    <string name="path_hide_uid_applied">UID ホワイトリストが適用されました</string>
 </resources>

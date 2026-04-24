@@ -1025,4 +1025,12 @@
     <string name="path_hide_disabled">تم تعطيل إخفاء المسار</string>
     <string name="path_hide_applied">تم تطبيق إعدادات إخفاء المسار</string>
     <string name="path_hide_failed">فشلت عملية إخفاء المسار: %d</string>
+    <string name="path_hide_uid_mode">وضع تنفيذ UID</string>
+    <string name="path_hide_uid_mode_summary">إخفاء المسارات لتطبيقات محددة فقط بواسطة UID</string>
+    <string name="path_hide_uids_label">معرّفات UID المستهدفة (واحد في كل سطر)</string>
+    <string name="path_hide_uids_helper">أدخل معرّفات UID للتطبيقات. فقط هذه التطبيقات سيتم إخفاء مساراتها.</string>
+    <string name="path_hide_uid_save">حفظ معرّفات UID</string>
+    <string name="path_hide_uid_mode_enabled">تم تفعيل وضع تنفيذ UID</string>
+    <string name="path_hide_uid_mode_disabled">تم تعطيل وضع تنفيذ UID</string>
+    <string name="path_hide_uid_applied">تم تطبيق القائمة البيضاء لـ UID</string>
 </resources>

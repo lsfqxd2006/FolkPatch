@@ -73,6 +73,8 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
     var umountPaths by rememberSaveable { mutableStateOf("") }
     var isPathHideEnabled by rememberSaveable { mutableStateOf(false) }
     var pathHidePaths by rememberSaveable { mutableStateOf("") }
+    var isPathHideUidMode by rememberSaveable { mutableStateOf(false) }
+    var pathHideUids by rememberSaveable { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -97,6 +99,12 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                     pathHidePaths = kernelPaths.trimEnd('\n')
                 } else {
                     pathHidePaths = readPathHidePaths()
+                }
+                // Load UID mode state
+                isPathHideUidMode = APApplication.sharedPreferences.getBoolean("pathhide_uid_mode", false)
+                val kernelUids = Natives.pathHideUidList()
+                if (kernelUids.isNotBlank()) {
+                    pathHideUids = kernelUids.trimEnd('\n')
                 }
             }
         }
@@ -257,6 +265,40 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                             }
                             withContext(Dispatchers.Main) {
                                 snackBarHost.showSnackbar(context.getString(R.string.path_hide_applied))
+                            }
+                        }
+                    },
+                    isPathHideUidMode = isPathHideUidMode,
+                    onPathHideUidModeChange = { enabled ->
+                        isPathHideUidMode = enabled
+                        scope.launch(Dispatchers.IO) {
+                            APApplication.sharedPreferences.edit().putBoolean("pathhide_uid_mode", enabled).apply()
+                            Natives.pathHideUidMode(enabled)
+                            withContext(Dispatchers.Main) {
+                                snackBarHost.showSnackbar(
+                                    context.getString(if (enabled) R.string.path_hide_uid_mode_enabled else R.string.path_hide_uid_mode_disabled)
+                                )
+                            }
+                        }
+                    },
+                    pathHideUids = pathHideUids,
+                    onPathHideUidsChange = { pathHideUids = it },
+                    onPathHideUidSave = {
+                        val currentUids = pathHideUids
+                        scope.launch(Dispatchers.IO) {
+                            Natives.pathHideUidClear()
+                            if (currentUids.isNotBlank()) {
+                                currentUids.lines()
+                                    .map { it.trim() }
+                                    .filter { it.isNotBlank() }
+                                    .forEach { uidStr ->
+                                        uidStr.toIntOrNull()?.let { uid ->
+                                            Natives.pathHideUidAdd(uid)
+                                        }
+                                    }
+                            }
+                            withContext(Dispatchers.Main) {
+                                snackBarHost.showSnackbar(context.getString(R.string.path_hide_uid_applied))
                             }
                         }
                     },

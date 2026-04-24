@@ -1026,4 +1026,12 @@
     <string name="path_hide_disabled">路徑隱藏已停用</string>
     <string name="path_hide_applied">路徑隱藏設定已套用</string>
     <string name="path_hide_failed">路徑隱藏操作失敗：%d</string>
+    <string name="path_hide_uid_mode">UID 執行模式</string>
+    <string name="path_hide_uid_mode_summary">僅對指定應用程式 UID 隱藏路徑</string>
+    <string name="path_hide_uids_label">目標 UID（每行一個）</string>
+    <string name="path_hide_uids_helper">輸入應用程式 UID，僅這些應用程式的路徑會被隱藏。</string>
+    <string name="path_hide_uid_save">儲存 UID</string>
+    <string name="path_hide_uid_mode_enabled">UID 執行模式已啟用</string>
+    <string name="path_hide_uid_mode_disabled">UID 執行模式已停用</string>
+    <string name="path_hide_uid_applied">UID 白名單已套用</string>
 </resources>

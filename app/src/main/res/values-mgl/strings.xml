@@ -1023,4 +1023,12 @@
     <string name="path_hide_disabled">Зам нуух идэвхгүй болсон</string>
     <string name="path_hide_applied">Зам нуух тохиргоо хэрэглэгдсэн</string>
     <string name="path_hide_failed">Зам нуух үйлдэл амжилтгүй: %d</string>
+    <string name="path_hide_uid_mode">UID гүйцэтгэх горим</string>
+    <string name="path_hide_uid_mode_summary">Зөвхөн тодорхой аппын UID-д замыг нуух</string>
+    <string name="path_hide_uids_label">Зорилтот UID (мөр бүрт нэг)</string>
+    <string name="path_hide_uids_helper">Аппын UID оруулна уу. Зөвхөн эдгээр аппуудын зам нуугдана.</string>
+    <string name="path_hide_uid_save">UID хадгалах</string>
+    <string name="path_hide_uid_mode_enabled">UID гүйцэтгэх горим идэвхжсэн</string>
+    <string name="path_hide_uid_mode_disabled">UID гүйцэтгэх горим идэвхгүй</string>
+    <string name="path_hide_uid_applied">UID цагаан жагсаалт хэрэгжсэн</string>
 </resources>

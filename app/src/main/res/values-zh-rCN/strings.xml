@@ -1029,4 +1029,12 @@
     <string name="path_hide_disabled">路径隐藏已禁用</string>
     <string name="path_hide_applied">路径隐藏配置已应用</string>
     <string name="path_hide_failed">路径隐藏操作失败：%d</string>
+    <string name="path_hide_uid_mode">UID 执行模式</string>
+    <string name="path_hide_uid_mode_summary">仅对指定应用 UID 隐藏路径</string>
+    <string name="path_hide_uids_label">目标 UID（每行一个）</string>
+    <string name="path_hide_uids_helper">输入应用 UID，仅这些应用的路径会被隐藏。</string>
+    <string name="path_hide_uid_save">保存 UID</string>
+    <string name="path_hide_uid_mode_enabled">UID 执行模式已启用</string>
+    <string name="path_hide_uid_mode_disabled">UID 执行模式已禁用</string>
+    <string name="path_hide_uid_applied">UID 白名单已应用</string>
 </resources>

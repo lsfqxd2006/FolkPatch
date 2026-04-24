@@ -1040,4 +1040,12 @@ Por ejemplo, los KPM que previenen la modificación de particiones solo pueden u
     <string name="path_hide_disabled">Ocultar ruta deshabilitado</string>
     <string name="path_hide_applied">Configuración de ocultar ruta aplicada</string>
     <string name="path_hide_failed">Error en la operación de ocultar ruta: %d</string>
+    <string name="path_hide_uid_mode">Modo de ejecución por UID</string>
+    <string name="path_hide_uid_mode_summary">Ocultar rutas solo para UID de aplicaciones específicas</string>
+    <string name="path_hide_uids_label">UID de destino (uno por línea)</string>
+    <string name="path_hide_uids_helper">Introduce los UID de las aplicaciones. Solo estas aplicaciones tendrán rutas ocultas.</string>
+    <string name="path_hide_uid_save">Guardar UID</string>
+    <string name="path_hide_uid_mode_enabled">Modo de ejecución por UID activado</string>
+    <string name="path_hide_uid_mode_disabled">Modo de ejecución por UID desactivado</string>
+    <string name="path_hide_uid_applied">Lista blanca de UID aplicada</string>
 </resources>

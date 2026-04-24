@@ -955,4 +955,12 @@ Upewnij się, że aplikacja jest całkowicie zamknięta i ponownie otwarta, aby 
     <string name="path_hide_disabled">Ukrywanie ścieżek wyłączone</string>
     <string name="path_hide_applied">Konfiguracja ukrywania ścieżek zastosowana</string>
     <string name="path_hide_failed">Błąd operacji ukrywania ścieżek: %d</string>
+    <string name="path_hide_uid_mode">Tryb wykonywania wg UID</string>
+    <string name="path_hide_uid_mode_summary">Ukrywaj ścieżki tylko dla określonych UID aplikacji</string>
+    <string name="path_hide_uids_label">Docelowe UID (po jednym w wierszu)</string>
+    <string name="path_hide_uids_helper">Wprowadź UID aplikacji. Tylko te aplikacje będą miały ukryte ścieżki.</string>
+    <string name="path_hide_uid_save">Zapisz UID</string>
+    <string name="path_hide_uid_mode_enabled">Tryb wykonywania wg UID włączony</string>
+    <string name="path_hide_uid_mode_disabled">Tryb wykonywania wg UID wyłączony</string>
+    <string name="path_hide_uid_applied">Biała lista UID zastosowana</string>
 </resources>

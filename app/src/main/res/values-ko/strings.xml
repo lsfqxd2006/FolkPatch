@@ -1051,4 +1051,12 @@
     <string name="path_hide_disabled">경로 숨기기 비활성화됨</string>
     <string name="path_hide_applied">경로 숨기기 설정이 적용됨</string>
     <string name="path_hide_failed">경로 숨기기 작업 실패: %d</string>
+    <string name="path_hide_uid_mode">UID 실행 모드</string>
+    <string name="path_hide_uid_mode_summary">지정한 앱 UID에 대해서만 경로를 숨깁니다</string>
+    <string name="path_hide_uids_label">대상 UID (한 줄에 하나)</string>
+    <string name="path_hide_uids_helper">앱 UID를 입력하세요. 이 앱들만 경로가 숨겨집니다.</string>
+    <string name="path_hide_uid_save">UID 저장</string>
+    <string name="path_hide_uid_mode_enabled">UID 실행 모드가 활성화되었습니다</string>
+    <string name="path_hide_uid_mode_disabled">UID 실행 모드가 비활성화되었습니다</string>
+    <string name="path_hide_uid_applied">UID 허용 목록이 적용되었습니다</string>
 </resources>

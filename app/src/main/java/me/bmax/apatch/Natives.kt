@@ -203,6 +203,36 @@ object Natives {
     }
 
     @FastNative
+    private external fun nativePathHideUidAdd(superKey: String, uid: Int): Long
+    fun pathHideUidAdd(uid: Int): Long {
+        return nativePathHideUidAdd(APApplication.superKey, uid)
+    }
+
+    @FastNative
+    private external fun nativePathHideUidRemove(superKey: String, uid: Int): Long
+    fun pathHideUidRemove(uid: Int): Long {
+        return nativePathHideUidRemove(APApplication.superKey, uid)
+    }
+
+    @FastNative
+    private external fun nativePathHideUidList(superKey: String): String
+    fun pathHideUidList(): String {
+        return nativePathHideUidList(APApplication.superKey)
+    }
+
+    @FastNative
+    private external fun nativePathHideUidClear(superKey: String): Long
+    fun pathHideUidClear(): Long {
+        return nativePathHideUidClear(APApplication.superKey)
+    }
+
+    @FastNative
+    private external fun nativePathHideUidMode(superKey: String, enable: Int): Long
+    fun pathHideUidMode(enable: Boolean): Long {
+        return nativePathHideUidMode(APApplication.superKey, if (enable) 1 else 0)
+    }
+
+    @FastNative
     private external fun nativeSuAuditList(superKey: String): String
     fun suAuditList(): String {
         return nativeSuAuditList(APApplication.superKey)

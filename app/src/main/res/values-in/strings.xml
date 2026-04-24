@@ -1019,4 +1019,12 @@ Pastikan aplikasi ditutup sepenuhnya dan dimulai ulang untuk menjalankan perinta
     <string name="path_hide_disabled">Sembunyikan jalur dinonaktifkan</string>
     <string name="path_hide_applied">Konfigurasi sembunyikan jalur diterapkan</string>
     <string name="path_hide_failed">Operasi sembunyikan jalur gagal: %d</string>
+    <string name="path_hide_uid_mode">Mode Eksekusi UID</string>
+    <string name="path_hide_uid_mode_summary">Sembunyikan jalur hanya untuk UID aplikasi tertentu</string>
+    <string name="path_hide_uids_label">UID target (satu per baris)</string>
+    <string name="path_hide_uids_helper">Masukkan UID aplikasi. Hanya aplikasi ini yang jalurnya akan disembunyikan.</string>
+    <string name="path_hide_uid_save">Simpan UID</string>
+    <string name="path_hide_uid_mode_enabled">Mode eksekusi UID diaktifkan</string>
+    <string name="path_hide_uid_mode_disabled">Mode eksekusi UID dinonaktifkan</string>
+    <string name="path_hide_uid_applied">Daftar putih UID diterapkan</string>
 </resources>

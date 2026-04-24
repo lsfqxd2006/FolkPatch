@@ -1022,4 +1022,12 @@
     <string name="path_hide_disabled">路径隐遁术已解除</string>
     <string name="path_hide_applied">路径隐遁术已布阵生效</string>
     <string name="path_hide_failed">路径隐遁术施展失败: %d</string>
+    <string name="path_hide_uid_mode">UID 锁定术</string>
+    <string name="path_hide_uid_mode_summary">仅对锁定之 UID 施以隐遁之术</string>
+    <string name="path_hide_uids_label">锁定 UID（每行一道）</string>
+    <string name="path_hide_uids_helper">书写应用 UID，唯锁定之目标方受隐遁术庇护</string>
+    <string name="path_hide_uid_save">封印 UID</string>
+    <string name="path_hide_uid_mode_enabled">UID 锁定术已施展</string>
+    <string name="path_hide_uid_mode_disabled">UID 锁定术已解除</string>
+    <string name="path_hide_uid_applied">UID 锁定名录已布阵生效</string>
 </resources>
