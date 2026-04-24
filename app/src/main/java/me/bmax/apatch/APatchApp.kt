@@ -105,6 +105,8 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
         const val PATHHIDE_DIR = "/data/adb/fp/pathhide/"
         const val PATHHIDE_PATHS_FILE = "/data/adb/fp/pathhide/paths"
         const val PATHHIDE_ENABLE_FILE = "/data/adb/fp/pathhide/enabled"
+        const val PATHHIDE_UIDS_FILE = "/data/adb/fp/pathhide/uids"
+        const val PATHHIDE_UID_MODE_FILE = "/data/adb/fp/pathhide/uid_mode"
         const val KPMS_DIR = APATCH_FOLDER + "kpms/"
 
         @Deprecated("Use SHA256 comparison instead")

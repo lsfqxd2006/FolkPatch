@@ -52,6 +52,8 @@ import me.bmax.apatch.util.isPathHideEnabled as checkPathHideEnabled
 import me.bmax.apatch.util.setPathHideEnabled
 import me.bmax.apatch.util.writePathHidePaths
 import me.bmax.apatch.util.readPathHidePaths
+import me.bmax.apatch.util.writePathHideUids
+import me.bmax.apatch.util.setPathHideUidMode
 import me.bmax.apatch.util.ui.LocalSnackbarHost
 import me.bmax.apatch.util.ui.NavigationBarsSpacer
 import androidx.compose.ui.platform.LocalContext
@@ -105,6 +107,8 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                 val kernelUids = Natives.pathHideUidList()
                 if (kernelUids.isNotBlank()) {
                     pathHideUids = kernelUids.trimEnd('\n')
+                } else {
+                    pathHideUids = me.bmax.apatch.util.readPathHideUids()
                 }
             }
         }
@@ -273,6 +277,7 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                         isPathHideUidMode = enabled
                         scope.launch(Dispatchers.IO) {
                             APApplication.sharedPreferences.edit().putBoolean("pathhide_uid_mode", enabled).apply()
+                            setPathHideUidMode(enabled)
                             Natives.pathHideUidMode(enabled)
                             withContext(Dispatchers.Main) {
                                 snackBarHost.showSnackbar(
@@ -286,6 +291,8 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                     onPathHideUidSave = {
                         val currentUids = pathHideUids
                         scope.launch(Dispatchers.IO) {
+                            // Save to config file for persistence
+                            writePathHideUids(currentUids)
                             Natives.pathHideUidClear()
                             if (currentUids.isNotBlank()) {
                                 currentUids.lines()

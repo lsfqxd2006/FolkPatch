@@ -16,6 +16,12 @@ pub const UTS_SPOOF_ENABLE_FILE: &str = concatcp!(ADB_DIR, ".uts_spoof_enable");
 pub const UTS_SPOOF_CONFIG_FILE: &str = concatcp!(ADB_DIR, ".uts_spoof_config");
 pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "apd");
 
+pub const PATHHIDE_DIR: &str = concatcp!(ADB_DIR, "fp/pathhide/");
+pub const PATHHIDE_ENABLE_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/enabled");
+pub const PATHHIDE_PATHS_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/paths");
+pub const PATHHIDE_UIDS_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/uids");
+pub const PATHHIDE_UID_MODE_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/uid_mode");
+
 pub const MODULE_DIR: &str = concatcp!(ADB_DIR, "modules/");
 pub const AP_MAGIC_MOUNT_SOURCE: &str = concatcp!(WORKING_DIR, "magic_mount");
 

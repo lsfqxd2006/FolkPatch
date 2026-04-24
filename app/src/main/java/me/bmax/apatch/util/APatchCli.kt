@@ -493,6 +493,26 @@ fun readPathHidePaths(): String {
     return ShellUtils.fastCmd(shell, "cat ${APApplication.PATHHIDE_PATHS_FILE} 2>/dev/null") ?: ""
 }
 
+fun writePathHideUids(uids: String) {
+    val shell = getRootShell()
+    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
+    val escapedUids = uids.replace("'", "'\\''")
+    shell.newJob().add("echo -n '$escapedUids' > ${APApplication.PATHHIDE_UIDS_FILE}")
+        .exec()
+}
+
+fun readPathHideUids(): String {
+    val shell = getRootShell()
+    return ShellUtils.fastCmd(shell, "cat ${APApplication.PATHHIDE_UIDS_FILE} 2>/dev/null") ?: ""
+}
+
+fun setPathHideUidMode(enable: Boolean) {
+    val shell = getRootShell()
+    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
+    shell.newJob().add("${if (enable) "touch" else "rm -f"} ${APApplication.PATHHIDE_UID_MODE_FILE}")
+        .exec()
+}
+
 fun executeHideBinary(): Boolean {
     val shell = getRootShell()
     val context = apApp.applicationContext
