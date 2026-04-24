@@ -46,9 +46,7 @@ import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -91,6 +89,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.bmax.apatch.R
 import me.bmax.apatch.APApplication
+import androidx.compose.material3.HorizontalDivider
+import me.bmax.apatch.ui.component.ExpressiveCard
 import me.bmax.apatch.ui.component.SwitchItem
 import me.bmax.apatch.ui.viewmodel.KPModel
 import me.bmax.apatch.ui.viewmodel.PatchesViewModel
@@ -191,33 +191,33 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
             }
 
             if (mode != PatchesViewModel.PatchMode.UNPATCH && mode != PatchesViewModel.PatchMode.RESTORE && viewModel.kimgInfo.banner.isNotEmpty()) {
-                ElevatedCard(
+                ExpressiveCard(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.elevatedCardColors(containerColor = run {
-                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 1f)
-                    }),
-                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
-                ) {
-                    SwitchItem(
-                        icon = Icons.Default.Key,
-                        title = stringResource(R.string.patch_custom_superkey),
-                        summary = stringResource(R.string.patch_custom_superkey_summary),
-                        checked = needKey,
-                        onCheckedChange = { checked ->
-                            needKey = checked
-                            APApplication.sharedPreferences.edit().putBoolean("patch_custom_superkey_enabled", checked).apply()
-                        }
-                    )
-                }
-
-                AnimatedVisibility(
-                    visible = needKey,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
+                    flat = true,
                 ) {
                     Column {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        SetSuperKeyView(viewModel)
+                        SwitchItem(
+                            icon = Icons.Default.Key,
+                            title = stringResource(R.string.patch_custom_superkey),
+                            summary = stringResource(R.string.patch_custom_superkey_summary),
+                            checked = needKey,
+                            onCheckedChange = { checked ->
+                                needKey = checked
+                                APApplication.sharedPreferences.edit().putBoolean("patch_custom_superkey_enabled", checked).apply()
+                            }
+                        )
+
+                        AnimatedVisibility(
+                            visible = needKey,
+                            enter = expandVertically() + fadeIn(),
+                            exit = shrinkVertically() + fadeOut()
+                        ) {
+                            Column {
+                                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp))
+                                SetSuperKeyViewContent(viewModel)
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
+                        }
                     }
                 }
             }
@@ -413,11 +413,7 @@ private fun ExtraItem(extra: KPModel.IExtraInfo, existed: Boolean, onDelete: () 
         ExtraConfigDialog(extra, onDismiss = { showConfigDialog = false })
     }
 
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(containerColor = run {
-            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 1f)
-        }),
-    ) {
+    ExpressiveCard(flat = true) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -482,127 +478,109 @@ private fun ExtraItem(extra: KPModel.IExtraInfo, existed: Boolean, onDelete: () 
 
 
 @Composable
-private fun SetSuperKeyView(viewModel: PatchesViewModel) {
+private fun SetSuperKeyViewContent(viewModel: PatchesViewModel) {
     var skey by remember { mutableStateOf(viewModel.superkey) }
     var skeyConfirm by remember { mutableStateOf("") }
     var showWarn by remember { mutableStateOf(!viewModel.checkSuperKeyValidation(skey)) }
     var showMismatch by remember { mutableStateOf(false) }
     var keyVisible by remember { mutableStateOf(false) }
     var keyConfirmVisible by remember { mutableStateOf(false) }
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(containerColor = run {
-            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 1f)
-        })
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+        if (showWarn) {
+            Text(
+                color = Color.Red,
+                text = stringResource(id = R.string.patch_item_set_skey_label),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+        Box(
+            contentAlignment = Alignment.CenterEnd,
         ) {
-            Column(
+            OutlinedTextField(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxWidth()
+                    .padding(top = 6.dp),
+                value = skey,
+                label = { Text(stringResource(id = R.string.patch_set_superkey)) },
+                visualTransformation = if (keyVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                shape = RoundedCornerShape(50.0f),
+                onValueChange = {
+                    skey = it
+                    showMismatch = skeyConfirm.isNotEmpty() && skey != skeyConfirm
+                    if (viewModel.checkSuperKeyValidation(it)) {
+                        if (skeyConfirm.isNotEmpty() && skey == skeyConfirm) {
+                            viewModel.superkey = it
+                        } else {
+                            viewModel.superkey = ""
+                        }
+                        showWarn = false
+                    } else {
+                        viewModel.superkey = ""
+                        showWarn = true
+                    }
+                },
+            )
+            IconButton(
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(top = 15.dp, end = 5.dp),
+                onClick = { keyVisible = !keyVisible }
             ) {
-                Text(
-                    text = stringResource(id = R.string.patch_item_skey),
-                    style = MaterialTheme.typography.bodyLarge
+                Icon(
+                    imageVector = if (keyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                    contentDescription = null,
+                    tint = Color.Gray
                 )
             }
-            if (showWarn) {
-                Spacer(modifier = Modifier.height(3.dp))
-                Text(
-                    color = Color.Red,
-                    text = stringResource(id = R.string.patch_item_set_skey_label),
-                    style = MaterialTheme.typography.bodyMedium
+        }
+        Box(
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp),
+                value = skeyConfirm,
+                label = { Text(stringResource(id = R.string.patch_confirm_superkey)) },
+                visualTransformation = if (keyConfirmVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                shape = RoundedCornerShape(50.0f),
+                onValueChange = {
+                    skeyConfirm = it
+                    showMismatch = skeyConfirm.isNotEmpty() && skey != skeyConfirm
+                    if (viewModel.checkSuperKeyValidation(skey) && skey == skeyConfirm) {
+                        viewModel.superkey = skey
+                    } else {
+                        viewModel.superkey = ""
+                    }
+                },
+            )
+            IconButton(
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(top = 15.dp, end = 5.dp),
+                onClick = { keyConfirmVisible = !keyConfirmVisible }
+            ) {
+                Icon(
+                    imageVector = if (keyConfirmVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                    contentDescription = null,
+                    tint = Color.Gray
                 )
             }
-            Column {
-                Box(
-                    contentAlignment = Alignment.CenterEnd,
-                ) {
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 6.dp),
-                        value = skey,
-                        label = { Text(stringResource(id = R.string.patch_set_superkey)) },
-                        visualTransformation = if (keyVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        shape = RoundedCornerShape(50.0f),
-                        onValueChange = {
-                            skey = it
-                            showMismatch = skeyConfirm.isNotEmpty() && skey != skeyConfirm
-                            if (viewModel.checkSuperKeyValidation(it)) {
-                                if (skeyConfirm.isNotEmpty() && skey == skeyConfirm) {
-                                    viewModel.superkey = it
-                                } else {
-                                    viewModel.superkey = ""
-                                }
-                                showWarn = false
-                            } else {
-                                viewModel.superkey = ""
-                                showWarn = true
-                            }
-                        },
-                    )
-                    IconButton(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .padding(top = 15.dp, end = 5.dp),
-                        onClick = { keyVisible = !keyVisible }
-                    ) {
-                        Icon(
-                            imageVector = if (keyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = null,
-                            tint = Color.Gray
-                        )
-                    }
-                }
-                Box(
-                    contentAlignment = Alignment.CenterEnd,
-                ) {
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 6.dp),
-                        value = skeyConfirm,
-                        label = { Text(stringResource(id = R.string.patch_confirm_superkey)) },
-                        visualTransformation = if (keyConfirmVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        shape = RoundedCornerShape(50.0f),
-                        onValueChange = {
-                            skeyConfirm = it
-                            showMismatch = skeyConfirm.isNotEmpty() && skey != skeyConfirm
-                            if (viewModel.checkSuperKeyValidation(skey) && skey == skeyConfirm) {
-                                viewModel.superkey = skey
-                            } else {
-                                viewModel.superkey = ""
-                            }
-                        },
-                    )
-                    IconButton(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .padding(top = 15.dp, end = 5.dp),
-                        onClick = { keyConfirmVisible = !keyConfirmVisible }
-                    ) {
-                        Icon(
-                            imageVector = if (keyConfirmVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = null,
-                            tint = Color.Gray
-                        )
-                    }
-                }
-                if (showMismatch) {
-                    Spacer(modifier = Modifier.height(3.dp))
-                    Text(
-                        color = Color.Red,
-                        text = stringResource(id = R.string.patch_skey_mismatch),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
+        }
+        if (showMismatch) {
+            Spacer(modifier = Modifier.height(3.dp))
+            Text(
+                color = Color.Red,
+                text = stringResource(id = R.string.patch_skey_mismatch),
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
@@ -610,11 +588,7 @@ private fun SetSuperKeyView(viewModel: PatchesViewModel) {
 @Composable
 private fun KernelPatchImageView(kpImgInfo: KPModel.KPImgInfo) {
     if (kpImgInfo.version.isEmpty()) return
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(containerColor = run {
-            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 1f)
-        })
-    ) {
+    ExpressiveCard(flat = true) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -650,11 +624,7 @@ private fun KernelPatchImageView(kpImgInfo: KPModel.KPImgInfo) {
 @Composable
 private fun CustomKPImgView(viewModel: PatchesViewModel) {
     if (!viewModel.useCustomKPImg) return
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(containerColor = run {
-            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 1f)
-        })
-    ) {
+    ExpressiveCard(flat = true) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -682,11 +652,7 @@ private fun CustomKPImgView(viewModel: PatchesViewModel) {
 
 @Composable
 private fun BootimgView(slot: String, boot: String) {
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(containerColor = run {
-            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 1f)
-        })
-    ) {
+    ExpressiveCard(flat = true) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -718,11 +684,7 @@ private fun BootimgView(slot: String, boot: String) {
 
 @Composable
 private fun KernelImageView(kImgInfo: KPModel.KImgInfo) {
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(containerColor = run {
-            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 1f)
-        })
-    ) {
+    ExpressiveCard(flat = true) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -781,11 +743,7 @@ private fun SelectFileButton(text: String, onSelected: (data: Intent, uri: Uri) 
 @Composable
 private fun ErrorView(error: String) {
     if (error.isEmpty()) return
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(containerColor = run {
-            MaterialTheme.colorScheme.error.copy(alpha = 1f)
-        })
-    ) {
+    ExpressiveCard(flat = true) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -803,11 +761,7 @@ private fun ErrorView(error: String) {
 
 @Composable
 private fun PatchMode(mode: PatchesViewModel.PatchMode) {
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(containerColor = run {
-            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 1f)
-        })
-    ) {
+    ExpressiveCard(flat = true) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
