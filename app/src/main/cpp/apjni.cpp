@@ -74,6 +74,29 @@ jint nativeGetUidExclude(JNIEnv *env, jobject /* this */, jstring super_key_jstr
     return static_cast<int>(sc_get_ap_mod_exclude(super_key.get(), uid));
 }
 
+jlong nativeSetNewAppProfileMode(JNIEnv *env, jobject /* this */, jstring super_key_jstr, jint mode) {
+    ensureSuperKeyNonNull(super_key_jstr);
+
+    const auto super_key = JUTFString(env, super_key_jstr);
+    const int value = static_cast<int>(mode);
+    if (value != 0) {
+        return sc_kstorage_write(super_key.get(), KSTORAGE_UNUSED_GROUP_3, 0, const_cast<int *>(&value), 0, sizeof(value));
+    }
+    return sc_kstorage_remove(super_key.get(), KSTORAGE_UNUSED_GROUP_3, 0);
+}
+
+jint nativeGetNewAppProfileMode(JNIEnv *env, jobject /* this */, jstring super_key_jstr) {
+    ensureSuperKeyNonNull(super_key_jstr);
+
+    const auto super_key = JUTFString(env, super_key_jstr);
+    int value = 0;
+    const long rc = sc_kstorage_read(super_key.get(), KSTORAGE_UNUSED_GROUP_3, 0, &value, 0, sizeof(value));
+    if (rc < 0) {
+        return 0;
+    }
+    return value;
+}
+
 jintArray nativeSuUids(JNIEnv *env, jobject /* this */, jstring super_key_jstr) {
     ensureSuperKeyNonNull(super_key_jstr);
 
@@ -477,6 +500,8 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void * /*reserved*/) {
         {"nativeSu", "(Ljava/lang/String;ILjava/lang/String;)J", reinterpret_cast<void *>(&nativeSu)},
         {"nativeSetUidExclude", "(Ljava/lang/String;II)I", reinterpret_cast<void *>(&nativeSetUidExclude)},
         {"nativeGetUidExclude", "(Ljava/lang/String;I)I", reinterpret_cast<void *>(&nativeGetUidExclude)},
+        {"nativeSetNewAppProfileMode", "(Ljava/lang/String;I)J", reinterpret_cast<void *>(&nativeSetNewAppProfileMode)},
+        {"nativeGetNewAppProfileMode", "(Ljava/lang/String;)I", reinterpret_cast<void *>(&nativeGetNewAppProfileMode)},
         {"nativeSuUids", "(Ljava/lang/String;)[I", reinterpret_cast<void *>(&nativeSuUids)},
         {"nativeSuProfile", "(Ljava/lang/String;I)Lme/bmax/apatch/Natives$Profile;", reinterpret_cast<void *>(&nativeSuProfile)},
         {"nativeLoadKernelPatchModule", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J", reinterpret_cast<void *>(&nativeLoadKernelPatchModule)},

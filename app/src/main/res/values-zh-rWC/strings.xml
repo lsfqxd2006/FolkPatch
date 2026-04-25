@@ -470,6 +470,10 @@
     <string name="dpi_confirm_message">将仙器DPI从%1$s更改为%2$s？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">启内建仙符挂载系统</string>
+    <string name="settings_new_app_profile_mode">新仙器默认道法</string>
+    <string name="settings_new_app_profile_normal">凡体</string>
+    <string name="settings_new_app_profile_root">超凡</string>
+    <string name="settings_new_app_profile_exclude">驱逐</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">施展障眼法隐藏Bootloader解锁状态</string>
     <string name="settings_app_title">仙器名讳</string>

@@ -482,6 +482,10 @@ Aquí hay algunas posibles razones para el fallo de autenticación—por favor v
     <string name="alt_icon_summary">Usar icono de lanzador alternativo</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Activar el sistema de montaje de módulos integrado</string>
+    <string name="settings_new_app_profile_mode">Modo predeterminado para nuevas apps</string>
+    <string name="settings_new_app_profile_normal">SIN ROOT</string>
+    <string name="settings_new_app_profile_root">ROOT</string>
+    <string name="settings_new_app_profile_exclude">Excluir</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">Ocultar el estado de desbloqueo del bootloader hasta cierto punto</string>
     <string name="settings_app_title">Título de la App</string>

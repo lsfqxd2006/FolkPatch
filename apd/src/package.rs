@@ -1,13 +1,20 @@
 use std::{
+    collections::{HashMap, HashSet},
     fs::File,
     io::{self, BufRead},
     path::Path,
+    process::Command,
     thread,
     time::Duration,
 };
 
 use log::{info, warn};
 use serde::{Deserialize, Serialize};
+
+use crate::defs;
+
+const DEFAULT_SCONTEXT: &str = "u:r:untrusted_app:s0";
+const MAGISK_SCONTEXT: &str = "u:r:magisk:s0";
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct PackageConfig {
@@ -17,6 +24,117 @@ pub struct PackageConfig {
     pub uid: i32,
     pub to_uid: i32,
     pub sctx: String,
+}
+
+fn read_known_user_packages() -> HashSet<String> {
+    std::fs::read_to_string(defs::AUTO_EXCLUDE_KNOWN_PACKAGES_FILE)
+        .map(|content| {
+            content
+                .lines()
+                .map(str::trim)
+                .filter(|line| !line.is_empty())
+                .map(ToOwned::to_owned)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn write_known_user_packages(packages: &HashSet<String>) -> io::Result<()> {
+    let mut sorted_packages: Vec<_> = packages.iter().cloned().collect();
+    sorted_packages.sort();
+    let mut content = sorted_packages.join("\n");
+    if !content.is_empty() {
+        content.push('\n');
+    }
+    std::fs::write(defs::AUTO_EXCLUDE_KNOWN_PACKAGES_FILE, content)
+}
+
+fn list_user_packages() -> HashSet<String> {
+    let commands: [(&str, &[&str]); 2] = [
+        ("cmd", &["package", "list", "packages", "-3"]),
+        ("pm", &["list", "packages", "-3"]),
+    ];
+
+    for (program, args) in commands {
+        let output = match Command::new(program).args(args).output() {
+            Ok(output) if output.status.success() => output,
+            Ok(output) => {
+                warn!("User package query {} {:?} failed: {:?}", program, args, output.status.code());
+                continue;
+            }
+            Err(e) => {
+                warn!("User package query {} {:?} failed: {}", program, args, e);
+                continue;
+            }
+        };
+
+        return String::from_utf8_lossy(&output.stdout)
+            .lines()
+            .filter_map(|line| line.strip_prefix("package:"))
+            .map(str::trim)
+            .filter(|pkg| !pkg.is_empty())
+            .map(ToOwned::to_owned)
+            .collect();
+    }
+
+    HashSet::new()
+}
+
+pub fn sync_auto_exclude_new_apps(
+    package_configs: &mut Vec<PackageConfig>,
+    uid_map: &HashMap<String, i32>,
+    mode: i32,
+) -> io::Result<bool> {
+    let current_user_packages = list_user_packages();
+    if current_user_packages.is_empty() {
+        return Ok(false);
+    }
+
+    let known_user_packages = read_known_user_packages();
+    let known_initialized = Path::new(defs::AUTO_EXCLUDE_KNOWN_PACKAGES_FILE).exists();
+    let mut changed = false;
+
+    if mode != 0 && known_initialized {
+        let new_packages: Vec<_> = current_user_packages
+            .difference(&known_user_packages)
+            .cloned()
+            .collect();
+
+        for pkg in new_packages {
+            let Some(&uid) = uid_map.get(&pkg) else {
+                warn!("[auto_exclude] Missing uid for package {}, skip", pkg);
+                continue;
+            };
+
+            let exists = package_configs.iter().any(|config| config.pkg == pkg || config.uid == uid);
+            if exists {
+                continue;
+            }
+
+            let (allow, exclude, sctx, mode_name) = match mode {
+                1 => (1, 0, MAGISK_SCONTEXT.to_string(), "root"),
+                2 => (0, 1, DEFAULT_SCONTEXT.to_string(), "exclude"),
+                _ => continue,
+            };
+
+            info!(
+                "[new_app_profile] New package detected, apply {} by default: {} ({})",
+                mode_name, pkg, uid
+            );
+            package_configs.push(PackageConfig {
+                pkg,
+                exclude,
+                allow,
+                uid,
+                to_uid: 0,
+                sctx,
+            });
+            changed = true;
+        }
+    }
+
+    write_known_user_packages(&current_user_packages)?;
+    Ok(changed || !known_initialized)
 }
 
 pub fn read_ap_package_config() -> Vec<PackageConfig> {
@@ -119,6 +237,19 @@ pub fn synchronize_package_uid() -> io::Result<()> {
                 let lines: Vec<_> = lines.filter_map(|line| line.ok()).collect();
 
                 let mut package_configs = read_ap_package_config();
+                let uid_map: HashMap<String, i32> = lines
+                    .iter()
+                    .filter_map(|line| {
+                        let words: Vec<&str> = line.split_whitespace().collect();
+                        if words.len() < 2 {
+                            return None;
+                        }
+                        words[1]
+                            .parse::<i32>()
+                            .ok()
+                            .map(|uid| (words[0].to_string(), uid))
+                    })
+                    .collect();
 
                 let system_packages: Vec<String> = lines
                     .iter()
@@ -138,6 +269,11 @@ pub fn synchronize_package_uid() -> io::Result<()> {
                 }
 
                 let mut updated = false;
+
+                let new_app_profile_mode = crate::supercall::get_new_app_profile_mode();
+                if sync_auto_exclude_new_apps(&mut package_configs, &uid_map, new_app_profile_mode)? {
+                    updated = true;
+                }
 
                 for line in &lines {
                     let words: Vec<&str> = line.split_whitespace().collect();

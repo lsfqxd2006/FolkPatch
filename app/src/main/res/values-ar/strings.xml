@@ -483,6 +483,10 @@
     <string name="alt_icon_summary">استخدم أيقونة المشغل البديلة</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">تفعيل نظام تركيب الوحدات المدمج</string>
+    <string name="settings_new_app_profile_mode">الوضع الافتراضي للتطبيقات الجديدة</string>
+    <string name="settings_new_app_profile_normal">بدون صلاحية</string>
+    <string name="settings_new_app_profile_root">صلاحية الجذر</string>
+    <string name="settings_new_app_profile_exclude">استبعاد</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">إخفاء حالة فتح قفل محمل الإقلاع إلى حد ما</string>
     <string name="settings_app_title">عنوان التطبيق</string>

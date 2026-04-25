@@ -480,6 +480,10 @@
     <string name="alt_icon_summary">Использовать альтернативный значок запуска</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Включить встроенную систему монтирования модулей</string>
+    <string name="settings_new_app_profile_mode">Режим по умолчанию для новых приложений</string>
+    <string name="settings_new_app_profile_normal">БЕЗ ROOT</string>
+    <string name="settings_new_app_profile_root">ROOT</string>
+    <string name="settings_new_app_profile_exclude">Исключить</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">Скрывать статус разблокировки загрузчика в некоторой степени</string>
     <string name="settings_app_title">Заголовок приложения</string>

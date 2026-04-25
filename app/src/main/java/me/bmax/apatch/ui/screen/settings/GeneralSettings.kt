@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.BuildConfig
+import me.bmax.apatch.Natives
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
 import me.bmax.apatch.ui.component.SplicedColumnGroup
@@ -135,6 +136,7 @@ fun GeneralSettingsContent(
     val appListLoadingSchemeTitle = stringResource(id = R.string.settings_app_list_loading_scheme)
     val currentScheme = remember { prefs.getString("app_list_loading_scheme", "root_service") }
     val currentSchemeLabel = if (currentScheme == "root_service") stringResource(R.string.app_list_loading_scheme_root_service) else stringResource(R.string.app_list_loading_scheme_package_manager)
+    val newAppProfileTitle = stringResource(id = R.string.settings_new_app_profile_mode)
 
     val blockUpdateTitle = stringResource(id = R.string.settings_block_kernelpatch_update)
     val blockUpdateSummary = stringResource(id = R.string.settings_block_kernelpatch_update_summary)
@@ -152,6 +154,7 @@ fun GeneralSettingsContent(
     val showFolkXAnimationTypeDialog = remember { mutableStateOf(false) }
     val showFolkXAnimationSpeedDialog = remember { mutableStateOf(false) }
     val showAppListLoadingSchemeDialog = remember { mutableStateOf(false) }
+    val showNewAppProfileModeDialog = remember { mutableStateOf(false) }
     val showSELinuxModeDialog = remember { mutableStateOf(false) }
 
     val useAltIcon = remember { mutableStateOf(prefs.getBoolean("use_alt_icon", false)) }
@@ -162,6 +165,16 @@ fun GeneralSettingsContent(
     val currentType = remember { prefs.getString("folkx_animation_type", "linear") }
     val currentSpeed = remember { prefs.getFloat("folkx_animation_speed", 1.0f) }
     var predictiveBackEnabled by remember { mutableStateOf(prefs.getBoolean("predictive_back_enabled", true)) }
+    var newAppProfileMode by remember {
+        mutableIntStateOf(
+            prefs.getInt(APApplication.PREF_AUTO_EXCLUDE_NEW_APPS, Natives.getNewAppProfileMode())
+        )
+    }
+    val currentNewAppProfileLabel = when (newAppProfileMode) {
+        1 -> stringResource(R.string.settings_new_app_profile_root)
+        2 -> stringResource(R.string.settings_new_app_profile_exclude)
+        else -> stringResource(R.string.settings_new_app_profile_normal)
+    }
 
     SplicedColumnGroup(flat = flat) {
 
@@ -350,6 +363,32 @@ fun GeneralSettingsContent(
                     (context as? Activity)?.recreate()
                 }
             )
+        }
+
+        item(visible = kPatchReady) {
+            ExpressiveCard(flat = flat, onClick = { showNewAppProfileModeDialog.value = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Filled.Block, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = newAppProfileTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = currentNewAppProfileLabel,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
         }
 
         item(visible = kPatchReady) {
@@ -668,6 +707,96 @@ fun GeneralSettingsContent(
 
     if (showAppListLoadingSchemeDialog.value) {
         AppListLoadingSchemeDialog(showAppListLoadingSchemeDialog)
+    }
+
+    if (showNewAppProfileModeDialog.value) {
+        NewAppProfileModeDialog(showNewAppProfileModeDialog) { mode ->
+            newAppProfileMode = mode
+            prefs.edit { putInt(APApplication.PREF_AUTO_EXCLUDE_NEW_APPS, mode) }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NewAppProfileModeDialog(
+    showDialog: MutableState<Boolean>,
+    onModeChanged: (Int) -> Unit,
+) {
+    val context = LocalContext.current
+    val currentMode = remember { mutableIntStateOf(Natives.getNewAppProfileMode()) }
+    val options = listOf(
+        0 to R.string.settings_new_app_profile_normal,
+        1 to R.string.settings_new_app_profile_root,
+        2 to R.string.settings_new_app_profile_exclude,
+    )
+
+    BasicAlertDialog(
+        onDismissRequest = { showDialog.value = false },
+        properties = DialogProperties(
+            decorFitsSystemWindows = true,
+            usePlatformDefaultWidth = false,
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .width(310.dp)
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(30.dp),
+            tonalElevation = AlertDialogDefaults.TonalElevation,
+            color = AlertDialogDefaults.containerColor,
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Text(
+                    text = stringResource(R.string.settings_new_app_profile_mode),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = AlertDialogDefaults.containerColor,
+                    tonalElevation = 2.dp
+                ) {
+                    Column {
+                        options.forEach { (mode, labelId) ->
+                            ListItem(
+                                headlineContent = { Text(stringResource(labelId)) },
+                                leadingContent = {
+                                    RadioButton(
+                                        selected = currentMode.intValue == mode,
+                                        onClick = null
+                                    )
+                                },
+                                modifier = Modifier.clickable {
+                                    val result = Natives.setNewAppProfileMode(mode)
+                                    if (result == 0L) {
+                                        currentMode.intValue = mode
+                                        onModeChanged(mode)
+                                        showDialog.value = false
+                                    } else {
+                                        showToast(context, "New app profile update failed: $result")
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { showDialog.value = false }) {
+                        Text(stringResource(id = android.R.string.cancel))
+                    }
+                }
+            }
+            val dialogWindowProvider = LocalView.current.parent as DialogWindowProvider
+            APDialogBlurBehindUtils.setupWindowBlurListener(dialogWindowProvider.window)
+        }
     }
 }
 

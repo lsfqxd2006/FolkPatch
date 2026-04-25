@@ -480,6 +480,10 @@ Aqui estão algumas possíveis razões para a falha de autenticação—verifiqu
     <string name="alt_icon_summary">Usar ícone alternativo do lançador</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Ativar o sistema de montagem de módulos integrado</string>
+    <string name="settings_new_app_profile_mode">Modo padrão para novos apps</string>
+    <string name="settings_new_app_profile_normal">SEM ROOT</string>
+    <string name="settings_new_app_profile_root">ROOT</string>
+    <string name="settings_new_app_profile_exclude">Excluir</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">Ocultar o status de desbloqueio do bootloader em certa medida</string>
     <string name="settings_app_title">Título do App</string>

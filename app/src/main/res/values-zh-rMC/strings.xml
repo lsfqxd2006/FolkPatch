@@ -458,6 +458,10 @@
     <string name="dpi_confirm_message">将渲染距离从%1$s更改为%2$s？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">开启内置的模组区块挂载系统</string>
+    <string name="settings_new_app_profile_mode">新模组默认模式</string>
+    <string name="settings_new_app_profile_normal">生存</string>
+    <string name="settings_new_app_profile_root">创造</string>
+    <string name="settings_new_app_profile_exclude">移除</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">把Bootloader解锁状态藏起来，别让别人看到</string>
     <string name="settings_app_title">应用名称</string>
