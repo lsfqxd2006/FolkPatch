@@ -477,6 +477,10 @@ Bol şans! Ayrıca, aşağıdaki belge butonuna tıklamak kesinlikle doğru!</st
     <string name="dpi_confirm_message">Uygulama DPI değerini %1$s ile %2$s arasında değiştirmek ister misiniz?</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Dahili modül bağlama sistemini etkinleştir</string>
+    <string name="settings_new_app_profile_mode">Yeni uygulamalar için varsayılan mod</string>
+    <string name="settings_new_app_profile_normal">ROOT YOK</string>
+    <string name="settings_new_app_profile_root">ROOT</string>
+    <string name="settings_new_app_profile_exclude">Hariç tut</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">Bootloader kilidi açık durumunu bir ölçüde gizle</string>
     <string name="settings_app_title">Uygulama Başlığı</string>

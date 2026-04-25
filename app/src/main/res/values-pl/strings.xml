@@ -413,6 +413,10 @@
     <string name="alt_icon_summary">Użyj alternatywnej ikony programu uruchamiającego</string>
     <string name="settings_magic_mount">API montowania Folk</string>
     <string name="settings_magic_mount_summary">Włącz wbudowany system montowania modułów</string>
+    <string name="settings_new_app_profile_mode">Domyślny tryb dla nowych aplikacji</string>
+    <string name="settings_new_app_profile_normal">BEZ ROOTA</string>
+    <string name="settings_new_app_profile_root">ROOT</string>
+    <string name="settings_new_app_profile_exclude">Wyklucz</string>
     <string name="settings_hide_service">Ukryj FolkPatch</string>
     <string name="settings_hide_service_summary">Ukryj status odblokowania bootloadera w pewnym stopniu</string>
     <string name="settings_app_title">Tytuł aplikacji</string>

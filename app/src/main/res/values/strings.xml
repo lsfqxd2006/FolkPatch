@@ -483,6 +483,10 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="dpi_confirm_message">Change app DPI from %1$s to %2$s?</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Enable the built-in module mounting system</string>
+    <string name="settings_new_app_profile_mode">Default mode for new apps</string>
+    <string name="settings_new_app_profile_normal">NO ROOT</string>
+    <string name="settings_new_app_profile_root">ROOT</string>
+    <string name="settings_new_app_profile_exclude">Exclude</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">Hide Bootloader unlock status to some extent</string>
     <string name="settings_kernel_spoof">Kernel Spoof Config</string>

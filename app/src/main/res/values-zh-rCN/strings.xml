@@ -463,6 +463,10 @@
     <string name="dpi_confirm_message">将应用 DPI 从 %1$s 更改为 %2$s？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">启用内置的模块挂载系统</string>
+    <string name="settings_new_app_profile_mode">新软件默认模式</string>
+    <string name="settings_new_app_profile_normal">常规</string>
+    <string name="settings_new_app_profile_root">超级用户</string>
+    <string name="settings_new_app_profile_exclude">排除</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">一定程度上隐藏Bootloader锁解锁状态</string>
     <string name="settings_app_title">应用名称</string>

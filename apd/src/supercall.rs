@@ -16,10 +16,12 @@ const MINOR: c_long = 13;
 const PATCH: c_long = 1;
 
 const KSTORAGE_EXCLUDE_LIST_GROUP: i32 = 1;
+const KSTORAGE_AUTO_EXCLUDE_GROUP: i32 = 3;
 
 const __NR_SUPERCALL: c_long = 45;
 const SUPERCALL_SU: c_long = 0x1010;
 const SUPERCALL_KSTORAGE_WRITE: c_long = 0x1041;
+const SUPERCALL_KSTORAGE_READ: c_long = 0x1042;
 const SUPERCALL_SU_GRANT_UID: c_long = 0x1100;
 const SUPERCALL_SU_REVOKE_UID: c_long = 0x1101;
 const SUPERCALL_SU_NUMS: c_long = 0x1102;
@@ -105,6 +107,30 @@ fn sc_kstorage_write(
     }
 }
 
+fn sc_kstorage_read(
+    key: &CStr,
+    gid: i32,
+    did: i64,
+    out_data: *mut c_void,
+    offset: i32,
+    dlen: i32,
+) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_KSTORAGE_READ),
+            gid as c_long,
+            did as c_long,
+            out_data,
+            (((offset as i64) << 32) | (dlen as i64)) as c_long,
+        ) as c_long
+    }
+}
+
 fn sc_set_ap_mod_exclude(key: &CStr, uid: i64, exclude: i32) -> c_long {
     sc_kstorage_write(
         key,
@@ -114,6 +140,23 @@ fn sc_set_ap_mod_exclude(key: &CStr, uid: i64, exclude: i32) -> c_long {
         0,
         size_of::<i32>() as i32,
     )
+}
+
+pub fn get_new_app_profile_mode() -> i32 {
+    let key = CStr::from_bytes_with_nul(b"su\0").expect("auto exclude key init failed");
+    let mut enabled = 0_i32;
+    let rc = sc_kstorage_read(
+        key,
+        KSTORAGE_AUTO_EXCLUDE_GROUP,
+        0,
+        &mut enabled as *mut i32 as *mut c_void,
+        0,
+        size_of::<i32>() as i32,
+    );
+    if rc < 0 {
+        return 0;
+    }
+    enabled
 }
 
 pub fn sc_su_get_safemode(key: &CStr) -> c_long {

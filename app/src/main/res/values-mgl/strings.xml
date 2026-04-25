@@ -476,6 +476,10 @@
     <string name="dpi_confirm_message">将应用DPI从%1$s更改为%2$s？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">启用内置的魔法阵挂载系统</string>
+    <string name="settings_new_app_profile_mode">新魔法使默认形态</string>
+    <string name="settings_new_app_profile_normal">日常形态</string>
+    <string name="settings_new_app_profile_root">魔法形态</string>
+    <string name="settings_new_app_profile_exclude">驱逐</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">用魔法阵隐藏Bootloader解锁状态</string>
     <string name="settings_app_title">魔法使名称</string>
