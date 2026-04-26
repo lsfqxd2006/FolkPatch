@@ -1051,7 +1051,8 @@
     <string name="path_hide_search_apps">捞应用…</string>
     <string name="path_hide_show_system">露系统应用</string>
     <string name="netisolate_title">网络封印术</string>
-    <string name="netisolate_enable">施展网络封印术</string>
+    <string name="netisolate_enable">网络封印术已施展</string>
+    <string name="netisolate_disable">网络封印术已解除</string>
     <string name="netisolate_enable_summary">于道核层面封印所选应用之网络连接</string>
     <string name="netisolate_uids_label">已封印应用</string>
     <string name="netisolate_uids_hint">输入要封印的 UID（每行一道）</string>

@@ -396,7 +396,7 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                             Natives.netIsolateEnable(enabled)
                             withContext(Dispatchers.Main) {
                                 snackBarHost.showSnackbar(
-                                    context.getString(if (enabled) R.string.netisolate_enable else R.string.netisolate_enable)
+                                    context.getString(if (enabled) R.string.netisolate_enable else R.string.netisolate_disable)
                                 )
                             }
                         }

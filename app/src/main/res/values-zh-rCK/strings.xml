@@ -1052,7 +1052,8 @@
     <string name="path_hide_search_apps">找应用…</string>
     <string name="path_hide_show_system">亮出系统应用</string>
     <string name="netisolate_title">断网隔离</string>
-    <string name="netisolate_enable">启用断网隔离</string>
+    <string name="netisolate_enable">断网隔离已开火</string>
+    <string name="netisolate_disable">断网隔离已熄火</string>
     <string name="netisolate_enable_summary">在内核层面断掉所选应用的网络连接</string>
     <string name="netisolate_uids_label">已断网应用</string>
     <string name="netisolate_uids_hint">输入要断网的 UID（每行一个）</string>
