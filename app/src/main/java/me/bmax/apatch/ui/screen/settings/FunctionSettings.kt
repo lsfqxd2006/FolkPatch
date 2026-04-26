@@ -114,9 +114,8 @@ fun FunctionSettingsContent(
     onUmountSave: () -> Unit,
     isNetIsolateEnabled: Boolean,
     onNetIsolateChange: (Boolean) -> Unit,
-    netIsolateUids: String,
-    onNetIsolateUidsChange: (String) -> Unit,
-    onNetIsolateSave: () -> Unit,
+    niSelectedUids: Set<Int>,
+    onNiUidToggle: (Int) -> Unit,
     flat: Boolean = false,
 ) {
     val context = LocalContext.current
@@ -575,8 +574,7 @@ fun FunctionSettingsContent(
         item(visible = kPatchReady && aPatchReady) {
             val niTitle = stringResource(id = R.string.netisolate_title)
             val niSummary = stringResource(id = R.string.netisolate_enable_summary)
-            val niUidsLabel = stringResource(id = R.string.netisolate_uids_label)
-            val niUidsHint = stringResource(id = R.string.netisolate_uids_hint)
+            val noAppsText = stringResource(R.string.netisolate_no_uids)
 
             ExpressiveCard(flat = flat) {
                 Column(
@@ -623,25 +621,60 @@ fun FunctionSettingsContent(
 
                     AnimatedVisibility(visible = isNetIsolateEnabled) {
                         Column(modifier = Modifier.padding(top = 12.dp)) {
-                            OutlinedTextField(
-                                value = netIsolateUids,
-                                onValueChange = onNetIsolateUidsChange,
-                                modifier = Modifier.fillMaxWidth().height(120.dp),
-                                label = { Text(niUidsLabel) },
-                                placeholder = { Text(niUidsHint) },
-                                minLines = 3,
-                                maxLines = Int.MAX_VALUE,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            )
+                            val pm = context.packageManager
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                            if (niSelectedUids.isNotEmpty()) {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    niSelectedUids.forEach { uid ->
+                                        val pkgs = pm.getPackagesForUid(uid)
+                                        val pkgName = pkgs?.firstOrNull()
+                                        val pkgInfo = remember(pkgName) {
+                                            pkgName?.let {
+                                                try { pm.getPackageInfo(it, 0) } catch (_: Exception) { null }
+                                            }
+                                        }
+                                        val label = pkgName?.let {
+                                            try { pm.getApplicationInfo(it, 0).loadLabel(pm).toString() }
+                                            catch (_: Exception) { it }
+                                        } ?: "UID $uid"
+                                        val isSystemApp = remember(pkgName) {
+                                            pkgName?.let {
+                                                try {
+                                                    val appInfo = pm.getApplicationInfo(it, 0)
+                                                    (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
+                                                        (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                                                } catch (_: Exception) {
+                                                    false
+                                                }
+                                            } ?: false
+                                        }
 
-                            Button(
-                                onClick = onNetIsolateSave,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(stringResource(R.string.save))
+                                        SelectedPathHideAppItem(
+                                            label = label,
+                                            packageName = pkgName ?: "UID $uid",
+                                            uid = uid,
+                                            packageInfo = pkgInfo,
+                                            isSystemApp = isSystemApp,
+                                            onRemove = { onNiUidToggle(uid) },
+                                        )
+                                    }
+                                }
+                            } else {
+                                Text(
+                                    noAppsText,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            AppPickerButton(
+                                selectedUids = niSelectedUids,
+                                onUidToggle = onNiUidToggle,
+                            )
                         }
                     }
                 }

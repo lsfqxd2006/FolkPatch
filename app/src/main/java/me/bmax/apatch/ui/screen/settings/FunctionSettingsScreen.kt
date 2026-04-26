@@ -79,7 +79,7 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
     var isUmountEnabled by rememberSaveable { mutableStateOf(false) }
     var umountPaths by rememberSaveable { mutableStateOf("") }
     var isNetIsolateEnabled by rememberSaveable { mutableStateOf(false) }
-    var netIsolateUids by rememberSaveable { mutableStateOf("") }
+    var niSelectedUids by rememberSaveable { mutableStateOf(emptySet<Int>()) }
     var isPathHideEnabled by rememberSaveable { mutableStateOf(false) }
     var pathHidePaths by rememberSaveable { mutableStateOf("") }
     var isPathHideUidMode by rememberSaveable { mutableStateOf(false) }
@@ -104,7 +104,11 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                 umountPaths = umountConfig.paths
                 // Load netisolate state
                 isNetIsolateEnabled = checkNetIsolateEnabled()
-                netIsolateUids = readNetIsolateUids()
+                niSelectedUids = readNetIsolateUids().lines()
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
+                    .mapNotNull { it.toIntOrNull() }
+                    .toSet()
                 // Load pathhide state from kernel + config file
                 isPathHideEnabled = checkPathHideEnabled()
                 // Try to get paths from kernel first, fall back to config file
@@ -397,25 +401,19 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                             }
                         }
                     },
-                    netIsolateUids = netIsolateUids,
-                    onNetIsolateUidsChange = { netIsolateUids = it },
-                    onNetIsolateSave = {
-                        val currentUids = netIsolateUids
+                    niSelectedUids = niSelectedUids,
+                    onNiUidToggle = { uid ->
                         scope.launch(Dispatchers.IO) {
-                            writeNetIsolateUids(currentUids)
-                            Natives.netIsolateUidClear()
-                            if (currentUids.isNotBlank()) {
-                                currentUids.lines()
-                                    .map { it.trim() }
-                                    .filter { it.isNotBlank() }
-                                    .forEach { uidStr ->
-                                        uidStr.toIntOrNull()?.let { uid ->
-                                            Natives.netIsolateUidAdd(uid)
-                                        }
-                                    }
+                            val newSet = if (uid in niSelectedUids) {
+                                Natives.netIsolateUidRemove(uid)
+                                niSelectedUids - uid
+                            } else {
+                                Natives.netIsolateUidAdd(uid)
+                                niSelectedUids + uid
                             }
+                            writeNetIsolateUids(newSet.joinToString("\n"))
                             withContext(Dispatchers.Main) {
-                                snackBarHost.showSnackbar(context.getString(R.string.netisolate_enable))
+                                niSelectedUids = newSet
                             }
                         }
                     },
