@@ -23,8 +23,11 @@ pub const PATHHIDE_ENABLE_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/enabled")
 pub const PATHHIDE_PATHS_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/paths");
 pub const PATHHIDE_UIDS_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/uids");
 pub const PATHHIDE_UID_MODE_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/uid_mode");
-pub const PATHHIDE_AUTO_EXCLUDE_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/auto_exclude");
-pub const PATHHIDE_UID_SNAPSHOT_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/uid_snapshot");
+pub const PATHHIDE_FILTER_SYSTEM_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/filter_system");
+
+pub const NETISOLATE_DIR: &str = concatcp!(ADB_DIR, "fp/netisolate/");
+pub const NETISOLATE_ENABLE_FILE: &str = concatcp!(ADB_DIR, "fp/netisolate/enabled");
+pub const NETISOLATE_UIDS_FILE: &str = concatcp!(ADB_DIR, "fp/netisolate/uids");
 
 pub const MODULE_DIR: &str = concatcp!(ADB_DIR, "modules/");
 pub const AP_MAGIC_MOUNT_SOURCE: &str = concatcp!(WORKING_DIR, "magic_mount");

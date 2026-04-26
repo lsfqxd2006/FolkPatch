@@ -1028,10 +1028,22 @@
     <string name="path_hide_uid_save">保存 UID（存档）</string>
     <string name="path_hide_uid_mode_enabled">UID 指定模式已启用（精准选择已激活）</string>
     <string name="path_hide_uid_mode_disabled">UID 指定模式已禁用（精准选择已关闭）</string>
+    <string name="path_hide_filter_system">过滤系统 UID（精准排除）</string>
+    <string name="path_hide_filter_system_summary">同时对 root 和系统进程（UID &lt; 10000）隐藏路径</string>
+    <string name="path_hide_filter_system_enabled">系统 UID 过滤已启用（精准排除已激活）</string>
+    <string name="path_hide_filter_system_disabled">系统 UID 过滤已禁用（精准排除已关闭）</string>
+    <string name="path_hide_filter_system_warning_title">警告</string>
+    <string name="path_hide_filter_system_warning_message">启用后将同时对 root 和系统进程（UID &lt; 10000）隐藏路径。这可能导致部分系统功能异常（像苦力怕炸方块一样），请谨慎操作。</string>
     <string name="path_hide_uid_applied">UID 白名单已应用（选择列表已生效）</string>
     <string name="path_hide_select_apps">挑选应用</string>
     <string name="path_hide_no_apps_selected">冇选中任何应用</string>
     <string name="path_hide_app_removed">已经清理咗 %d 个已卸载应用的配置</string>
     <string name="path_hide_search_apps">搵应用…</string>
     <string name="path_hide_show_system">显示系统应用</string>
+    <string name="netisolate_title">网络隔离（切断连接）</string>
+    <string name="netisolate_enable">启用网络隔离</string>
+    <string name="netisolate_enable_summary">在核心层面阻止所选应用的网络访问（像拔掉网线一样）</string>
+    <string name="netisolate_uids_label">已隔离应用</string>
+    <string name="netisolate_uids_hint">输入要隔离的 UID（每行一个，像列清单）</string>
+    <string name="netisolate_no_uids">没有应用被隔离</string>
 </resources>

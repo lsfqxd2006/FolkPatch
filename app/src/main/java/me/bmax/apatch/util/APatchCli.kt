@@ -513,6 +513,37 @@ fun setPathHideUidMode(enable: Boolean) {
         .exec()
 }
 
+fun setPathHideFilterSystem(enable: Boolean) {
+    val shell = getRootShell()
+    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
+    shell.newJob().add("${if (enable) "touch" else "rm -f"} ${APApplication.PATHHIDE_FILTER_SYSTEM_FILE}")
+        .exec()
+}
+
+fun setNetIsolateEnabled(enable: Boolean) {
+    val shell = getRootShell()
+    shell.newJob().add("mkdir -p ${APApplication.NETISOLATE_DIR}").exec()
+    shell.newJob().add("${if (enable) "touch" else "rm -f"} ${APApplication.NETISOLATE_ENABLE_FILE}")
+        .exec()
+}
+
+fun writeNetIsolateUids(uids: String) {
+    val shell = getRootShell()
+    shell.newJob().add("mkdir -p ${APApplication.NETISOLATE_DIR}").exec()
+    shell.newJob().add("echo -n '$uids' > ${APApplication.NETISOLATE_UIDS_FILE}").exec()
+}
+
+fun isNetIsolateEnabled(): Boolean {
+    val flagFile = SuFile(APApplication.NETISOLATE_ENABLE_FILE)
+    flagFile.shell = getRootShell()
+    return flagFile.exists()
+}
+
+fun readNetIsolateUids(): String {
+    val shell = getRootShell()
+    return ShellUtils.fastCmd(shell, "cat ${APApplication.NETISOLATE_UIDS_FILE} 2>/dev/null") ?: ""
+}
+
 fun executeHideBinary(): Boolean {
     val shell = getRootShell()
     val context = apApp.applicationContext

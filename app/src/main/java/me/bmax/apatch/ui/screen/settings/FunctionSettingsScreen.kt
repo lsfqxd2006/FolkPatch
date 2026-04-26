@@ -52,9 +52,13 @@ import me.bmax.apatch.util.isPathHideEnabled as checkPathHideEnabled
 import me.bmax.apatch.util.setPathHideEnabled
 import me.bmax.apatch.util.writePathHidePaths
 import me.bmax.apatch.util.readPathHidePaths
+import me.bmax.apatch.util.isNetIsolateEnabled as checkNetIsolateEnabled
+import me.bmax.apatch.util.readNetIsolateUids
+import me.bmax.apatch.util.setNetIsolateEnabled
+import me.bmax.apatch.util.writeNetIsolateUids
 import me.bmax.apatch.util.writePathHideUids
 import me.bmax.apatch.util.setPathHideUidMode
-import me.bmax.apatch.util.getRootShell
+import me.bmax.apatch.util.setPathHideFilterSystem
 import me.bmax.apatch.util.ui.LocalSnackbarHost
 import me.bmax.apatch.util.ui.NavigationBarsSpacer
 import androidx.compose.ui.platform.LocalContext
@@ -74,10 +78,13 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
     var kernelSpoofBuildTime by rememberSaveable { mutableStateOf("") }
     var isUmountEnabled by rememberSaveable { mutableStateOf(false) }
     var umountPaths by rememberSaveable { mutableStateOf("") }
+    var isNetIsolateEnabled by rememberSaveable { mutableStateOf(false) }
+    var niSelectedUids by rememberSaveable { mutableStateOf(emptySet<Int>()) }
     var isPathHideEnabled by rememberSaveable { mutableStateOf(false) }
     var pathHidePaths by rememberSaveable { mutableStateOf("") }
     var isPathHideUidMode by rememberSaveable { mutableStateOf(false) }
-    var isAutoExcludeEnabled by rememberSaveable { mutableStateOf(false) }
+    var isPathHideFilterSystem by rememberSaveable { mutableStateOf(false) }
+    val showFilterSystemWarningDialog = rememberSaveable { mutableStateOf(false) }
     var selectedUids by rememberSaveable { mutableStateOf(emptySet<Int>()) }
 
     val scope = rememberCoroutineScope()
@@ -95,6 +102,13 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                 val umountConfig = UmountConfigManager.loadConfig(context)
                 isUmountEnabled = umountConfig.enabled
                 umountPaths = umountConfig.paths
+                // Load netisolate state
+                isNetIsolateEnabled = checkNetIsolateEnabled()
+                niSelectedUids = readNetIsolateUids().lines()
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
+                    .mapNotNull { it.toIntOrNull() }
+                    .toSet()
                 // Load pathhide state from kernel + config file
                 isPathHideEnabled = checkPathHideEnabled()
                 // Try to get paths from kernel first, fall back to config file
@@ -106,8 +120,7 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                 }
                 // Load UID mode state
                 isPathHideUidMode = APApplication.sharedPreferences.getBoolean("pathhide_uid_mode", false)
-                // Load auto-exclude state
-                isAutoExcludeEnabled = APApplication.sharedPreferences.getBoolean(APApplication.PREF_PATHHIDE_AUTO_EXCLUDE, false)
+                isPathHideFilterSystem = APApplication.sharedPreferences.getBoolean("pathhide_filter_system", false)
                 val pm = context.packageManager
                 val uidSource = Natives.pathHideUidList().ifBlank {
                     me.bmax.apatch.util.readPathHideUids()
@@ -307,36 +320,21 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                             }
                         }
                     },
-                    isAutoExcludeEnabled = isAutoExcludeEnabled,
-                    onAutoExcludeChange = { enabled ->
-                        isAutoExcludeEnabled = enabled
-                        scope.launch(Dispatchers.IO) {
-                            APApplication.sharedPreferences.edit()
-                                .putBoolean(APApplication.PREF_PATHHIDE_AUTO_EXCLUDE, enabled)
-                                .apply()
-                            val shell = getRootShell()
-                            shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
-                            shell.newJob().add(
-                                "${if (enabled) "touch" else "rm -f"} ${APApplication.PATHHIDE_AUTO_EXCLUDE_FILE}"
-                            ).exec()
-                            // When enabling for the first time, seed the daemon snapshot
-                            // with current user app UIDs so existing apps are not treated as "new"
-                            if (enabled) {
-                                val snapshotResult = shell.newJob().add(
-                                    "awk '\$2 >= 10000 {print \$2}' /data/system/packages.list | sort -u"
-                                ).to(ArrayList<String>(), null).exec()
-                                val snapshotContent = snapshotResult.out.joinToString("\n")
-                                shell.newJob().add(
-                                    "echo -n '${snapshotContent.replace("'", "'\\''")}' > ${APApplication.PATHHIDE_UID_SNAPSHOT_FILE}"
-                                ).exec()
-                            }
-                            withContext(Dispatchers.Main) {
-                                snackBarHost.showSnackbar(
-                                    context.getString(
-                                        if (enabled) R.string.path_hide_auto_exclude_enabled
-                                        else R.string.path_hide_auto_exclude_disabled
+                    isPathHideFilterSystem = isPathHideFilterSystem,
+                    onPathHideFilterSystemChange = { enabled ->
+                        if (enabled) {
+                            showFilterSystemWarningDialog.value = true
+                        } else {
+                            isPathHideFilterSystem = false
+                            scope.launch(Dispatchers.IO) {
+                                APApplication.sharedPreferences.edit().putBoolean("pathhide_filter_system", false).apply()
+                                setPathHideFilterSystem(false)
+                                Natives.pathHideFilterSystem(false)
+                                withContext(Dispatchers.Main) {
+                                    snackBarHost.showSnackbar(
+                                        context.getString(R.string.path_hide_filter_system_disabled)
                                     )
-                                )
+                                }
                             }
                         }
                     },
@@ -390,10 +388,58 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                         }
                     },
                     flat = flat,
+                    isNetIsolateEnabled = isNetIsolateEnabled,
+                    onNetIsolateChange = { enabled ->
+                        isNetIsolateEnabled = enabled
+                        scope.launch(Dispatchers.IO) {
+                            setNetIsolateEnabled(enabled)
+                            Natives.netIsolateEnable(enabled)
+                            withContext(Dispatchers.Main) {
+                                snackBarHost.showSnackbar(
+                                    context.getString(if (enabled) R.string.netisolate_enable else R.string.netisolate_enable)
+                                )
+                            }
+                        }
+                    },
+                    niSelectedUids = niSelectedUids,
+                    onNiUidToggle = { uid ->
+                        scope.launch(Dispatchers.IO) {
+                            val newSet = if (uid in niSelectedUids) {
+                                Natives.netIsolateUidRemove(uid)
+                                niSelectedUids - uid
+                            } else {
+                                Natives.netIsolateUidAdd(uid)
+                                niSelectedUids + uid
+                            }
+                            writeNetIsolateUids(newSet.joinToString("\n"))
+                            withContext(Dispatchers.Main) {
+                                niSelectedUids = newSet
+                            }
+                        }
+                    },
                 )
             }
             item { Spacer(Modifier.height(8.dp)) }
             item { NavigationBarsSpacer() }
         }
+    }
+
+    if (showFilterSystemWarningDialog.value) {
+        PathHideFilterSystemWarningDialog(
+            showDialog = showFilterSystemWarningDialog,
+            onConfirm = {
+                isPathHideFilterSystem = true
+                scope.launch(Dispatchers.IO) {
+                    APApplication.sharedPreferences.edit().putBoolean("pathhide_filter_system", true).apply()
+                    setPathHideFilterSystem(true)
+                    Natives.pathHideFilterSystem(true)
+                    withContext(Dispatchers.Main) {
+                        snackBarHost.showSnackbar(
+                            context.getString(R.string.path_hide_filter_system_enabled)
+                        )
+                    }
+                }
+            },
+        )
     }
 }

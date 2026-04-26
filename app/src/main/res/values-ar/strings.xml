@@ -1041,10 +1041,22 @@
     <string name="path_hide_uid_save">حفظ معرّفات UID</string>
     <string name="path_hide_uid_mode_enabled">تم تفعيل وضع تنفيذ UID</string>
     <string name="path_hide_uid_mode_disabled">تم تعطيل وضع تنفيذ UID</string>
+    <string name="path_hide_filter_system">تصفية معرّفات UID النظام</string>
+    <string name="path_hide_filter_system_summary">إخفاء المسارات أيضًا من عمليات الجذر والنظام (UID &lt; 10000)</string>
+    <string name="path_hide_filter_system_enabled">تم تفعيل تصفية معرّفات UID النظام</string>
+    <string name="path_hide_filter_system_disabled">تم تعطيل تصفية معرّفات UID النظام</string>
+    <string name="path_hide_filter_system_warning_title">تحذير</string>
+    <string name="path_hide_filter_system_warning_message">سيؤدي التفعيل إلى إخفاء المسارات أيضًا من عمليات الجذر والنظام (UID &lt; 10000). قد يتسبب ذلك في خلل في بعض وظائف النظام. يرجى الحذر.</string>
     <string name="path_hide_uid_applied">تم تطبيق القائمة البيضاء لـ UID</string>
     <string name="path_hide_select_apps">اختر التطبيقات</string>
     <string name="path_hide_no_apps_selected">لم يتم اختيار أي تطبيق</string>
     <string name="path_hide_app_removed">تمت إزالة إعدادات %d تطبيق تم إلغاء تثبيته</string>
     <string name="path_hide_search_apps">البحث عن التطبيقات…</string>
     <string name="path_hide_show_system">عرض تطبيقات النظام</string>
+    <string name="netisolate_title">عزل الشبكة</string>
+    <string name="netisolate_enable">تفعيل عزل الشبكة</string>
+    <string name="netisolate_enable_summary">حظر الوصول إلى الشبكة للتطبيقات المحددة على مستوى النواة</string>
+    <string name="netisolate_uids_label">التطبيقات المحظورة</string>
+    <string name="netisolate_uids_hint">أدخل معرّفات UID للحظر (واحد لكل سطر)</string>
+    <string name="netisolate_no_uids">لا توجد تطبيقات محظورة</string>
 </resources>

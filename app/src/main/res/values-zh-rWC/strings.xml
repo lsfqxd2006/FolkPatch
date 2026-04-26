@@ -1038,10 +1038,22 @@
     <string name="path_hide_uid_save">封印 UID</string>
     <string name="path_hide_uid_mode_enabled">UID 锁定术已施展</string>
     <string name="path_hide_uid_mode_disabled">UID 锁定术已解除</string>
+    <string name="path_hide_filter_system">屏蔽系统 UID</string>
+    <string name="path_hide_filter_system_summary">同时对 root 和系统进程（UID &lt; 10000）隐匿路径</string>
+    <string name="path_hide_filter_system_enabled">系统 UID 屏蔽术已施展</string>
+    <string name="path_hide_filter_system_disabled">系统 UID 屏蔽术已解除</string>
+    <string name="path_hide_filter_system_warning_title">道法警示</string>
+    <string name="path_hide_filter_system_warning_message">施展后将同时对 root 和系统进程（UID &lt; 10000）隐匿路径。此术可能引致部分仙法功能异常，道友请三思而行。</string>
     <string name="path_hide_uid_applied">UID 锁定名录已布阵生效</string>
     <string name="path_hide_select_apps">拣选应用</string>
     <string name="path_hide_no_apps_selected">未拣到任何应用</string>
     <string name="path_hide_app_removed">已清走 %d 个已卸载应用的残局</string>
     <string name="path_hide_search_apps">捞应用…</string>
     <string name="path_hide_show_system">露系统应用</string>
+    <string name="netisolate_title">网络封印术</string>
+    <string name="netisolate_enable">施展网络封印术</string>
+    <string name="netisolate_enable_summary">于道核层面封印所选应用之网络连接</string>
+    <string name="netisolate_uids_label">已封印应用</string>
+    <string name="netisolate_uids_hint">输入要封印的 UID（每行一道）</string>
+    <string name="netisolate_no_uids">暂无被封印应用</string>
 </resources>
