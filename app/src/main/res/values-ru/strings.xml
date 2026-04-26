@@ -1066,7 +1066,8 @@
     <string name="path_hide_search_apps">Поиск приложений…</string>
     <string name="path_hide_show_system">Показать системные приложения</string>
     <string name="netisolate_title">Сетевая изоляция</string>
-    <string name="netisolate_enable">Включить сетевую изоляцию</string>
+    <string name="netisolate_enable">Сетевая изоляция включена</string>
+    <string name="netisolate_disable">Сетевая изоляция отключена</string>
     <string name="netisolate_enable_summary">Блокировать сетевой доступ для выбранных приложений на уровне ядра</string>
     <string name="netisolate_uids_label">Заблокированные приложения</string>
     <string name="netisolate_uids_hint">Введите UID для блокировки (по одному на строку)</string>

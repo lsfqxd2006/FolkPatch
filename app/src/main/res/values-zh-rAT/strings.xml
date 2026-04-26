@@ -1053,7 +1053,8 @@
     <string name="path_hide_search_apps">搜寻应用…</string>
     <string name="path_hide_show_system">昭示系统应用</string>
     <string name="netisolate_title">圣光网络封印</string>
-    <string name="netisolate_enable">施展网络封印</string>
+    <string name="netisolate_enable">网络封印已施展</string>
+    <string name="netisolate_disable">网络封印已解除</string>
     <string name="netisolate_enable_summary">于灵魂之力层面封印所选应用之网络连接</string>
     <string name="netisolate_uids_label">已封印应用</string>
     <string name="netisolate_uids_hint">输入要封印的 UID（每行一道）</string>
