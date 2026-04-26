@@ -386,7 +386,6 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
         }
         
         APatchKeyHelper.setSharedPreferences(sharedPreferences)
-        me.bmax.apatch.util.LauncherIconUtils.applySaved(this)
         Log.d(TAG, "Reading superKey...")
         val savedKey = try {
             APatchKeyHelper.readSPSuperKey()
@@ -423,7 +422,26 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
         me.bmax.apatch.ui.theme.VibrationConfig.load(this)
 
         MusicManager.init(this)
-        
+
+        // Register package install receiver for pathhide auto-exclude
+        try {
+            val filter = android.content.IntentFilter(Intent.ACTION_PACKAGE_ADDED)
+            filter.addDataScheme("package")
+            val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Context.RECEIVER_EXPORTED
+            } else {
+                0
+            }
+            registerReceiver(
+                me.bmax.apatch.receiver.PackageInstalledReceiver(),
+                filter,
+                flags
+            )
+            Log.d(TAG, "PackageInstalledReceiver registered")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to register PackageInstalledReceiver", e)
+        }
+
         Log.d(TAG, "APApplication onCreate completed")
 
         // Reset crash counter on successful initialization

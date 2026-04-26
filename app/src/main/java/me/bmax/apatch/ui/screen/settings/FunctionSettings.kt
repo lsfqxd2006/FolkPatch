@@ -509,6 +509,48 @@ fun FunctionSettingsContent(
 
                             AnimatedVisibility(visible = isPathHideUidMode) {
                                 Column(modifier = Modifier.padding(top = 8.dp)) {
+                                    // Auto-exclude new apps toggle
+                                    val autoExcludeTitle = stringResource(id = R.string.path_hide_auto_exclude)
+                                    val autoExcludeSummary = stringResource(id = R.string.path_hide_auto_exclude_summary)
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.weight(1f),
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Add,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(20.dp),
+                                            )
+                                            Spacer(Modifier.width(12.dp))
+                                            Column {
+                                                Text(
+                                                    text = autoExcludeTitle,
+                                                    style = MaterialTheme.typography.titleSmall,
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                )
+                                                Text(
+                                                    text = autoExcludeSummary,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                )
+                                            }
+                                        }
+                                        ExpressiveSwitch(
+                                            checked = isAutoExcludeEnabled,
+                                            onCheckedChange = onAutoExcludeChange,
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(12.dp))
+
                                     val pm = context.packageManager
                                     val noAppsText = stringResource(R.string.path_hide_no_apps_selected)
 
