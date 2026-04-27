@@ -548,12 +548,12 @@
 
     <!-- 隐藏设定字符串 -->
     <string name="home_hide_su_path">隐藏 su 可执行文件路径</string>
-    <string name="home_hide_kpatch_version">隐藏内核版本补丁</string>
+    <string name="home_hide_kpatch_version">隐藏内核补丁版本信息</string>
     <string name="home_hide_fingerprint">隐藏指纹信息</string>
     <string name="home_hide_zygisk">隐藏 Zygisk 实现</string>
     <string name="home_hide_mount">隐藏挂载实现</string>
     <string name="home_hide_su_path_summary">在信息卡片中隐藏 su 可执行文件路径</string>
-    <string name="home_hide_kpatch_version_summary">在信息卡片中隐藏内核版本补丁信息</string>
+    <string name="home_hide_kpatch_version_summary">在信息卡片中隐藏内核补丁版本信息</string>
     <string name="home_hide_fingerprint_summary">在信息卡片中隐藏指纹信息</string>
     <string name="home_hide_zygisk_summary">在信息卡片中隐藏 Zygisk 实现信息</string>
     <string name="home_hide_mount_summary">在信息卡片中隐藏挂载实现信息</string>
