@@ -195,7 +195,7 @@ fun HomeScreenCircle(
         }
         
         // System Patch Detection
-        if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
+        if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
              AStatusCardCircle(apState)
         }
 

@@ -219,10 +219,9 @@ fun HomeScreenV1(
     ) {
         Spacer(Modifier.height(0.dp))
         KStatusCard(kpState, apState, navigator)
-        if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
+        if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
             AStatusCard(apState)
         }
-        InfoCard(kpState, apState)
         val hideApatchCard = APApplication.sharedPreferences.getBoolean("hide_apatch_card", false)
         if (!hideApatchCard) {
             LearnMoreCard()
@@ -247,7 +246,7 @@ fun HomeScreenSign(
     ) {
         Spacer(Modifier.height(0.dp))
         KStatusCard(kpState, apState, navigator)
-        if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
+        if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
             AStatusCard(apState)
         }
         SignInfoCard(kpState, apState)

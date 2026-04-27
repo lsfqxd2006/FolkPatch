@@ -267,9 +267,6 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
                 _kpStateLiveData.postValue(
                     if (ready) State.KERNELPATCH_INSTALLED else State.UNKNOWN_STATE
                 )
-                _apStateLiveData.postValue(
-                    if (ready) State.ANDROIDPATCH_NOT_INSTALLED else State.UNKNOWN_STATE
-                )
                 Log.d(TAG, "state: " + _kpStateLiveData.value)
                 if (!ready) return@thread
 

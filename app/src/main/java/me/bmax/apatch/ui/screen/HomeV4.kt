@@ -263,6 +263,7 @@ fun HomeScreenV4(
         // Android补丁状态卡片（Half模式时显示）
         AnimatedVisibility(
             visible = kpStateResolved != APApplication.State.UNKNOWN_STATE && 
+                apStateResolved != APApplication.State.UNKNOWN_STATE &&
                 apStateResolved != APApplication.State.ANDROIDPATCH_INSTALLED,
             enter = fadeIn(),
             exit = fadeOut()

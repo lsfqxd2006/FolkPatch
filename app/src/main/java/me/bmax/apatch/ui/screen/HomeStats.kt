@@ -125,7 +125,7 @@ fun HomeScreenStats(
                     StatsGridTopSection(kpState, apState, navigator, showUninstallDialog, showAuthKeyDialog)
                 } else {
                     StatusCardCircle(kpState, apState, navigator, showUninstallDialog, showAuthKeyDialog)
-                    if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
+                    if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
                         AStatusCardCircle(apState)
                     }
                 }
@@ -156,7 +156,7 @@ fun HomeScreenStats(
                 StatsGridTopSection(kpState, apState, navigator, showUninstallDialog, showAuthKeyDialog)
             } else {
                 StatusCardCircle(kpState, apState, navigator, showUninstallDialog, showAuthKeyDialog)
-                if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
+                if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
                     AStatusCardCircle(apState)
                 }
             }
@@ -720,7 +720,7 @@ private fun StatsGridTopSection(
         }
     }
 
-    if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
+    if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
         AStatusCard(apState)
     }
 
