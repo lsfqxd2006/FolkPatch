@@ -39,6 +39,7 @@ import coil.request.ImageRequest
 import android.os.Build
 import me.bmax.apatch.apApp
 import me.bmax.apatch.util.Version.getManagerVersion
+import me.bmax.apatch.util.ui.HomeBottomSpacer
 
 private val managerVersion = getManagerVersion()
 
@@ -174,7 +175,7 @@ fun HomeScreenV2(
             LearnMoreCard()
         }
         
-        Spacer(Modifier.height(16.dp))
+        HomeBottomSpacer()
     }
 }
 

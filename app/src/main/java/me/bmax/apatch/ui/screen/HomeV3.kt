@@ -40,6 +40,7 @@ import me.bmax.apatch.util.Version
 import me.bmax.apatch.util.Version.getManagerVersion
 import me.bmax.apatch.util.getSELinuxStatus
 import me.bmax.apatch.util.rootShellForResult
+import me.bmax.apatch.util.ui.HomeBottomSpacer
 
 private val managerVersion = getManagerVersion()
 
@@ -178,7 +179,7 @@ fun HomeScreenV3(
                 StorageCard(isWallpaperMode = isWallpaperMode)
             }
 
-            Spacer(Modifier.height(16.dp))
+            HomeBottomSpacer()
         }
     }
 }

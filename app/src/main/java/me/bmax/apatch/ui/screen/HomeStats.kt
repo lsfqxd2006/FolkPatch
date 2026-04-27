@@ -36,6 +36,7 @@ import me.bmax.apatch.ui.viewmodel.TimeSeriesData
 import me.bmax.apatch.util.AppData
 import me.bmax.apatch.ui.theme.BackgroundConfig
 import kotlin.math.roundToInt
+import me.bmax.apatch.util.ui.HomeBottomSpacer
 
 @Composable
 fun HomeScreenStats(
@@ -722,4 +723,6 @@ private fun StatsGridTopSection(
     if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
         AStatusCard(apState)
     }
+
+    HomeBottomSpacer()
 }
