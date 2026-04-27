@@ -47,6 +47,7 @@ import me.bmax.apatch.ui.theme.BackgroundConfig
 import androidx.compose.material3.surfaceColorAtElevation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.bmax.apatch.util.ui.HomeBottomSpacer
 
 @Composable
 fun HomeScreenCircle(
@@ -207,7 +208,7 @@ fun HomeScreenCircle(
             LearnMoreCardCircle()
         }
         
-        Spacer(Modifier)
+        HomeBottomSpacer()
     }
 }
 

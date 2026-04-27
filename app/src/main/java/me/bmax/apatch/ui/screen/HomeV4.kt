@@ -120,6 +120,7 @@ import me.bmax.apatch.util.Version.getManagerVersion
 import me.bmax.apatch.util.getSELinuxStatus
 import me.bmax.apatch.util.reboot
 import me.bmax.apatch.util.rootShellForResult
+import me.bmax.apatch.util.ui.HomeBottomSpacer
 
 private val managerVersion = getManagerVersion()
 
@@ -314,7 +315,7 @@ fun HomeScreenV4(
             }
         }
 
-        Spacer(Modifier)
+        HomeBottomSpacer()
     }
 }
 

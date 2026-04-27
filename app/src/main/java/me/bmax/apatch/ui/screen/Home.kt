@@ -145,6 +145,7 @@ import me.bmax.apatch.util.Version.getManagerVersion
 import me.bmax.apatch.util.getSELinuxStatus
 import me.bmax.apatch.util.reboot
 import me.bmax.apatch.util.ui.APDialogBlurBehindUtils
+import me.bmax.apatch.util.ui.HomeBottomSpacer
 
 private val managerVersion = getManagerVersion()
 
@@ -226,7 +227,7 @@ fun HomeScreenV1(
         if (!hideApatchCard) {
             LearnMoreCard()
         }
-        Spacer(Modifier)
+        HomeBottomSpacer()
     }
 }
 
@@ -254,7 +255,7 @@ fun HomeScreenSign(
         if (!hideApatchCard) {
             LearnMoreCard()
         }
-        Spacer(Modifier)
+        HomeBottomSpacer()
     }
 }
 
