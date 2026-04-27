@@ -1,3 +1,0 @@
-[submodule "KernelPatch"]
-  path = KernelPatch
-  url = https://github.com/empty/empty.git
