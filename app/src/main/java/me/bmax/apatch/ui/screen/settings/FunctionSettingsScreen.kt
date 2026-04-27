@@ -104,7 +104,10 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                 umountPaths = umountConfig.paths
                 // Load netisolate state
                 isNetIsolateEnabled = checkNetIsolateEnabled()
-                niSelectedUids = readNetIsolateUids().lines()
+                val niUidSource = Natives.netIsolateUidList().ifBlank {
+                    readNetIsolateUids()
+                }
+                niSelectedUids = niUidSource.lines()
                     .map { it.trim() }
                     .filter { it.isNotBlank() }
                     .mapNotNull { it.toIntOrNull() }

@@ -530,7 +530,8 @@ fun setNetIsolateEnabled(enable: Boolean) {
 fun writeNetIsolateUids(uids: String) {
     val shell = getRootShell()
     shell.newJob().add("mkdir -p ${APApplication.NETISOLATE_DIR}").exec()
-    shell.newJob().add("echo -n '$uids' > ${APApplication.NETISOLATE_UIDS_FILE}").exec()
+    val escapedUids = uids.replace("'", "'\\''")
+    shell.newJob().add("echo -n '$escapedUids' > ${APApplication.NETISOLATE_UIDS_FILE}").exec()
 }
 
 fun isNetIsolateEnabled(): Boolean {
