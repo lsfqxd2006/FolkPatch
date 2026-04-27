@@ -220,23 +220,28 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         );
     }
 
-    let mut command = &mut Command::new(assets::BUSYBOX_PATH);
+    let is_elf = fs::read(path.as_ref())
+        .ok()
+        .and_then(|bytes| bytes.get(..4).map(|b| b.to_vec()))
+        .map_or(false, |magic| magic == [0x7f, b'E', b'L', b'F']);
+
+    let mut command = Command::new(if is_elf {
+        path.as_ref().as_os_str().to_owned()
+    } else {
+        assets::BUSYBOX_PATH.into()
+    });
     #[cfg(unix)]
     {
-        command = command.process_group(0);
-        command = unsafe {
+        command.process_group(0);
+        unsafe {
             command.pre_exec(|| {
-                // ignore the error?
                 switch_cgroups();
                 Ok(())
-            })
-        };
+            });
+        }
     }
-    command = command
+    command
         .current_dir(path.as_ref().parent().unwrap())
-        .arg("sh")
-        .arg(path.as_ref())
-        .env("ASH_STANDALONE", "1")
         .env("APATCH", "true")
         .env("APATCH_VER", defs::VERSION_NAME)
         .env("APATCH_VER_CODE", defs::VERSION_CODE)
@@ -248,10 +253,14 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
                 defs::BINARY_DIR.trim_end_matches('/')
             ),
         );
-
-    // Set AP_MODULE environment variable
+    if !is_elf {
+        command
+            .arg("sh")
+            .arg(path.as_ref())
+            .env("ASH_STANDALONE", "1");
+    }
     if let Some(id) = module_id {
-        command = command.env("AP_MODULE", id);
+        command.env("AP_MODULE", id);
     }
 
     let result = if wait {
