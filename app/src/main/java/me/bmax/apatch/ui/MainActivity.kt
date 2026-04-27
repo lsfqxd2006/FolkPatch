@@ -743,42 +743,58 @@ class MainActivity : AppCompatActivity() {
                     )
 
                     Box(modifier = Modifier.fillMaxSize()) {
-                        CompositionLocalProvider(
-                            LocalSnackbarHost provides snackBarHostState,
-                            LocalScrollState provides if (isFloatingMode) ScrollState(
-                                isScrollingDown = isScrollingDown,
-                                scrollOffset = scrollOffset,
-                                previousScrollOffset = previousScrollOffset
-                            ) else null,
-                            LocalBottomBarVisible provides bottomBarVisibleState,
-                            LocalIsFloatingNavMode provides isFloatingMode
-                        ) {
-                            DestinationsNavHost(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .then(
-                                        if (useNavigationRail) Modifier.padding(start = 80.dp) else Modifier
-                                    )
-                                    .navBarLiquefiable(
-                                        if (shouldExposeContentToLiquid) floatingLiquidState else null
-                                    )
-                                    .then(
-                                        when {
-                                            isFloatingMode -> Modifier.nestedScroll(scrollConnection)
-                                            !useNavigationRail -> Modifier.padding(bottom = 80.dp)
-                                            else -> Modifier
-                                        }
-                                    ),
-                                navGraph = NavGraphs.root,
-                                navController = navController,
-                                engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
-                                defaultTransitions = navTransitions
+                        val baseContentModifier = Modifier
+                            .navBarLiquefiable(
+                                if (shouldExposeContentToLiquid) floatingLiquidState else null
                             )
-                        }
+                            .then(
+                                when {
+                                    isFloatingMode -> Modifier.nestedScroll(scrollConnection)
+                                    !useNavigationRail -> Modifier.padding(bottom = 80.dp)
+                                    else -> Modifier
+                                }
+                            )
 
                         if (useNavigationRail) {
-                            Box(modifier = Modifier.align(Alignment.CenterStart)) {
+                            Row(modifier = Modifier.fillMaxSize()) {
                                 NavigationRailBar(navController)
+                                CompositionLocalProvider(
+                                    LocalSnackbarHost provides snackBarHostState,
+                                    LocalScrollState provides if (isFloatingMode) ScrollState(
+                                        isScrollingDown = isScrollingDown,
+                                        scrollOffset = scrollOffset,
+                                        previousScrollOffset = previousScrollOffset
+                                    ) else null,
+                                    LocalBottomBarVisible provides bottomBarVisibleState,
+                                    LocalIsFloatingNavMode provides isFloatingMode
+                                ) {
+                                    DestinationsNavHost(
+                                        modifier = Modifier.weight(1f).then(baseContentModifier),
+                                        navGraph = NavGraphs.root,
+                                        navController = navController,
+                                        engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
+                                        defaultTransitions = navTransitions
+                                    )
+                                }
+                            }
+                        } else {
+                            CompositionLocalProvider(
+                                LocalSnackbarHost provides snackBarHostState,
+                                LocalScrollState provides if (isFloatingMode) ScrollState(
+                                    isScrollingDown = isScrollingDown,
+                                    scrollOffset = scrollOffset,
+                                    previousScrollOffset = previousScrollOffset
+                                ) else null,
+                                LocalBottomBarVisible provides bottomBarVisibleState,
+                                LocalIsFloatingNavMode provides isFloatingMode
+                            ) {
+                                DestinationsNavHost(
+                                    modifier = Modifier.fillMaxSize().then(baseContentModifier),
+                                    navGraph = NavGraphs.root,
+                                    navController = navController,
+                                    engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
+                                    defaultTransitions = navTransitions
+                                )
                             }
                         }
 
@@ -1478,7 +1494,7 @@ private fun NavigationRailBar(navController: NavHostController) {
                         label = {
                             Text(
                                 text = stringResource(destination.label),
-                                overflow = TextOverflow.Visible,
+                                overflow = TextOverflow.Ellipsis,
                                 maxLines = 1,
                                 softWrap = false
                             )
@@ -1487,7 +1503,7 @@ private fun NavigationRailBar(navController: NavHostController) {
                     )
                 }
             }
-            
+
             Spacer(Modifier.weight(1f))
         }
     }
