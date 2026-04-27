@@ -1023,8 +1023,6 @@
     <string name="settings_path_hide">路径隐遁术</string>
     <string name="settings_path_hide_summary">于道核层面施展隐遁之术，令凡俗应用不得窥见文件与目录</string>
     <string name="path_hide_paths_label">隐遁路径（每行一道）</string>
-    <string name="path_hide_paths_placeholder">/data/adb
-/system/bin/su</string>
     <string name="path_hide_paths_helper">每行书写一个路径，匹配之路径将如入虚无，查无可寻</string>
     <string name="path_hide_save">封印保存</string>
     <string name="path_hide_enabled">路径隐遁术已施展</string>

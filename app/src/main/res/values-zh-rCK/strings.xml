@@ -1024,8 +1024,6 @@
     <string name="settings_path_hide">路径藏起来</string>
     <string name="settings_path_hide_summary">在内核层面把文件和目录藏起来，不让别的应用看到</string>
     <string name="path_hide_paths_label">要藏的路径（每行一个）</string>
-    <string name="path_hide_paths_placeholder">/data/adb
-/system/bin/su</string>
     <string name="path_hide_paths_helper">每行写一个路径，匹配的路径就跟不存在一样</string>
     <string name="path_hide_save">保存</string>
     <string name="path_hide_enabled">路径隐藏已开火</string>
