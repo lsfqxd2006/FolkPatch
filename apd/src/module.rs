@@ -225,11 +225,11 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         .and_then(|bytes| bytes.get(..4).map(|b| b.to_vec()))
         .map_or(false, |magic| magic == [0x7f, b'E', b'L', b'F']);
 
-    let mut command = if is_elf {
-        Command::new(path.as_ref())
+    let mut command = Command::new(if is_elf {
+        path.as_ref().as_os_str().to_owned()
     } else {
-        Command::new(assets::BUSYBOX_PATH)
-    };
+        assets::BUSYBOX_PATH.into()
+    });
     #[cfg(unix)]
     {
         command = command.process_group(0);
