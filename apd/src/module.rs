@@ -232,24 +232,16 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
     });
     #[cfg(unix)]
     {
-        command = command.process_group(0);
-        command = unsafe {
+        command.process_group(0);
+        unsafe {
             command.pre_exec(|| {
-                // ignore the error?
                 switch_cgroups();
                 Ok(())
-            })
-        };
+            });
+        }
     }
-    command = command
-        .current_dir(path.as_ref().parent().unwrap());
-    if !is_elf {
-        command = command
-            .arg("sh")
-            .arg(path.as_ref())
-            .env("ASH_STANDALONE", "1");
-    }
-    command = command
+    command
+        .current_dir(path.as_ref().parent().unwrap())
         .env("APATCH", "true")
         .env("APATCH_VER", defs::VERSION_NAME)
         .env("APATCH_VER_CODE", defs::VERSION_CODE)
@@ -261,10 +253,14 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
                 defs::BINARY_DIR.trim_end_matches('/')
             ),
         );
-
-    // Set AP_MODULE environment variable
+    if !is_elf {
+        command
+            .arg("sh")
+            .arg(path.as_ref())
+            .env("ASH_STANDALONE", "1");
+    }
     if let Some(id) = module_id {
-        command = command.env("AP_MODULE", id);
+        command.env("AP_MODULE", id);
     }
 
     let result = if wait {
