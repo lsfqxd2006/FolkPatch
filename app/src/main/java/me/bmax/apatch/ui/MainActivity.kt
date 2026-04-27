@@ -165,6 +165,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import android.provider.OpenableColumns
 import me.bmax.apatch.ui.theme.ThemeManager
+import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 
 
@@ -557,7 +558,20 @@ class MainActivity : AppCompatActivity() {
                 val themeImportUri = remember { mutableStateOf<Uri?>(null) }
                 val themeImportMetadata = remember { mutableStateOf<ThemeManager.ThemeMetadata?>(null) }
                 val scope = androidx.compose.runtime.rememberCoroutineScope()
-                
+
+                var pendingExternalInstallUri by remember { mutableStateOf<Uri?>(null) }
+                val externalInstallConfirmDialog = rememberConfirmDialog(
+                    onConfirm = {
+                        pendingExternalInstallUri?.let { u ->
+                            navigator.navigate(InstallScreenDestination(u, MODULE_TYPE.APM))
+                        }
+                        pendingExternalInstallUri = null
+                    },
+                    onDismiss = {
+                        pendingExternalInstallUri = null
+                    }
+                )
+
                 val uri = installUri
                 val uris = installUris
                 val lastHandledExternalKey = rememberSaveable { mutableStateOf<String?>(null) }
@@ -597,7 +611,16 @@ class MainActivity : AppCompatActivity() {
                             if (prefs.getBoolean("strong_biometric", false) && prefs.getBoolean("biometric_login", false)) {
                                 if (!BiometricUtils.authenticate(this@MainActivity)) return@LaunchedEffect
                             }
-                            navigator.navigate(InstallScreenDestination(uri, MODULE_TYPE.APM))
+                            if (prefs.getBoolean("apm_install_confirm_enabled", true)) {
+                                pendingExternalInstallUri = uri
+                                externalInstallConfirmDialog.showConfirm(
+                                    title = context.getString(R.string.apm_install_confirm_title),
+                                    content = context.getString(R.string.apm_install_confirm_content, fileName),
+                                    markdown = false
+                                )
+                            } else {
+                                navigator.navigate(InstallScreenDestination(uri, MODULE_TYPE.APM))
+                            }
                         }
                         installUri = null
                         installUris = null
