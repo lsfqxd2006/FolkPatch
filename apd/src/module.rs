@@ -220,7 +220,16 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         );
     }
 
-    let mut command = &mut Command::new(assets::BUSYBOX_PATH);
+    let is_elf = fs::read(path.as_ref())
+        .ok()
+        .and_then(|bytes| bytes.get(..4).map(|b| b.to_vec()))
+        .map_or(false, |magic| magic == [0x7f, b'E', b'L', b'F']);
+
+    let mut command = if is_elf {
+        Command::new(path.as_ref())
+    } else {
+        Command::new(assets::BUSYBOX_PATH)
+    };
     #[cfg(unix)]
     {
         command = command.process_group(0);
@@ -233,10 +242,14 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         };
     }
     command = command
-        .current_dir(path.as_ref().parent().unwrap())
-        .arg("sh")
-        .arg(path.as_ref())
-        .env("ASH_STANDALONE", "1")
+        .current_dir(path.as_ref().parent().unwrap());
+    if !is_elf {
+        command = command
+            .arg("sh")
+            .arg(path.as_ref())
+            .env("ASH_STANDALONE", "1");
+    }
+    command = command
         .env("APATCH", "true")
         .env("APATCH_VER", defs::VERSION_NAME)
         .env("APATCH_VER_CODE", defs::VERSION_CODE)
