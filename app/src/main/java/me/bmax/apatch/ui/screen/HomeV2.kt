@@ -162,7 +162,7 @@ fun HomeScreenV2(
 
         
         // AndroidPatch Install Card (Only when not installed)
-        if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
+        if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
             AStatusCard(apState)
         }
         

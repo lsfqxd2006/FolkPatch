@@ -45,10 +45,24 @@ fun download(
         }
     }
 
-    val request = DownloadManager.Request(Uri.parse(url)).setDestinationInExternalPublicDir(
-        Environment.DIRECTORY_DOWNLOADS, fileName
-    ).setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+    val request = DownloadManager.Request(Uri.parse(url))
+        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
         .setMimeType("application/zip").setTitle(fileName).setDescription(description)
+
+    try {
+        request.setDestinationInExternalPublicDir(
+            Environment.DIRECTORY_DOWNLOADS, fileName
+        )
+    } catch (_: SecurityException) {
+        val dir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        if (dir != null) {
+            request.setDestinationUri(Uri.fromFile(java.io.File(dir, fileName)))
+        } else {
+            request.setDestinationInExternalFilesDir(
+                context, Environment.DIRECTORY_DOWNLOADS, fileName
+            )
+        }
+    }
 
     downloadManager.enqueue(request)
 }
