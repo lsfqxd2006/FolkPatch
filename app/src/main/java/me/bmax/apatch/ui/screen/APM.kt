@@ -69,6 +69,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Terminal
@@ -90,6 +91,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import me.bmax.apatch.ui.component.ExpressiveSwitch
+import me.bmax.apatch.ui.component.ExpressiveCard
 import me.bmax.apatch.ui.component.LocalInsideSplicedGroup
 import me.bmax.apatch.ui.component.TwoColumnGrid
 import me.bmax.apatch.ui.component.splicedLazyColumnGroup
@@ -753,47 +755,41 @@ private fun ModuleList(
                 },
                 beforeItems = {
                     if (showMountWarning) {
-                        Surface(
+                        ExpressiveCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 16.dp),
-                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
-                            shape = RoundedCornerShape(16.dp),
-                            tonalElevation = 2.dp
+                            flat = false,
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp)
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Delete,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.error,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = stringResource(R.string.apm_mount_warning_title),
-                                        style = MaterialTheme.typography.titleSmall,
-                                        color = MaterialTheme.colorScheme.error,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                                Icon(
+                                    imageVector = Icons.Outlined.Info,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 Text(
-                                    text = stringResource(R.string.apm_mount_warning_message),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                    text = stringResource(R.string.apm_mount_warning_title),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
                                 )
 
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Text(
+                                    text = stringResource(R.string.apm_mount_warning_message),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -806,10 +802,6 @@ private fun ModuleList(
                                                 .apply()
                                             showMountWarning = false
                                         },
-                                        colors = ButtonDefaults.filledTonalButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.error,
-                                            contentColor = MaterialTheme.colorScheme.onError
-                                        )
                                     ) {
                                         Text(stringResource(R.string.apm_mount_warning_button))
                                     }
@@ -914,45 +906,39 @@ private fun ModuleList(
                 // Warning Banner
                 if (showMountWarning) {
                     item {
-                        Surface(
+                        ExpressiveCard(
                             modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
-                            shape = RoundedCornerShape(16.dp),
-                            tonalElevation = 2.dp
+                            flat = false,
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp)
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Delete,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.error,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = stringResource(R.string.apm_mount_warning_title),
-                                        style = MaterialTheme.typography.titleSmall,
-                                        color = MaterialTheme.colorScheme.error,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                                Icon(
+                                    imageVector = Icons.Outlined.Info,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 Text(
-                                    text = stringResource(R.string.apm_mount_warning_message),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                    text = stringResource(R.string.apm_mount_warning_title),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
                                 )
 
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Text(
+                                    text = stringResource(R.string.apm_mount_warning_message),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -965,10 +951,6 @@ private fun ModuleList(
                                                 .apply()
                                             showMountWarning = false
                                         },
-                                        colors = ButtonDefaults.filledTonalButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.error,
-                                            contentColor = MaterialTheme.colorScheme.onError
-                                        )
                                     ) {
                                         Text(stringResource(R.string.apm_mount_warning_button))
                                     }
