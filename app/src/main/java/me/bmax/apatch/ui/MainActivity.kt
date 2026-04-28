@@ -10,7 +10,6 @@ import android.os.Looper
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -881,14 +880,9 @@ class MainActivity : AppCompatActivity() {
                 .build()
         )
 
-        APApplication.kpStateLiveData.observeForever(object : Observer<APApplication.State> {
-            override fun onChanged(state: APApplication.State) {
-                if (state != APApplication.State.UNKNOWN_STATE) {
-                    isLoading = false
-                    APApplication.kpStateLiveData.removeObserver(this)
-                }
-            }
-        })
+        Handler(Looper.getMainLooper()).postDelayed({
+            isLoading = false
+        }, 500)
     }
 }
 
