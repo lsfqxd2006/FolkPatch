@@ -107,7 +107,7 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
     val scope = rememberCoroutineScope()
     var needKey by remember { mutableStateOf(APApplication.sharedPreferences.getBoolean("patch_custom_superkey_enabled", false)) }
     val viewModel = viewModel<PatchesViewModel>()
-    SideEffect {
+    LaunchedEffect(mode) {
         viewModel.prepare(mode)
     }
 
@@ -141,20 +141,21 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
         ) {
             val context = LocalContext.current
 
-            // request permissions
-            val permissions = arrayOf(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-            val permissionsToRequest = permissions.filter {
-                ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
-            }
-            if (permissionsToRequest.isNotEmpty()) {
-                ActivityCompat.requestPermissions(
-                    context as Activity,
-                    permissionsToRequest.toTypedArray(),
-                    1001
+            LaunchedEffect(Unit) {
+                val permissions = arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
                 )
+                val permissionsToRequest = permissions.filter {
+                    ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
+                }
+                if (permissionsToRequest.isNotEmpty()) {
+                    ActivityCompat.requestPermissions(
+                        context as Activity,
+                        permissionsToRequest.toTypedArray(),
+                        1001
+                    )
+                }
             }
 
             PatchMode(mode)
