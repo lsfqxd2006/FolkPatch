@@ -16,7 +16,7 @@ private const val TAG = "SafeToast"
 fun showToast(context: Context, message: String) {
     try {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    } catch (e: SecurityException) {
+    } catch (e: Exception) {
         Log.w(TAG, "System toast unavailable, using fallback: $message", e)
         showFallbackToast(context, message)
     }

@@ -354,9 +354,12 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
 
     override fun onCreate() {
         super.onCreate()
+        apApp = this
+        if (Application.getProcessName().endsWith(":root") || Application.getProcessName().endsWith(":webui")) {
+            return
+        }
         bypassHiddenApiRestrictions()
         Log.d(TAG, "APApplication onCreate started")
-        apApp = this
 
         val isArm64 = Build.SUPPORTED_ABIS.any { it == "arm64-v8a" }
         Log.d(TAG, "Device architecture check: isArm64=$isArm64, supported ABIs=${Build.SUPPORTED_ABIS.joinToString(", ")}")
