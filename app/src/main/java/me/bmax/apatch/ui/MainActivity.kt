@@ -239,6 +239,7 @@ class MainActivity : AppCompatActivity() {
     private val isLocked = mutableStateOf(false)
     private var isAuthenticated = false
     private var biometricPromptShowing = false
+    private var startupSoundPlayed = false
     private var pendingActionModuleId by mutableStateOf<String?>(null)
     private var pendingScriptId by mutableStateOf<String?>(null)
 
@@ -402,6 +403,12 @@ class MainActivity : AppCompatActivity() {
                         biometricPromptShowing = false
                         if (errorCode == androidx.biometric.BiometricPrompt.ERROR_USER_CANCELED) {
                             finishAndRemoveTask()
+                        } else {
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                if (!isAuthenticated && !biometricPromptShowing) {
+                                    showBiometricPromptIfNeeded()
+                                }
+                            }, 300)
                         }
                     }
 
@@ -410,7 +417,10 @@ class MainActivity : AppCompatActivity() {
                         isLocked.value = false
                         isAuthenticated = true
                         biometricPromptShowing = false
-                        me.bmax.apatch.util.SoundEffectManager.playStartup(this@MainActivity)
+                        if (!startupSoundPlayed) {
+                            startupSoundPlayed = true
+                            me.bmax.apatch.util.SoundEffectManager.playStartup(this@MainActivity)
+                        }
                     }
                 })
             val promptInfo = androidx.biometric.BiometricPrompt.PromptInfo.Builder()
@@ -421,7 +431,11 @@ class MainActivity : AppCompatActivity() {
             biometricPrompt.authenticate(promptInfo)
         } else if (!biometricLogin || !canAuthenticate || isShareIntent) {
             isAuthenticated = true
-            me.bmax.apatch.util.SoundEffectManager.playStartup(this)
+            isLocked.value = false
+            if (!startupSoundPlayed) {
+                startupSoundPlayed = true
+                me.bmax.apatch.util.SoundEffectManager.playStartup(this)
+            }
         }
     }
 
