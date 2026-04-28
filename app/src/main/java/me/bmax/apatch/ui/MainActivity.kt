@@ -238,6 +238,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var permissionHandler: PermissionRequestHandler
     private val isLocked = mutableStateOf(false)
     private var isAuthenticated = false
+    private var biometricPromptShowing = false
+    private var startupSoundPlayed = false
     private var pendingActionModuleId by mutableStateOf<String?>(null)
     private var pendingScriptId by mutableStateOf<String?>(null)
 
@@ -288,9 +290,6 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         updatePendingActionFromIntent(intent)
-        if (!isAuthenticated) {
-            showBiometricPromptIfNeeded()
-        }
     }
 
     private fun updatePendingActionFromIntent(intent: Intent?) {
@@ -372,11 +371,17 @@ class MainActivity : AppCompatActivity() {
         // 初始化权限处理器
         permissionHandler = PermissionRequestHandler(this)
 
-        showBiometricPromptIfNeeded()
         setupUI()
     }
 
+    override fun onResume() {
+        super.onResume()
+        showBiometricPromptIfNeeded()
+    }
+
     private fun showBiometricPromptIfNeeded() {
+        if (isAuthenticated || biometricPromptShowing) return
+
         val prefs = APApplication.sharedPreferences
         val biometricLogin = prefs.getBoolean("biometric_login", false)
         val biometricManager = androidx.biometric.BiometricManager.from(this)
@@ -386,23 +391,36 @@ class MainActivity : AppCompatActivity() {
         ) == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS
 
         val isShareIntent = intent.action == Intent.ACTION_SEND || intent.action == Intent.ACTION_SEND_MULTIPLE
-        if (biometricLogin && canAuthenticate && !isShareIntent && !isAuthenticated) {
+        if (biometricLogin && canAuthenticate && !isShareIntent) {
             isLocked.value = true
+            biometricPromptShowing = true
             val biometricPrompt = androidx.biometric.BiometricPrompt(
                 this,
                 androidx.core.content.ContextCompat.getMainExecutor(this),
                 object : androidx.biometric.BiometricPrompt.AuthenticationCallback() {
                     override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                         super.onAuthenticationError(errorCode, errString)
-                        showToast(this@MainActivity, errString.toString())
-                        finishAndRemoveTask()
+                        biometricPromptShowing = false
+                        if (errorCode == androidx.biometric.BiometricPrompt.ERROR_USER_CANCELED) {
+                            finishAndRemoveTask()
+                        } else {
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                if (!isAuthenticated && !biometricPromptShowing) {
+                                    showBiometricPromptIfNeeded()
+                                }
+                            }, 300)
+                        }
                     }
 
                     override fun onAuthenticationSucceeded(result: androidx.biometric.BiometricPrompt.AuthenticationResult) {
                         super.onAuthenticationSucceeded(result)
                         isLocked.value = false
                         isAuthenticated = true
-                        me.bmax.apatch.util.SoundEffectManager.playStartup(this@MainActivity)
+                        biometricPromptShowing = false
+                        if (!startupSoundPlayed) {
+                            startupSoundPlayed = true
+                            me.bmax.apatch.util.SoundEffectManager.playStartup(this@MainActivity)
+                        }
                     }
                 })
             val promptInfo = androidx.biometric.BiometricPrompt.PromptInfo.Builder()
@@ -413,7 +431,11 @@ class MainActivity : AppCompatActivity() {
             biometricPrompt.authenticate(promptInfo)
         } else if (!biometricLogin || !canAuthenticate || isShareIntent) {
             isAuthenticated = true
-            me.bmax.apatch.util.SoundEffectManager.playStartup(this)
+            isLocked.value = false
+            if (!startupSoundPlayed) {
+                startupSoundPlayed = true
+                me.bmax.apatch.util.SoundEffectManager.playStartup(this)
+            }
         }
     }
 
