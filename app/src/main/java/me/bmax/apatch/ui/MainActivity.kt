@@ -10,7 +10,6 @@ import android.os.Looper
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -238,6 +237,7 @@ class MainActivity : AppCompatActivity() {
     private var installUris: ArrayList<Uri>? = null
     private lateinit var permissionHandler: PermissionRequestHandler
     private val isLocked = mutableStateOf(false)
+    private var isAuthenticated = false
     private var pendingActionModuleId by mutableStateOf<String?>(null)
     private var pendingScriptId by mutableStateOf<String?>(null)
 
@@ -288,6 +288,9 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         updatePendingActionFromIntent(intent)
+        if (!isAuthenticated) {
+            showBiometricPromptIfNeeded()
+        }
     }
 
     private fun updatePendingActionFromIntent(intent: Intent?) {
@@ -369,6 +372,11 @@ class MainActivity : AppCompatActivity() {
         // 初始化权限处理器
         permissionHandler = PermissionRequestHandler(this)
 
+        showBiometricPromptIfNeeded()
+        setupUI()
+    }
+
+    private fun showBiometricPromptIfNeeded() {
         val prefs = APApplication.sharedPreferences
         val biometricLogin = prefs.getBoolean("biometric_login", false)
         val biometricManager = androidx.biometric.BiometricManager.from(this)
@@ -378,7 +386,7 @@ class MainActivity : AppCompatActivity() {
         ) == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS
 
         val isShareIntent = intent.action == Intent.ACTION_SEND || intent.action == Intent.ACTION_SEND_MULTIPLE
-        if (biometricLogin && canAuthenticate && !isShareIntent) {
+        if (biometricLogin && canAuthenticate && !isShareIntent && !isAuthenticated) {
             isLocked.value = true
             val biometricPrompt = androidx.biometric.BiometricPrompt(
                 this,
@@ -393,7 +401,7 @@ class MainActivity : AppCompatActivity() {
                     override fun onAuthenticationSucceeded(result: androidx.biometric.BiometricPrompt.AuthenticationResult) {
                         super.onAuthenticationSucceeded(result)
                         isLocked.value = false
-                        // Play startup sound after biometric auth success
+                        isAuthenticated = true
                         me.bmax.apatch.util.SoundEffectManager.playStartup(this@MainActivity)
                     }
                 })
@@ -403,11 +411,10 @@ class MainActivity : AppCompatActivity() {
                 .setAllowedAuthenticators(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG or androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL)
                 .build()
             biometricPrompt.authenticate(promptInfo)
-        } else {
-            // Play startup sound directly if no biometric auth needed
+        } else if (!biometricLogin || !canAuthenticate || isShareIntent) {
+            isAuthenticated = true
             me.bmax.apatch.util.SoundEffectManager.playStartup(this)
         }
-        setupUI()
     }
 
     private fun setupUI() {
@@ -881,14 +888,9 @@ class MainActivity : AppCompatActivity() {
                 .build()
         )
 
-        APApplication.kpStateLiveData.observeForever(object : Observer<APApplication.State> {
-            override fun onChanged(state: APApplication.State) {
-                if (state != APApplication.State.UNKNOWN_STATE) {
-                    isLoading = false
-                    APApplication.kpStateLiveData.removeObserver(this)
-                }
-            }
-        })
+        Handler(Looper.getMainLooper()).postDelayed({
+            isLoading = false
+        }, 500)
     }
 }
 
