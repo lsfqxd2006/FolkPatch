@@ -420,12 +420,19 @@ class SuperUserViewModel : ViewModel() {
                 val config = configs.getOrDefault(
                     uid, PkgConfig.Config(appInfo.packageName, Natives.isUidExcluded(uid), 0, Natives.Profile(uid = uid))
                 )
+                val hadShellFlag = config.profile.toUid == 2000 && config.allow != 0
                 config.allow = 0
 
-                // from kernel
+                // from kernel (ROOT mode)
                 if (actProfile != null) {
                     config.allow = 1
                     config.profile = actProfile
+                }
+
+                // from config file (SHELL mode, no kernel mapping)
+                if (hadShellFlag && config.allow == 0) {
+                    config.allow = 1
+                    config.profile.toUid = 2000
                 }
                 AppInfo(
                     label = appInfo.loadLabel(apApp.packageManager).toString(),

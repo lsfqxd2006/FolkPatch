@@ -168,9 +168,11 @@ fun AppProfileScreen(
                         1 -> { // SHELL
                             config.allow = 1
                             config.exclude = 0
-                            config.profile.scontext = APApplication.MAGISK_SCONTEXT
+                            config.profile.scontext = APApplication.DEFAULT_SCONTEXT
                             config.profile.toUid = 2000
-                            Natives.grantSu(appInfo.uid, 2000, config.profile.scontext)
+                            // Do NOT call Natives.grantSu — shell access is handled
+                            // entirely in userspace via the Shizuku API server
+                            Natives.revokeSu(appInfo.uid)
                             Natives.setUidExclude(appInfo.uid, 0)
                             SuAuditLog.logGrant(appInfo.packageName, appInfo.uid)
                         }
