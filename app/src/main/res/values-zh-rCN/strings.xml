@@ -220,6 +220,8 @@
     <string name="su_pkg_root_setting_summary">启用该选项为你的软件启动超级用户,软件能够使用SU命令</string>
     <string name="su_pkg_normal_setting_title">常规模式</string>
     <string name="su_pkg_normal_setting_summary">不授予 root 权限，应用在没有超级用户权限下运行。</string>
+    <string name="su_pkg_shell_setting_title">Shell 模式</string>
+    <string name="su_pkg_shell_setting_summary">授予 Shell 级别 (UID 2000) 访问权限。应用将以 ADB Shell 身份运行，适合测试 Shizuku 兼容应用。</string>
     <string name="su_show_system_apps">显示系统应用</string>
     <string name="su_hide_system_apps">隐藏系统应用</string>
     <string name="su_refresh">刷新</string>

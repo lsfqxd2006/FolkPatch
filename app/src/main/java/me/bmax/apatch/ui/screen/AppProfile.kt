@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material.icons.filled.Security
@@ -80,13 +81,14 @@ fun AppProfileScreen(
 
     val config = appInfo.config
     
-    // 0: ROOT, 1: NO ROOT, 2: Exclude
-    var selectedIndex by remember(config) { 
+    // 0: ROOT, 1: SHELL, 2: NO ROOT, 3: Exclude
+    var selectedIndex by remember(config) {
         mutableIntStateOf(
             when {
+                config.allow == 1 && config.profile.toUid == 2000 -> 1
                 config.allow == 1 -> 0
-                config.exclude == 1 -> 2
-                else -> 1
+                config.exclude == 1 -> 3
+                else -> 2
             }
         )
     }
@@ -147,29 +149,39 @@ fun AppProfileScreen(
             )
 
             SegmentedControl(
-                items = listOf("ROOT", "NO ROOT", "Exclude"),
+                items = listOf("ROOT", "SHELL", "NO ROOT", "Exclude"),
                 selectedIndex = selectedIndex,
                 onItemSelection = { index ->
                     selectedIndex = index
-                    
+
                     // Update Logic
                     when (index) {
                         0 -> { // ROOT
                             config.allow = 1
                             config.exclude = 0
                             config.profile.scontext = APApplication.MAGISK_SCONTEXT
+                            config.profile.toUid = 0
                             Natives.grantSu(appInfo.uid, 0, config.profile.scontext)
                             Natives.setUidExclude(appInfo.uid, 0)
                             SuAuditLog.logGrant(appInfo.packageName, appInfo.uid)
                         }
-                        1 -> { // NO ROOT
+                        1 -> { // SHELL
+                            config.allow = 1
+                            config.exclude = 0
+                            config.profile.scontext = APApplication.MAGISK_SCONTEXT
+                            config.profile.toUid = 2000
+                            Natives.grantSu(appInfo.uid, 2000, config.profile.scontext)
+                            Natives.setUidExclude(appInfo.uid, 0)
+                            SuAuditLog.logGrant(appInfo.packageName, appInfo.uid)
+                        }
+                        2 -> { // NO ROOT
                             config.allow = 0
                             config.exclude = 0
                             Natives.revokeSu(appInfo.uid)
                             Natives.setUidExclude(appInfo.uid, 0)
                             SuAuditLog.logRevoke(appInfo.packageName, appInfo.uid)
                         }
-                        2 -> { // Exclude
+                        3 -> { // Exclude
                             config.allow = 0
                             config.exclude = 1
                             config.profile.scontext = APApplication.DEFAULT_SCONTEXT
@@ -196,13 +208,22 @@ fun AppProfileScreen(
             AnimatedVisibility(visible = selectedIndex == 1) {
                 ListItem(
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    headlineContent = { Text(stringResource(id = R.string.su_pkg_shell_setting_title)) },
+                    supportingContent = { Text(stringResource(id = R.string.su_pkg_shell_setting_summary)) },
+                    leadingContent = { Icon(Icons.Filled.DeveloperMode, contentDescription = null) }
+                )
+            }
+
+            AnimatedVisibility(visible = selectedIndex == 2) {
+                ListItem(
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     headlineContent = { Text(stringResource(id = R.string.su_pkg_normal_setting_title)) },
                     supportingContent = { Text(stringResource(id = R.string.su_pkg_normal_setting_summary)) },
                     leadingContent = { Icon(Icons.Filled.Info, contentDescription = null) }
                 )
             }
 
-            AnimatedVisibility(visible = selectedIndex == 2) {
+            AnimatedVisibility(visible = selectedIndex == 3) {
                 ListItem(
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     headlineContent = { Text(stringResource(id = R.string.su_pkg_excluded_setting_title)) },
