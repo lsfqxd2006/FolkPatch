@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
-import android.os.SELinux;
-import android.os.SystemProperties;
 import android.system.Os;
 import android.util.Log;
 
@@ -18,6 +16,7 @@ import com.topjohnwu.superuser.ipc.RootService;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import moe.shizuku.server.IRemoteProcess;
@@ -33,6 +32,39 @@ public class FolkShizukuService extends RootService {
     private static final int SERVER_VERSION = 13;
 
     private static volatile IBinder serviceBinder;
+
+    private static String sContextCache;
+
+    private static String getSelinuxContext() {
+        if (sContextCache != null) return sContextCache;
+        try {
+            Class<?> selinux = Class.forName("android.os.SELinux");
+            Method getContext = selinux.getDeclaredMethod("getContext");
+            sContextCache = (String) getContext.invoke(null);
+            return sContextCache;
+        } catch (Exception e) {
+            return "u:r:su:s0";
+        }
+    }
+
+    private static String getSystemProp(String name, String defaultValue) {
+        try {
+            Class<?> sp = Class.forName("android.os.SystemProperties");
+            Method get = sp.getDeclaredMethod("get", String.class, String.class);
+            return (String) get.invoke(null, name, defaultValue);
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
+    private static void setSystemProp(String name, String value) {
+        try {
+            Class<?> sp = Class.forName("android.os.SystemProperties");
+            Method set = sp.getDeclaredMethod("set", String.class, String.class);
+            set.invoke(null, name, value);
+        } catch (Exception ignored) {
+        }
+    }
 
     private final IShizukuService.Stub serviceImpl = new IShizukuService.Stub() {
 
@@ -65,21 +97,17 @@ public class FolkShizukuService extends RootService {
 
         @Override
         public String getSELinuxContext() {
-            try {
-                return SELinux.getContext();
-            } catch (Throwable tr) {
-                throw new IllegalStateException(tr.getMessage());
-            }
+            return getSelinuxContext();
         }
 
         @Override
         public String getSystemProperty(String name, String defaultValue) {
-            return SystemProperties.get(name, defaultValue);
+            return getSystemProp(name, defaultValue);
         }
 
         @Override
         public void setSystemProperty(String name, String value) {
-            SystemProperties.set(name, value);
+            setSystemProp(name, value);
         }
 
         @Override
