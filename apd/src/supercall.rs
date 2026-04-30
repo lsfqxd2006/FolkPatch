@@ -962,20 +962,14 @@ pub fn apply_uts_spoof(superkey: &Option<String>) {
 /* ─── APatch Full App Profile Supercalls ─── */
 
 /// Set a full app profile in the kernel.
-/// `uid` = target app UID, `data` = pointer to KernelProfileData,
-/// `cmd_val` = ver_and_cmd_val(AP_CMD_SET_PROFILE).
-pub fn sc_ap_set_profile(key: &CStr, uid: i32, data: *const std::ffi::c_void, cmd_val: c_long) -> c_long {
+/// `data` = pointer to KernelProfileData (struct contains uid);
+/// passed as arg1 (x2) to match KP's supercall dispatch.
+pub fn sc_ap_set_profile(key: &CStr, data: *const std::ffi::c_void, cmd_val: c_long) -> c_long {
     if key.to_bytes().is_empty() {
         return (-EINVAL).into();
     }
     unsafe {
-        syscall(
-            __NR_SUPERCALL,
-            key.as_ptr(),
-            cmd_val,
-            uid as c_long,
-            data,
-        ) as c_long
+        syscall(__NR_SUPERCALL, key.as_ptr(), cmd_val, data) as c_long
     }
 }
 

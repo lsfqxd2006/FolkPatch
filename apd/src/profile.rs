@@ -104,19 +104,20 @@ impl Default for AppProfile {
 /* ─── Kernel Data Layout (for supercall) ─── */
 
 /*
- * Must match kernel-side struct ap_profile_data exactly.
- * This is the raw bytes we send through the supercall.
+ * Must match KP's struct ap_profile_data exactly.
+ * Layout: uid(4) + groups(128) + groups_count(4) + cap*(24) + sctx(96) + ns(4) + flag(1)
  */
 #[repr(C)]
 struct KernelProfileData {
+    uid: i32,
     groups: [i32; AP_MAX_GROUPS as usize],
     groups_count: u32,
-    capabilities_effective: u64,
-    capabilities_permitted: u64,
-    capabilities_inheritable: u64,
+    cap_effective: u64,
+    cap_permitted: u64,
+    cap_inheritable: u64,
+    selinux_domain: [u8; 0x60],  // SUPERCALL_SCONTEXT_LEN
     namespaces: i32,
-    umount_modules: u8,  // bool
-    has_root_config: u8, // bool
+    has_root_config: u8,
 }
 
 impl From<&AppProfile> for KernelProfileData {
@@ -148,14 +149,24 @@ impl From<&AppProfile> for KernelProfileData {
             0
         };
 
+        let mut sdomain = [0u8; 0x60];
+        let sctx = if profile.allow_su {
+            profile.root_profile.selinux_domain.as_bytes()
+        } else {
+            &[]
+        };
+        let copy_len = std::cmp::min(sctx.len(), sdomain.len() - 1);
+        sdomain[..copy_len].copy_from_slice(&sctx[..copy_len]);
+
         KernelProfileData {
+            uid: profile.uid,
             groups,
             groups_count,
-            capabilities_effective: caps_eff,
-            capabilities_permitted: caps_perm,
-            capabilities_inheritable: caps_inh,
+            cap_effective: caps_eff,
+            cap_permitted: caps_perm,
+            cap_inheritable: caps_inh,
+            selinux_domain: sdomain,
             namespaces: ns,
-            umount_modules: if profile.exclude_modules { 0 } else { 1 },
             has_root_config: if profile.allow_su { 1 } else { 0 },
         }
     }
@@ -246,10 +257,9 @@ pub fn sync_profile_to_kernel(profile: &AppProfile) -> Result<()> {
     let kernel_data = KernelProfileData::from(profile);
     let data_ptr = &kernel_data as *const KernelProfileData as *const std::ffi::c_void;
 
-    let uid = profile.uid;
     let cmd_val = crate::supercall::ver_and_cmd_val(0x1201); // SUPERCALL_AP_SET_PROFILE
 
-    let rc = crate::supercall::sc_ap_set_profile(&key, uid, data_ptr, cmd_val);
+    let rc = crate::supercall::sc_ap_set_profile(&key, data_ptr, cmd_val);
     if rc != 0 {
         warn!("[profile] Kernel sync failed for {} (uid={}): rc={}", profile.pkg, uid, rc);
         return Err(anyhow::anyhow!("Kernel sync failed with rc={}", rc));
