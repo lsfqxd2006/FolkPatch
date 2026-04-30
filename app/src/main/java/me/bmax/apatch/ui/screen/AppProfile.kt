@@ -98,9 +98,10 @@ fun AppProfileScreen(
     var selectedIndex by remember(config) {
         mutableIntStateOf(
             when {
+                config.allow == 1 && config.profile.toUid == 2000 -> 1
                 config.allow == 1 -> 0
-                config.exclude == 1 -> 2
-                else -> 1
+                config.exclude == 1 -> 3
+                else -> 2
             }
         )
     }
@@ -220,7 +221,7 @@ fun AppProfileScreen(
 
             // Mode selector
             SegmentedControl(
-                items = listOf("ROOT", "NO ROOT", "Exclude"),
+                items = listOf("ROOT", "SHELL", "NO ROOT", "Exclude"),
                 selectedIndex = selectedIndex,
                 onItemSelection = { index ->
                     selectedIndex = index
@@ -238,6 +239,15 @@ fun AppProfileScreen(
                 )
             }
             AnimatedVisibility(visible = selectedIndex == 1) {
+                ListItem(
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    headlineContent = { Text(stringResource(id = R.string.su_pkg_shell_setting_title)) },
+                    supportingContent = { Text(stringResource(id = R.string.su_pkg_shell_setting_summary)) },
+                    leadingContent = { Icon(Icons.Filled.DeveloperMode, contentDescription = null) }
+                )
+            }
+
+            AnimatedVisibility(visible = selectedIndex == 2) {
                 ListItem(
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     headlineContent = { Text(stringResource(id = R.string.su_pkg_normal_setting_title)) },
