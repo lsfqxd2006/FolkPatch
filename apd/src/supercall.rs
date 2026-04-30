@@ -48,6 +48,12 @@ const SUPERCALL_NETISOLATE_UID_REMOVE: c_long = 0x1073;
 const SUPERCALL_NETISOLATE_UID_LIST: c_long = 0x1074;
 const SUPERCALL_NETISOLATE_UID_CLEAR: c_long = 0x1075;
 
+/* APatch Full App Profile commands */
+const SUPERCALL_AP_SET_PROFILE: c_long = 0x1201;
+const SUPERCALL_AP_GET_PROFILE: c_long = 0x1202;
+const SUPERCALL_AP_DEL_PROFILE: c_long = 0x1203;
+const SUPERCALL_AP_LIST_PROFILES: c_long = 0x1204;
+
 const SUPERCALL_SCONTEXT_LEN: usize = 0x60;
 
 #[repr(C)]
@@ -60,6 +66,11 @@ struct SuProfile {
 fn ver_and_cmd(cmd: c_long) -> c_long {
     let version_code: u32 = ((MAJOR << 16) + (MINOR << 8) + PATCH).try_into().unwrap();
     ((version_code as c_long) << 32) | (0x1158 << 16) | (cmd & 0xFFFF)
+}
+
+/// Public helper: return the encoded command value for a raw command constant.
+pub fn ver_and_cmd_val(cmd: c_long) -> c_long {
+    ver_and_cmd(cmd)
 }
 
 fn sc_su_revoke_uid(key: &CStr, uid: uid_t) -> c_long {
@@ -945,5 +956,74 @@ pub fn apply_uts_spoof(superkey: &Option<String>) {
         }
     } else {
         info!("[uts_spoof] config has empty values, skipping set");
+    }
+}
+
+/* ─── APatch Full App Profile Supercalls ─── */
+
+/// Set a full app profile in the kernel.
+/// `uid` = target app UID, `data` = pointer to KernelProfileData,
+/// `cmd_val` = ver_and_cmd_val(AP_CMD_SET_PROFILE).
+pub fn sc_ap_set_profile(key: &CStr, uid: i32, data: *const std::ffi::c_void, cmd_val: c_long) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            cmd_val,
+            uid as c_long,
+            data,
+        ) as c_long
+    }
+}
+
+/// Get a full app profile from the kernel.
+/// `uid` = target app UID, `out_data` = output buffer for KernelProfileData.
+pub fn sc_ap_get_profile(key: &CStr, uid: i32, out_data: *mut std::ffi::c_void, cmd_val: c_long) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            cmd_val,
+            uid as c_long,
+            out_data,
+        ) as c_long
+    }
+}
+
+/// Delete a full app profile from the kernel.
+pub fn sc_ap_del_profile(key: &CStr, uid: i32, cmd_val: c_long) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            cmd_val,
+            uid as c_long,
+        ) as c_long
+    }
+}
+
+/// List all UIDs that have AP profiles in the kernel.
+/// Returns: encoded (total_count << 32) | written_count
+pub fn sc_ap_list_profiles(key: &CStr, buf: &mut [i32], cmd_val: c_long) -> c_long {
+    if key.to_bytes().is_empty() {
+        return (-EINVAL).into();
+    }
+    unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            cmd_val,
+            buf.as_mut_ptr(),
+            buf.len() as c_long,
+        ) as c_long
     }
 }
