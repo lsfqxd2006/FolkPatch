@@ -2,8 +2,8 @@ package me.bmax.apatch.shizuku
 
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -70,37 +70,29 @@ object FolkShizukuManager {
      */
     private fun deliverToAllShizukuApps(context: Context) {
         Log.i(TAG, "Discovering Shizuku apps...")
-        val rootBinder = FolkShizukuRootService.getBinder()
-        val shellBinder = FolkShizukuShellService.getBinder()
-
-        if (rootBinder == null && shellBinder == null) {
-            Log.w(TAG, "No server binders available, skipping delivery")
+        val binder = FolkShizukuRootService.getBinder()
+        if (binder == null) {
+            Log.w(TAG, "No server binder available, skipping delivery")
             return
         }
 
         val pm = context.packageManager
-        // Query for providers with the Shizuku authority pattern
-        val intent = Intent("moe.shizuku.api.action.BINDER_RECEIVED")
-        val receivers = pm.queryBroadcastReceivers(intent, PackageManager.GET_META_DATA)
+        val apps: List<PackageInfo> = pm.getInstalledPackages(PackageManager.GET_META_DATA)
 
-        for (ri in receivers) {
-            val pkg = ri.activityInfo.packageName
+        for (app in apps) {
+            val pkg = app.packageName
             if (pkg == context.packageName) continue
 
-            // Deliver root binder for now (per-app routing can be added later)
-            val binder = rootBinder
-            if (binder == null) continue
-
+            // Try to deliver. Fails fast for apps without ShizukuProvider.
             try {
                 val uri = Uri.parse("content://$pkg.shizuku")
                 val bundle = Bundle()
                 bundle.putBinder("moe.shizuku.privileged.api.intent.extra.BINDER", binder)
                 context.contentResolver.call(uri, "sendBinder", null, bundle)
                 Log.d(TAG, "Delivered Shizuku binder to $pkg")
-            } catch (e: SecurityException) {
-                Log.d(TAG, "No permission to deliver to $pkg")
-            } catch (e: Exception) {
-                Log.d(TAG, "No ShizukuProvider in $pkg")
+            } catch (_: SecurityException) {
+            } catch (_: IllegalArgumentException) {
+            } catch (_: Exception) {
             }
         }
         Log.i(TAG, "Shizuku delivery complete")
