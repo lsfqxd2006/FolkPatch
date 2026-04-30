@@ -231,6 +231,7 @@ class SuperUserViewModel : ViewModel() {
                     jsonObj.put("pkg", config.pkg)
                     jsonObj.put("allow", config.allow)
                     jsonObj.put("exclude", config.exclude)
+                    jsonObj.put("toUid", config.profile.toUid)
                     jsonObj.put("scontext", config.profile.scontext)
                     jsonArray.put(jsonObj)
                 }
@@ -273,16 +274,17 @@ class SuperUserViewModel : ViewModel() {
 
                         val allow = jsonObj.optInt("allow", 0)
                         val exclude = jsonObj.optInt("exclude", 0)
+                        val toUid = jsonObj.optInt("toUid", 0)
                         val scontext = jsonObj.optString("scontext", APApplication.DEFAULT_SCONTEXT)
 
-                        val profile = Natives.Profile(uid = uid, toUid = 0, scontext = scontext)
+                        val profile = Natives.Profile(uid = uid, toUid = toUid, scontext = scontext)
                         val config = PkgConfig.Config(pkg = pkgName, exclude = exclude, allow = allow, profile = profile)
 
                         newConfigs.add(config)
 
                         // Apply to kernel immediately
                         if (allow == 1) {
-                            Natives.grantSu(uid, 0, scontext)
+                            Natives.grantSu(uid, toUid, scontext)
                             Natives.setUidExclude(uid, 0)
                         } else {
                             Natives.revokeSu(uid)
@@ -319,7 +321,8 @@ class SuperUserViewModel : ViewModel() {
                             val scontext = config.profile.scontext
                             
                             if (allow == 1) {
-                                Natives.grantSu(uid, 0, scontext)
+                                val toUid = config.profile.toUid
+                                Natives.grantSu(uid, toUid, scontext)
                                 Natives.setUidExclude(uid, 0)
                             } else {
                                 Natives.revokeSu(uid)
@@ -417,12 +420,19 @@ class SuperUserViewModel : ViewModel() {
                 val config = configs.getOrDefault(
                     uid, PkgConfig.Config(appInfo.packageName, Natives.isUidExcluded(uid), 0, Natives.Profile(uid = uid))
                 )
+                val hadShellFlag = config.profile.toUid == 2000 && config.allow != 0
                 config.allow = 0
 
-                // from kernel
+                // from kernel (ROOT mode)
                 if (actProfile != null) {
                     config.allow = 1
                     config.profile = actProfile
+                }
+
+                // from config file (SHELL mode, no kernel mapping)
+                if (hadShellFlag && config.allow == 0) {
+                    config.allow = 1
+                    config.profile.toUid = 2000
                 }
                 AppInfo(
                     label = appInfo.loadLabel(apApp.packageManager).toString(),

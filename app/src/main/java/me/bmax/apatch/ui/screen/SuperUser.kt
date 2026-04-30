@@ -378,6 +378,7 @@ private fun AppItemM3E(
 ) {
     val config = app.config
     val rootGranted = config.allow != 0
+    val isShell = rootGranted && config.profile.toUid == 2000
     val excludeApp = config.exclude == 1
 
     Row(
@@ -418,7 +419,9 @@ private fun AppItemM3E(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             FlowRow(modifier = Modifier.padding(top = 4.dp)) {
-                if (rootGranted) {
+                if (isShell) {
+                    LabelText(label = "SHELL", containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+                } else if (rootGranted) {
                     LabelText(label = "ROOT", containerColor = MaterialTheme.colorScheme.primaryContainer)
                 }
                 if (excludeApp) {
