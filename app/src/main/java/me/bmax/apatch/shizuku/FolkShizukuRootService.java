@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.system.Os;
 import android.util.Log;
-
+import java.util.List
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -53,7 +53,7 @@ public class FolkShizukuRootService extends RootService {
             if (selfPkg == null) return;
 
             try {
-                PackageInfo apps = pm.getInstalledPackages(PackageManager.GET_META_DATA);
+                List<PackageInfo> apps = pm.getInstalledPackages(PackageManager.GET_META_DATA);
 
                 for (PackageInfo app : apps) {
                     String pkg = app.packageName;
