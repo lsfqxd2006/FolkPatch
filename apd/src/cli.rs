@@ -1,8 +1,9 @@
-use crate::{defs, event, lua, module, module_config, supercall, utils};
+use crate::{defs, event, lua, module, module_config, profile, supercall, utils};
 #[cfg(target_os = "android")]
 use android_logger::Config;
 use anyhow::{Context, Result};
 use clap::Parser;
+use std::io::Read;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
@@ -46,6 +47,84 @@ enum Commands {
 
     /// MagiskPolicy - SELinux Policy Patch Tool
     Sepolicy(crate::sepolicy::Args),
+
+    /// Manage full app profiles
+    Profile {
+        #[command(subcommand)]
+        command: ProfileCmd,
+    },
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum ProfileCmd {
+    /// Show profile for a package
+    Show {
+        /// Package name
+        pkg: String,
+    },
+
+    /// List all configured profiles
+    List,
+
+    /// Set simple allow/deny/exclude mode (compatible with existing behavior)
+    Set {
+        /// Package name
+        pkg: String,
+        /// UID
+        uid: i32,
+        /// Mode: allow/root, deny/nobody, or exclude
+        mode: String,
+        /// SELinux context (for allow mode)
+        #[arg(default_value = "u:r:magisk:s0")]
+        scontext: String,
+    },
+
+    /// Set full root profile
+    SetRoot {
+        /// Package name
+        pkg: String,
+        /// UID
+        uid: i32,
+        /// Root UID (default: 0)
+        #[arg(long, default_value = "0")]
+        root_uid: i32,
+        /// Root GID (default: 0)
+        #[arg(long, default_value = "0")]
+        root_gid: i32,
+        /// Supplementary groups (comma-separated, default: "0")
+        #[arg(long, default_value = "0")]
+        groups: String,
+        /// Capabilities effective mask (hex)
+        #[arg(long, default_value = "ffffffffffffffff")]
+        cap_eff: String,
+        /// Capabilities permitted mask (hex)
+        #[arg(long, default_value = "ffffffffffffffff")]
+        cap_perm: String,
+        /// Capabilities inheritable mask (hex)
+        #[arg(long, default_value = "0")]
+        cap_inh: String,
+        /// SELinux domain
+        #[arg(long, default_value = "u:r:magisk:s0")]
+        domain: String,
+        /// Namespace mode: 0=inherit, 1=global, 2=individual
+        #[arg(long, default_value = "0")]
+        namespace: i32,
+    },
+
+    /// Delete profile for a package
+    Delete {
+        /// Package name
+        pkg: String,
+    },
+
+    /// Sync all profiles from disk to kernel
+    Sync,
+
+    /// Import profiles from JSON string or stdin
+    Import {
+        /// JSON string (reads from stdin if empty)
+        json: Option<String>,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -313,6 +392,54 @@ pub fn run() -> Result<()> {
             }),
 
         Commands::Sepolicy(sepolicy_args) => crate::sepolicy::execute(&sepolicy_args),
+
+        Commands::Profile { command } => {
+            match command {
+                ProfileCmd::Show { pkg } => {
+                    profile::show_profile(&pkg)
+                }
+                ProfileCmd::List => {
+                    profile::list_profiles()
+                }
+                ProfileCmd::Set { pkg, uid, mode, scontext } => {
+                    profile::set_simple(&pkg, uid, &mode, &scontext)
+                }
+                ProfileCmd::SetRoot {
+                    pkg, uid, root_uid, root_gid, groups,
+                    cap_eff, cap_perm, cap_inh,
+                    domain, namespace,
+                } => {
+                    let groups: Vec<i32> = groups.split(',')
+                        .map(|s| s.trim().parse().unwrap_or(0))
+                        .collect();
+                    let cap_eff = u64::from_str_radix(cap_eff.trim_start_matches("0x"), 16).unwrap_or(0);
+                    let cap_perm = u64::from_str_radix(cap_perm.trim_start_matches("0x"), 16).unwrap_or(0);
+                    let cap_inh = u64::from_str_radix(cap_inh.trim_start_matches("0x"), 16).unwrap_or(0);
+                    profile::set_root_profile(
+                        &pkg, uid, root_uid, root_gid, &groups,
+                        cap_eff, cap_perm, cap_inh, &domain, namespace,
+                    )
+                }
+                ProfileCmd::Delete { pkg } => {
+                    profile::delete_profile(&pkg)
+                }
+                ProfileCmd::Sync => {
+                    profile::sync_all_to_kernel()
+                }
+                ProfileCmd::Import { json } => {
+                    let json_str = match json {
+                        Some(j) => j,
+                        None => {
+                            let mut buf = String::new();
+                            std::io::stdin().read_to_string(&mut buf)
+                                .context("Failed to read stdin")?;
+                            buf
+                        }
+                    };
+                    profile::import_profiles(&json_str)
+                }
+            }
+        }
     };
 
     if let Err(e) = &result {
