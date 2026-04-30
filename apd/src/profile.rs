@@ -247,7 +247,7 @@ pub fn sync_profile_to_kernel(profile: &AppProfile) -> Result<()> {
     let data_ptr = &kernel_data as *const KernelProfileData as *const std::ffi::c_void;
 
     let uid = profile.uid;
-    let cmd_val = crate::supercall::ver_and_cmd_val(AP_CMD_SET_PROFILE);
+    let cmd_val = crate::supercall::ver_and_cmd_val(0x1201); // SUPERCALL_AP_SET_PROFILE
 
     let rc = crate::supercall::sc_ap_set_profile(&key, uid, data_ptr, cmd_val);
     if rc != 0 {
@@ -263,7 +263,7 @@ fn delete_kernel_profile(uid: i32) -> Result<()> {
     let key = std::ffi::CStr::from_bytes_with_nul(b"su\0")
         .map_err(|_| anyhow::anyhow!("Invalid superkey"))?;
 
-    let cmd_val = crate::supercall::ver_and_cmd_val(AP_CMD_DEL_PROFILE);
+    let cmd_val = crate::supercall::ver_and_cmd_val(0x1203); // SUPERCALL_AP_DEL_PROFILE
     let rc = crate::supercall::sc_ap_del_profile(&key, uid, cmd_val);
     if rc != 0 && rc != -2 { // -ENOENT is OK
         warn!("[profile] Kernel delete failed for uid={}: rc={}", uid, rc);
@@ -299,9 +299,9 @@ pub fn init_from_package_config() -> Result<()> {
             profile.root_profile.selinux_domain = config.sctx.clone();
         }
 
-        profiles.insert(config.pkg.clone(), profile);
         save_profile(&profile)?;
         sync_profile_to_kernel(&profile)?;
+        profiles.insert(config.pkg.clone(), profile);
         changed = true;
     }
 
@@ -342,20 +342,21 @@ pub fn list_profiles() -> Result<()> {
 }
 
 /// Set root profile fields
-pub fn set_root_profile(pkg: &str, uid: i32, gid: i32, groups: &[i32],
+pub fn set_root_profile(pkg: &str, app_uid: i32, root_uid: i32, root_gid: i32, groups: &[i32],
                         capabilities_eff: u64, capabilities_perm: u64, capabilities_inh: u64,
                         selinux_domain: &str, namespaces: i32) -> Result<()> {
     let mut profile = load_profile(pkg)
         .unwrap_or_else(|| AppProfile {
             pkg: pkg.to_string(),
-            uid: 0,
+            uid: app_uid,
             ..Default::default()
         });
 
+    profile.uid = app_uid;
     profile.allow_su = true;
     profile.root_profile = RootProfileConfig {
-        uid,
-        gid,
+        uid: root_uid,
+        gid: root_gid,
         groups: if groups.is_empty() { vec![0] } else { groups.to_vec() },
         capabilities: Capabilities {
             effective: capabilities_eff,
