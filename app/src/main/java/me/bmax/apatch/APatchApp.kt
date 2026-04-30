@@ -355,7 +355,7 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
     override fun onCreate() {
         super.onCreate()
         apApp = this
-        if (Application.getProcessName().endsWith(":root") || Application.getProcessName().endsWith(":webui") || Application.getProcessName().endsWith(":shizuku")) {
+        if (Application.getProcessName().endsWith(":root") || Application.getProcessName().endsWith(":webui") || Application.getProcessName().endsWith(":shizuku_root") || Application.getProcessName().endsWith(":shizuku_shell")) {
             return
         }
         bypassHiddenApiRestrictions()
