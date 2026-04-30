@@ -261,10 +261,10 @@ pub fn sync_profile_to_kernel(profile: &AppProfile) -> Result<()> {
 
     let rc = crate::supercall::sc_ap_set_profile(&key, data_ptr, cmd_val);
     if rc != 0 {
-        warn!("[profile] Kernel sync failed for {} (uid={}): rc={}", profile.pkg, uid, rc);
+        warn!("[profile] Kernel sync failed for {} (uid={}): rc={}", profile.pkg, profile.uid, rc);
         return Err(anyhow::anyhow!("Kernel sync failed with rc={}", rc));
     }
-    info!("[profile] Synced {} to kernel (uid={})", profile.pkg, uid);
+    info!("[profile] Synced {} to kernel (uid={})", profile.pkg, profile.uid);
     Ok(())
 }
 
