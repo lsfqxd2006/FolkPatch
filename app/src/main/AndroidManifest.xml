@@ -138,9 +138,14 @@
             android:process=":root" />
 
         <service
-            android:name=".shizuku.FolkShizukuService"
+            android:name=".shizuku.FolkShizukuRootService"
             android:exported="false"
-            android:process=":shizuku" />
+            android:process=":shizuku_root" />
+
+        <service
+            android:name=".shizuku.FolkShizukuShellService"
+            android:exported="false"
+            android:process=":shizuku_shell" />
 
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
