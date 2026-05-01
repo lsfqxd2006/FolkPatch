@@ -399,8 +399,25 @@ class SuperUserViewModel : ViewModel() {
         }
 
         withContext(Dispatchers.IO) {
-            val uids = Natives.suUids().toList()
-            Log.d(TAG, "all allows: $uids")
+            // Read su allow list from kernel (ROOT/NO ROOT toggle)
+            val kernelUids = Natives.suUids().toList()
+
+            // Read custom scontext from our JSON profiles (AppProfile independent)
+            val profilesJson = Natives.getProfileListJson()
+            val profileSctx = HashMap<Int, String>()
+            if (profilesJson != null) {
+                try {
+                    val arr = JSONArray(profilesJson)
+                    for (i in 0 until arr.length()) {
+                        val obj = arr.getJSONObject(i)
+                        val uid = obj.getInt("uid")
+                        val sctx = obj.optString("scontext", "")
+                        if (sctx.isNotEmpty()) profileSctx[uid] = sctx
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to parse profiles JSON", e)
+                }
+            }
 
             var configs: HashMap<Int, PkgConfig.Config> = HashMap()
             thread {
@@ -408,21 +425,21 @@ class SuperUserViewModel : ViewModel() {
                 configs = PkgConfig.readConfigs()
             }.join()
 
-            Log.d(TAG, "all configs: $configs")
-
             val newApps = allPackages.map {
                 val appInfo = it.applicationInfo
                 val uid = appInfo!!.uid
-                val actProfile = if (uids.contains(uid)) Natives.suProfile(uid) else null
+                val actProfile = if (kernelUids.contains(uid)) Natives.suProfile(uid) else null
                 val config = configs.getOrDefault(
                     uid, PkgConfig.Config(appInfo.packageName, Natives.isUidExcluded(uid), 0, Natives.Profile(uid = uid))
                 )
                 config.allow = 0
 
-                // from kernel
                 if (actProfile != null) {
                     config.allow = 1
-                    config.profile = actProfile
+                    // Use scontext from kernel, but override with JSON profile if available
+                    kernelUids.contains(uid)
+                    profileSctx[uid]?.let { config.profile.scontext = it }
+                    // If no custom scontext in JSON, keep kernel's value
                 }
                 AppInfo(
                     label = appInfo.loadLabel(apApp.packageManager).toString(),

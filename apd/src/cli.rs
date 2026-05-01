@@ -1,4 +1,4 @@
-use crate::{defs, event, lua, module, module_config, supercall, utils};
+use crate::{defs, event, lua, module, module_config, profile, supercall, utils};
 #[cfg(target_os = "android")]
 use android_logger::Config;
 use anyhow::{Context, Result};
@@ -46,6 +46,29 @@ enum Commands {
 
     /// MagiskPolicy - SELinux Policy Patch Tool
     Sepolicy(crate::sepolicy::Args),
+
+    /// Manage per-app profiles
+    Profile {
+        #[command(subcommand)]
+        command: ProfileCmd,
+    },
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum ProfileCmd {
+    /// Show profile for a package
+    Show { pkg: String },
+    /// List all profiles
+    List {
+        #[arg(long)]
+        json: bool,
+    },
+    /// Set simple allow/deny/exclude
+    Set { pkg: String, uid: i32, mode: String, #[arg(default_value = "u:r:magisk:s0")] scontext: String },
+    /// Delete profile
+    Delete { pkg: String },
+    /// Exec a command with the profile's SELinux context
+    Exec { pkg: String, uid: i32, cmd: Vec<String> },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -313,6 +336,16 @@ pub fn run() -> Result<()> {
             }),
 
         Commands::Sepolicy(sepolicy_args) => crate::sepolicy::execute(&sepolicy_args),
+
+        Commands::Profile { command } => {
+            match command {
+                ProfileCmd::Show { pkg } => profile::show_profile(&pkg),
+                ProfileCmd::List { json } => profile::list_profiles(json),
+                ProfileCmd::Set { pkg, uid, mode, scontext } => profile::set_simple(&pkg, uid, &mode, &scontext),
+                ProfileCmd::Delete { pkg } => profile::delete_profile(&pkg),
+                ProfileCmd::Exec { pkg, uid, cmd } => profile::exec_profile(&pkg, uid, &cmd),
+            }
+        }
     };
 
     if let Err(e) = &result {
