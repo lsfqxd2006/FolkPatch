@@ -399,8 +399,21 @@ class SuperUserViewModel : ViewModel() {
         }
 
         withContext(Dispatchers.IO) {
-            val uids = Natives.suUids().toList()
-            Log.d(TAG, "all allows: $uids")
+            // Read profiles from our own JSON table (apd), not kernel
+            val profilesJson = Natives.getProfileListJson()
+            val profileMap = HashMap<Int, JSONObject>()
+            if (profilesJson != null) {
+                try {
+                    val arr = JSONArray(profilesJson)
+                    for (i in 0 until arr.length()) {
+                        val obj = arr.getJSONObject(i)
+                        profileMap[obj.getInt("uid")] = obj
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to parse profiles JSON", e)
+                }
+            }
+            Log.d(TAG, "profiles loaded: ${profileMap.size}")
 
             var configs: HashMap<Int, PkgConfig.Config> = HashMap()
             thread {
@@ -408,22 +421,28 @@ class SuperUserViewModel : ViewModel() {
                 configs = PkgConfig.readConfigs()
             }.join()
 
-            Log.d(TAG, "all configs: $configs")
-
             val newApps = allPackages.map {
                 val appInfo = it.applicationInfo
                 val uid = appInfo!!.uid
-                val actProfile = if (uids.contains(uid)) Natives.suProfile(uid) else null
-                val config = configs.getOrDefault(
-                    uid, PkgConfig.Config(appInfo.packageName, Natives.isUidExcluded(uid), 0, Natives.Profile(uid = uid))
-                )
-                config.allow = 0
+                val pkgName = appInfo.packageName
 
-                // from kernel
-                if (actProfile != null) {
-                    config.allow = 1
-                    config.profile = actProfile
+                // Build config: try JSON profile first, fall back to CSV
+                val profObj = profileMap[uid]
+                val allowSu = profObj?.optBoolean("allow_su", false) ?: false
+                val excludeMod = profObj?.optBoolean("exclude_modules", false) ?: false
+                val scontext = profObj?.optString("scontext", APApplication.MAGISK_SCONTEXT)
+                    ?: APApplication.MAGISK_SCONTEXT
+
+                val config = if (allowSu || excludeMod) {
+                    PkgConfig.Config(
+                        pkgName, if (excludeMod) 1 else 0,
+                        if (allowSu) 1 else 0,
+                        Natives.Profile(uid = uid, toUid = 0, scontext = scontext)
+                    )
+                } else {
+                    configs.getOrDefault(uid, PkgConfig.Config(pkgName, 0, 0, Natives.Profile(uid = uid)))
                 }
+
                 AppInfo(
                     label = appInfo.loadLabel(apApp.packageManager).toString(),
                     packageInfo = it,

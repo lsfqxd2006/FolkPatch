@@ -59,7 +59,10 @@ enum ProfileCmd {
     /// Show profile for a package
     Show { pkg: String },
     /// List all profiles
-    List,
+    List {
+        #[arg(long)]
+        json: bool,
+    },
     /// Set simple allow/deny/exclude
     Set { pkg: String, uid: i32, mode: String, #[arg(default_value = "u:r:magisk:s0")] scontext: String },
     /// Delete profile
@@ -337,7 +340,7 @@ pub fn run() -> Result<()> {
         Commands::Profile { command } => {
             match command {
                 ProfileCmd::Show { pkg } => profile::show_profile(&pkg),
-                ProfileCmd::List => profile::list_profiles(),
+                ProfileCmd::List { json } => profile::list_profiles(json),
                 ProfileCmd::Set { pkg, uid, mode, scontext } => profile::set_simple(&pkg, uid, &mode, &scontext),
                 ProfileCmd::Delete { pkg } => profile::delete_profile(&pkg),
                 ProfileCmd::Exec { pkg, uid, cmd } => profile::exec_profile(&pkg, uid, &cmd),

@@ -143,8 +143,21 @@ pub fn show_profile(pkg: &str) -> Result<()> {
     }
 }
 
-pub fn list_profiles() -> Result<()> {
+pub fn list_profiles(json: bool) -> Result<()> {
     let profiles = load_all_profiles();
+    if json {
+        let list: Vec<serde_json::Value> = profiles.values().map(|p| {
+            serde_json::json!({
+                "pkg": p.pkg,
+                "uid": p.uid,
+                "allow_su": p.allow_su,
+                "exclude_modules": p.exclude_modules,
+                "scontext": p.root_profile.selinux_domain,
+            })
+        }).collect();
+        println!("{}", serde_json::to_string_pretty(&list)?);
+        return Ok(());
+    }
     if profiles.is_empty() { println!("no profiles"); return Ok(()); }
     println!("{:<25} {:<8} {:<6} {:<8}", "Package", "UID", "Allow", "Exclude");
     for (_, p) in &profiles {

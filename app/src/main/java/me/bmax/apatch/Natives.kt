@@ -46,6 +46,13 @@ object Natives {
         return if (result.isSuccess && result.out.isNotEmpty()) result.out.joinToString("\n") else null
     }
 
+    /** List all profiles as JSON string */
+    fun getProfileListJson(): String? {
+        val shell = me.bmax.apatch.util.getRootShell()
+        val result = shell.newJob().add("${APApplication.APD_PATH} profile list --json").exec()
+        return if (result.isSuccess && result.out.isNotEmpty()) result.out.joinToString("\n") else null
+    }
+
     @Keep
     class KPMCtlRes {
         var rc: Long = 0

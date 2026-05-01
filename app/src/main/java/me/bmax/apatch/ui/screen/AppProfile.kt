@@ -256,14 +256,10 @@ fun AppProfileScreen(
                                     // 1. Save to apd profile JSON
                                     val ok = Natives.setProfile(packageName, uid, "allow", sctx)
                                     if (ok) {
-                                        // 2. Save to CSV
                                         config.allow = 1
                                         config.exclude = 0
                                         config.profile.scontext = sctx
                                         PkgConfig.changeConfig(config)
-                                        // 3. Update kernel su table (so UI refresh reads correct value)
-                                        Natives.grantSu(uid, 0, sctx)
-                                        Natives.setUidExclude(uid, 0)
                                     }
                                     withContext(Dispatchers.Main) {
                                         showToast(context, if (ok) "Saved" else "Failed")
