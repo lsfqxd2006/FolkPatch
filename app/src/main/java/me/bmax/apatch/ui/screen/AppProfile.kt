@@ -1,5 +1,5 @@
 package me.bmax.apatch.ui.screen
-
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -243,7 +243,7 @@ fun AppProfileScreen(
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     headlineContent = { Text(stringResource(id = R.string.su_pkg_shell_setting_title)) },
                     supportingContent = { Text(stringResource(id = R.string.su_pkg_shell_setting_summary)) },
-                    leadingContent = { Icon(Icons.Filled.DeveloperMode, contentDescription = null) }
+                    leadingContent = { Icon(Icons.Filled.Build, contentDescription = null) }
                 )
             }
 
