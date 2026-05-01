@@ -1,5 +1,5 @@
 package me.bmax.apatch.ui.screen
-
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -24,6 +25,8 @@ import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -45,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -57,9 +61,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.Natives
+import me.bmax.apatch.Natives.FullProfile
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.SegmentedControl
-import me.bmax.apatch.ui.component.SwitchItem
 import me.bmax.apatch.ui.viewmodel.SuperUserViewModel
 import me.bmax.apatch.util.PkgConfig
 import me.bmax.apatch.util.SuAuditLog
@@ -76,7 +80,7 @@ fun AppProfileScreen(
     val viewModel = viewModel<SuperUserViewModel>()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    
+
     val appInfoState = remember(packageName, uid) {
         derivedStateOf {
             SuperUserViewModel.apps.find { it.packageName == packageName && it.uid == uid }
@@ -89,16 +93,74 @@ fun AppProfileScreen(
     }
 
     val config = appInfo.config
-    
-    // 0: ROOT, 1: NO ROOT, 2: Exclude
-    var selectedIndex by remember(config) { 
+
+    // Mode selection: 0=ROOT, 1=NO ROOT, 2=Exclude
+    var selectedIndex by remember(config) {
         mutableIntStateOf(
             when {
+                config.allow == 1 && config.profile.toUid == 2000 -> 1
                 config.allow == 1 -> 0
-                config.exclude == 1 -> 2
-                else -> 1
+                config.exclude == 1 -> 3
+                else -> 2
             }
         )
+    }
+
+    // Full profile state (advanced settings)
+    var showAdvanced by remember { mutableStateOf(false) }
+    var selinuxDomain by remember { mutableStateOf(config.profile.scontext) }
+    var namespaceMode by remember { mutableIntStateOf(0) }
+    var rootUid by remember { mutableStateOf("0") }
+    var rootGid by remember { mutableStateOf("0") }
+    var capEff by remember { mutableStateOf("ffffffffffffffff") }
+
+    // Load full profile once
+    var fullProfileLoaded by remember { mutableStateOf(false) }
+    if (!fullProfileLoaded) {
+        scope.launch(Dispatchers.IO) {
+            val fp = Natives.getFullProfile(packageName)
+            if (fp != null) {
+                selinuxDomain = fp.selinuxDomain
+                namespaceMode = fp.namespace
+                rootUid = fp.rootUid.toString()
+                rootGid = fp.rootGid.toString()
+                capEff = java.lang.Long.toHexString(fp.capEffective)
+            }
+        }
+        fullProfileLoaded = true
+    }
+
+    fun applyCurrentMode(index: Int) {
+        when (index) {
+            0 -> { // ROOT
+                config.allow = 1
+                config.exclude = 0
+                config.profile.scontext = selinuxDomain
+                Natives.grantSu(appInfo.uid, 0, selinuxDomain)
+                Natives.setUidExclude(appInfo.uid, 0)
+                Natives.setSimpleProfileMode(packageName, uid, "allow", selinuxDomain)
+                SuAuditLog.logGrant(appInfo.packageName, appInfo.uid)
+            }
+            1 -> { // NO ROOT
+                config.allow = 0
+                config.exclude = 0
+                Natives.revokeSu(appInfo.uid)
+                Natives.setUidExclude(appInfo.uid, 0)
+                Natives.setSimpleProfileMode(packageName, uid, "deny")
+                SuAuditLog.logRevoke(appInfo.packageName, appInfo.uid)
+            }
+            2 -> { // Exclude
+                config.allow = 0
+                config.exclude = 1
+                config.profile.scontext = APApplication.DEFAULT_SCONTEXT
+                Natives.revokeSu(appInfo.uid)
+                Natives.setUidExclude(appInfo.uid, 1)
+                Natives.setSimpleProfileMode(packageName, uid, "exclude")
+                SuAuditLog.logExclude(appInfo.packageName, appInfo.uid)
+            }
+        }
+        config.profile.uid = appInfo.uid
+        PkgConfig.changeConfig(config)
     }
 
     Scaffold(
@@ -137,6 +199,7 @@ fun AppProfileScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
+            // App info header
             ListItem(
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 headlineContent = { Text(appInfo.label) },
@@ -156,44 +219,17 @@ fun AppProfileScreen(
                 }
             )
 
+            // Mode selector
             SegmentedControl(
-                items = listOf("ROOT", "NO ROOT", "Exclude"),
+                items = listOf("ROOT", "SHELL", "NO ROOT", "Exclude"),
                 selectedIndex = selectedIndex,
                 onItemSelection = { index ->
                     selectedIndex = index
-                    
-                    // Update Logic
-                    when (index) {
-                        0 -> { // ROOT
-                            config.allow = 1
-                            config.exclude = 0
-                            config.profile.scontext = APApplication.MAGISK_SCONTEXT
-                            Natives.grantSu(appInfo.uid, 0, config.profile.scontext)
-                            Natives.setUidExclude(appInfo.uid, 0)
-                            SuAuditLog.logGrant(appInfo.packageName, appInfo.uid)
-                        }
-                        1 -> { // NO ROOT
-                            config.allow = 0
-                            config.exclude = 0
-                            Natives.revokeSu(appInfo.uid)
-                            Natives.setUidExclude(appInfo.uid, 0)
-                            SuAuditLog.logRevoke(appInfo.packageName, appInfo.uid)
-                        }
-                        2 -> { // Exclude
-                            config.allow = 0
-                            config.exclude = 1
-                            config.profile.scontext = APApplication.DEFAULT_SCONTEXT
-                            Natives.revokeSu(appInfo.uid)
-                            Natives.setUidExclude(appInfo.uid, 1)
-                            SuAuditLog.logExclude(appInfo.packageName, appInfo.uid)
-                        }
-                    }
-                    config.profile.uid = appInfo.uid
-                    PkgConfig.changeConfig(config)
+                    applyCurrentMode(index)
                 }
             )
 
-            // Description Cards
+            // Description cards
             AnimatedVisibility(visible = selectedIndex == 0) {
                 ListItem(
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -202,8 +238,16 @@ fun AppProfileScreen(
                     leadingContent = { Icon(Icons.Filled.Security, contentDescription = null) }
                 )
             }
-
             AnimatedVisibility(visible = selectedIndex == 1) {
+                ListItem(
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    headlineContent = { Text(stringResource(id = R.string.su_pkg_shell_setting_title)) },
+                    supportingContent = { Text(stringResource(id = R.string.su_pkg_shell_setting_summary)) },
+                    leadingContent = { Icon(Icons.Filled.Build, contentDescription = null) }
+                )
+            }
+
+            AnimatedVisibility(visible = selectedIndex == 2) {
                 ListItem(
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     headlineContent = { Text(stringResource(id = R.string.su_pkg_normal_setting_title)) },
@@ -211,7 +255,6 @@ fun AppProfileScreen(
                     leadingContent = { Icon(Icons.Filled.Info, contentDescription = null) }
                 )
             }
-
             AnimatedVisibility(visible = selectedIndex == 2) {
                 ListItem(
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -274,3 +317,4 @@ fun AppProfileScreen(
         }
     }
 }
+

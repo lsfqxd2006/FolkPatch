@@ -3,6 +3,7 @@ use crate::{defs, event, lua, module, module_config, profile, supercall, utils};
 use android_logger::Config;
 use anyhow::{Context, Result};
 use clap::Parser;
+use std::io::Read;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 

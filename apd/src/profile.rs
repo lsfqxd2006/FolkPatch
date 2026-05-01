@@ -8,6 +8,11 @@ use std::path::Path;
 use crate::package::read_ap_package_config;
 
 /* ─── Data Structures ─── */
+use crate::package::PackageConfig;
+
+/* ─── Data Structures (matches kernel struct ap_profile_data) ─── */
+
+const AP_MAX_GROUPS: u32 = 32;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Capabilities {

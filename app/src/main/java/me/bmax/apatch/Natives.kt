@@ -334,4 +334,79 @@ object Natives {
     fun getApiToken(context: Context): String {
         return nativeGetApiToken(context)
     }
+
+    /* ─── Full Profile Management (via apd CLI) ─── */
+
+    /** Get a full profile from apd. Returns null if not found. */
+    fun getFullProfile(pkg: String): FullProfile? {
+        val shell = me.bmax.apatch.util.getRootShell()
+        val result = shell.newJob()
+            .add("${APApplication.APD_PATH} profile show $pkg")
+            .exec()
+        if (!result.isSuccess || result.out.isEmpty()) return null
+        try {
+            val json = result.out.joinToString("\n")
+            val obj = org.json.JSONObject(json)
+            return FullProfile(
+                pkg = obj.optString("pkg", pkg),
+                uid = obj.optInt("uid", 0),
+                allowSu = obj.optBoolean("allow_su", false),
+                excludeModules = obj.optBoolean("exclude_modules", false),
+                rootUid = obj.optJSONObject("root_profile")?.optInt("uid", 0) ?: 0,
+                rootGid = obj.optJSONObject("root_profile")?.optInt("gid", 0) ?: 0,
+                capEffective = (obj.optJSONObject("root_profile")
+                    ?.optJSONObject("capabilities")?.optString("effective", "ffffffffffffffff")
+                    ?: "ffffffffffffffff").toLongOrNull(16) ?: -1,
+                selinuxDomain = obj.optJSONObject("root_profile")
+                    ?.optString("selinux_domain", APApplication.MAGISK_SCONTEXT) ?: APApplication.MAGISK_SCONTEXT,
+                namespace = obj.optJSONObject("root_profile")?.optInt("namespaces", 0) ?: 0,
+            )
+        } catch (e: Exception) {
+            android.util.Log.w("Natives", "Failed to parse full profile", e)
+            return null
+        }
+    }
+
+    /** Set full root profile via apd */
+    fun setFullRootProfile(pkg: String, uid: Int, full: FullProfile): Boolean {
+        val groups = full.groups.joinToString(",")
+        val capEffHex = java.lang.Long.toHexString(full.capEffective)
+        val capPermHex = java.lang.Long.toHexString(full.capPermitted)
+        val capInhHex = java.lang.Long.toHexString(full.capInheritable)
+        val cmd = "${APApplication.APD_PATH} profile set-root $pkg $uid " +
+            "--root-uid ${full.rootUid} --root-gid ${full.rootGid} " +
+            "--groups \"$groups\" " +
+            "--cap-eff $capEffHex " +
+            "--cap-perm $capPermHex " +
+            "--cap-inh $capInhHex " +
+            "--domain \"${full.selinuxDomain}\" " +
+            "--namespace ${full.namespace}"
+        val shell = me.bmax.apatch.util.getRootShell()
+        val result = shell.newJob().add(cmd).exec()
+        return result.isSuccess
+    }
+
+    /** Set simple mode (allow/deny/exclude) for a package */
+    fun setSimpleProfileMode(pkg: String, uid: Int, mode: String, scontext: String = APApplication.MAGISK_SCONTEXT): Boolean {
+        val cmd = "${APApplication.APD_PATH} profile set $pkg $uid $mode $scontext"
+        val shell = me.bmax.apatch.util.getRootShell()
+        val result = shell.newJob().add(cmd).exec()
+        return result.isSuccess
+    }
+
+    /** Delete full profile */
+    fun deleteFullProfile(pkg: String): Boolean {
+        val cmd = "${APApplication.APD_PATH} profile delete $pkg"
+        val shell = me.bmax.apatch.util.getRootShell()
+        val result = shell.newJob().add(cmd).exec()
+        return result.isSuccess
+    }
+
+    /** Sync all profiles from disk to kernel */
+    fun syncAllProfiles(): Boolean {
+        val cmd = "${APApplication.APD_PATH} profile sync"
+        val shell = me.bmax.apatch.util.getRootShell()
+        val result = shell.newJob().add(cmd).exec()
+        return result.isSuccess
+    }
 }

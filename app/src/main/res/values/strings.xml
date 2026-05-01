@@ -221,6 +221,8 @@
     <string name="su_pkg_root_setting_summary">Enabling this option grants superuser access to your app, allowing it to use SU commands.</string>
     <string name="su_pkg_normal_setting_title">Normal Mode</string>
     <string name="su_pkg_normal_setting_summary">Default state, no special handling.</string>
+    <string name="su_pkg_shell_setting_title">Shell Mode</string>
+    <string name="su_pkg_shell_setting_summary">Grants shell-level (UID 2000) access. The app runs as ADB shell identity with partial system API access, suitable for testing Shizuku-compatible apps.</string>
     <string name="su_show_system_apps">Show system apps</string>
     <string name="su_hide_system_apps">Hide system apps</string>
     <string name="su_refresh">Refresh</string>
