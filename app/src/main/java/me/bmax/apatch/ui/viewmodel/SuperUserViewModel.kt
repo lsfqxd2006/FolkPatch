@@ -399,21 +399,25 @@ class SuperUserViewModel : ViewModel() {
         }
 
         withContext(Dispatchers.IO) {
-            // Read profiles from our own JSON table (apd), not kernel
+            // Read su allow list from kernel (ROOT/NO ROOT toggle)
+            val kernelUids = Natives.suUids().toList()
+
+            // Read custom scontext from our JSON profiles (AppProfile independent)
             val profilesJson = Natives.getProfileListJson()
-            val profileMap = HashMap<Int, JSONObject>()
+            val profileSctx = HashMap<Int, String>()
             if (profilesJson != null) {
                 try {
                     val arr = JSONArray(profilesJson)
                     for (i in 0 until arr.length()) {
                         val obj = arr.getJSONObject(i)
-                        profileMap[obj.getInt("uid")] = obj
+                        val uid = obj.getInt("uid")
+                        val sctx = obj.optString("scontext", "")
+                        if (sctx.isNotEmpty()) profileSctx[uid] = sctx
                     }
                 } catch (e: Exception) {
                     Log.w(TAG, "Failed to parse profiles JSON", e)
                 }
             }
-            Log.d(TAG, "profiles loaded: ${profileMap.size}")
 
             var configs: HashMap<Int, PkgConfig.Config> = HashMap()
             thread {
@@ -424,25 +428,19 @@ class SuperUserViewModel : ViewModel() {
             val newApps = allPackages.map {
                 val appInfo = it.applicationInfo
                 val uid = appInfo!!.uid
-                val pkgName = appInfo.packageName
+                val actProfile = if (kernelUids.contains(uid)) Natives.suProfile(uid) else null
+                val config = configs.getOrDefault(
+                    uid, PkgConfig.Config(appInfo.packageName, Natives.isUidExcluded(uid), 0, Natives.Profile(uid = uid))
+                )
+                config.allow = 0
 
-                // Build config: try JSON profile first, fall back to CSV
-                val profObj = profileMap[uid]
-                val allowSu = profObj?.optBoolean("allow_su", false) ?: false
-                val excludeMod = profObj?.optBoolean("exclude_modules", false) ?: false
-                val scontext = profObj?.optString("scontext", APApplication.MAGISK_SCONTEXT)
-                    ?: APApplication.MAGISK_SCONTEXT
-
-                val config = if (allowSu || excludeMod) {
-                    PkgConfig.Config(
-                        pkgName, if (excludeMod) 1 else 0,
-                        if (allowSu) 1 else 0,
-                        Natives.Profile(uid = uid, toUid = 0, scontext = scontext)
-                    )
-                } else {
-                    configs.getOrDefault(uid, PkgConfig.Config(pkgName, 0, 0, Natives.Profile(uid = uid)))
+                if (actProfile != null) {
+                    config.allow = 1
+                    // Use scontext from kernel, but override with JSON profile if available
+                    kernelUids.contains(uid)
+                    profileSctx[uid]?.let { config.profile.scontext = it }
+                    // If no custom scontext in JSON, keep kernel's value
                 }
-
                 AppInfo(
                     label = appInfo.loadLabel(apApp.packageManager).toString(),
                     packageInfo = it,
