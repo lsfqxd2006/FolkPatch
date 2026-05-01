@@ -2,7 +2,7 @@
 use std::os::unix::process::CommandExt;
 use std::{env, ffi::CStr, path::PathBuf, process::Command};
 
-use anyhow::{Ok, Result};
+use anyhow::Result;
 #[cfg(unix)]
 use getopts::Options;
 use rustix::thread::{Gid, Uid, set_thread_res_gid, set_thread_res_uid};
