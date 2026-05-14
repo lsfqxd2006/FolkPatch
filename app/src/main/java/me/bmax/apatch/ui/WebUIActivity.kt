@@ -4,9 +4,10 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.net.Uri
 import android.view.ViewGroup.MarginLayoutParams
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -14,6 +15,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.compose.setContent
@@ -45,11 +47,15 @@ import me.bmax.apatch.ui.viewmodel.SuperUserViewModel
 import me.bmax.apatch.ui.webui.AppIconUtil
 import me.bmax.apatch.ui.webui.SuFilePathHandler
 import me.bmax.apatch.ui.webui.WebViewInterface
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 
 @SuppressLint("SetJavaScriptEnabled")
 class WebUIActivity : AppCompatActivity() {
     private lateinit var webViewInterface: WebViewInterface
+    private var webView: WebView? = null
+    private var webCanGoBack = false
     private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private var isWebViewReady by mutableStateOf(false)
@@ -77,6 +83,17 @@ class WebUIActivity : AppCompatActivity() {
         
         setupActivityInfo()
 
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (webCanGoBack) {
+                    webView?.goBack()
+                    return
+                }
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+            }
+        })
+
         setContent {
             APatchTheme(allowCustomBackground = false) {
                 val backgroundColor = MaterialTheme.colorScheme.background
@@ -93,6 +110,7 @@ class WebUIActivity : AppCompatActivity() {
                                         android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                                         android.view.ViewGroup.LayoutParams.MATCH_PARENT
                                     )
+                                    this@WebUIActivity.webView = this
                                     configureWebView(this)
                                 }
                             },
@@ -175,15 +193,23 @@ class WebUIActivity : AppCompatActivity() {
                     if (!packageName.isNullOrEmpty()) {
                         val icon = AppIconUtil.loadAppIconSync(this@WebUIActivity, packageName, 512)
                         if (icon != null) {
-                            val stream = java.io.ByteArrayOutputStream()
-                            icon.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
-                            val inputStream = java.io.ByteArrayInputStream(stream.toByteArray())
-                            return WebResourceResponse("image/png", null, inputStream)
+                            val stream = ByteArrayOutputStream()
+                            icon.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                            return WebResourceResponse(
+                                "image/png", null, 200, "OK",
+                                mapOf("Access-Control-Allow-Origin" to "*"),
+                                ByteArrayInputStream(stream.toByteArray())
+                            )
                         }
                     }
                 }
 
                 return webViewAssetLoader.shouldInterceptRequest(request.url)
+            }
+
+            override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+                webCanGoBack = view?.canGoBack() == true
+                super.doUpdateVisitedHistory(view, url, isReload)
             }
         }
 
