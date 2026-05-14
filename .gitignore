@@ -12,7 +12,7 @@ local.properties
 auth.properties
 
 # FolkPatch specific signing files
-app/folkpatch-release*.jks
+app/mykey.jks
 keystore.properties
 .vscode
 .kotlin
