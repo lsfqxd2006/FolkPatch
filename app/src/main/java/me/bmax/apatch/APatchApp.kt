@@ -395,8 +395,6 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
                 .putString("home_layout_style", "circle")
                 .apply()
         }
-        
-        me.bmax.apatch.util.LauncherIconUtils.applySaved(this)
         Log.d(TAG, "superKey already initialized in early init, length=${_superKey.length}")
         setSuperKeyAndRefresh(_superKey)
 
