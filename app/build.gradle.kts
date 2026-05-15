@@ -172,7 +172,22 @@ android {
                     cppFlags += "-DAPI_TOKEN=\"$token\""
                 }
                 if (signatureHash.isNotEmpty()) {
+                    // 原有 SHA256（保留）
                     cppFlags += "-DAPP_SIGNATURE_HASH=\"$signatureHash\""
+                
+                    // ============= 作者要求：Base64 生成 =============
+                    // SHA256 十六进制 → 二进制 → Base64（标准格式）
+                    val hexBytes = signatureHash.chunked(2).map {
+                        it.toInt(16).toByte()
+                    }.toByteArray()
+                    
+                    val signatureBase64 = android.util.Base64.encodeToString(
+                        hexBytes,
+                        android.util.Base64.NO_WRAP
+                    )
+                    
+                    // 注入给 C++ / KernelPatch 同步使用
+                    cppFlags += "-DAPP_SIGNATURE_HASH_BASE64=\"$signatureBase64\""
                 }
                 cppFlags += "-DAPP_PACKAGE_NAME=\"$applicationId\""
                 
