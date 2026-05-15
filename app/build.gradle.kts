@@ -173,14 +173,6 @@ android {
                 }
                 if (signatureHash.isNotEmpty()) {
                     cppFlags += "-DAPP_SIGNATURE_HASH=\"$signatureHash\""
-                
-                    // 正确可用：Gradle 原生 Base64 编码（不报错版）
-                    val hexBytes = signatureHash.chunked(2).map {
-                        it.toInt(16).toByte()
-                    }.toByteArray()
-                    
-                    val signatureBase64 = java.util.Base64.getEncoder().encodeToString(hexBytes)
-                    cppFlags += "-DAPP_SIGNATURE_HASH_BASE64=\"$signatureBase64\""
                 }
                 cppFlags += "-DAPP_PACKAGE_NAME=\"$applicationId\""
                 
