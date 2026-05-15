@@ -343,6 +343,7 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
         super.onCreate()
         apApp = this
         sharedPreferences = getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
+        superKey = "su"
         if (Application.getProcessName().endsWith(":root") || Application.getProcessName().endsWith(":webui")) {
             return
         }
@@ -380,11 +381,13 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
                 .apply()
         }
         
-        superKey = "su"
-        
         Log.d(TAG, "Initializing OkHttpClient...")
         okhttpClient =
-            OkHttpClient.Builder().cache(Cache(File(cacheDir, "okhttp"), 10 * 1024 * 1024))
+            OkHttpClient.Builder()
+                .cache(Cache(File(cacheDir, "okhttp"), 10 * 1024 * 1024))
+                .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                .writeTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
                 .addInterceptor { block ->
                     block.proceed(
                         block.request().newBuilder()
