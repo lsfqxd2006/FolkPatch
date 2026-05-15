@@ -44,12 +44,12 @@ if (localPropertiesFile.exists()) {
     localProperties.load(FileInputStream(localPropertiesFile))
 }
 
-apksign {
-    storeFileProperty = "KEYSTORE_FILE"
-    storePasswordProperty = "KEYSTORE_PASSWORD"
-    keyAliasProperty = "KEY_ALIAS"
-    keyPasswordProperty = "KEY_PASSWORD"
-}
+//apksign {
+//    storeFileProperty = "KEYSTORE_FILE"
+//    storePasswordProperty = "KEYSTORE_PASSWORD"
+//    keyAliasProperty = "KEY_ALIAS"
+//    keyPasswordProperty = "KEY_PASSWORD"
+//}
 
 val ccache = System.getenv("PATH")?.split(File.pathSeparator)
     ?.map { File(it, "ccache") }?.firstOrNull { it.exists() }?.absolutePath
@@ -442,50 +442,4 @@ dependencies {
     implementation(libs.liquid)
 
     compileOnly(libs.cxx)
-}
-// ==========================================
-// 【正式版】KernelPatch 签名（适配你的 keystore.properties）
-// ==========================================
-val signKeystoreProps = Properties()
-val signKeystoreFile = rootProject.file("keystore.properties")
-
-if (signKeystoreFile.exists()) {
-    signKeystoreProps.load(FileInputStream(signKeystoreFile))
-}
-
-val keyStoreFile = file(signKeystoreProps.getProperty("KEYSTORE_FILE", "../app/mykey.jks"))
-val keyStorePwd = signKeystoreProps.getProperty("KEYSTORE_PASSWORD", "140308")
-val keyAlias = signKeystoreProps.getProperty("KEY_ALIAS", "mykey")
-val keyPwd = signKeystoreProps.getProperty("KEY_PASSWORD", "861030")
-
-val apksignerPath = "${android.sdkDirectory}/build-tools/${android.buildToolsVersion}/apksigner"
-
-tasks.register<Exec>("signKernelPatch") {
-    dependsOn("downloadKpimg", "downloadKptools", "downloadCompatKpatch")
-    val signFiles = listOf(
-        "src/main/assets/kpimg",
-        "libs/arm64-v8a/libkptools.so",
-        "libs/arm64-v8a/libkpatch.so"
-    )
-
-    doFirst {
-        println("开始签名 KernelPatch 组件...")
-        println("使用密钥文件：${keyStoreFile.absolutePath}")
-        println("密钥别名：$keyAlias")
-    }
-
-    val targetFiles = signFiles.filter { file(it).exists() }.map { file(it).absolutePath }
-
-    commandLine(
-        apksignerPath, "sign",
-        "--ks", keyStoreFile.absolutePath,
-        "--ks-pass", "pass:$keyStorePwd",
-        "--ks-key-alias", keyAlias,
-        "--key-pass", "pass:$keyPwd",
-        *targetFiles.toTypedArray()
-    )
-}
-
-tasks.named("preBuild") {
-    dependsOn("signKernelPatch")
 }
