@@ -44,12 +44,12 @@ if (localPropertiesFile.exists()) {
     localProperties.load(FileInputStream(localPropertiesFile))
 }
 
-//apksign {
-//    storeFileProperty = "KEYSTORE_FILE"
-//    storePasswordProperty = "KEYSTORE_PASSWORD"
-//    keyAliasProperty = "KEY_ALIAS"
-//    keyPasswordProperty = "KEY_PASSWORD"
-//}
+apksign {
+    storeFileProperty = "KEYSTORE_FILE"
+    storePasswordProperty = "KEYSTORE_PASSWORD"
+    keyAliasProperty = "KEY_ALIAS"
+    keyPasswordProperty = "KEY_PASSWORD"
+}
 
 val ccache = System.getenv("PATH")?.split(File.pathSeparator)
     ?.map { File(it, "ccache") }?.firstOrNull { it.exists() }?.absolutePath
