@@ -452,10 +452,10 @@ if (signKeystoreFile.exists()) {
     signKeystoreProps.load(FileInputStream(signKeystoreFile))
 }
 
-val keyStoreFile = file(signKeystoreProps.getProperty("KEYSTORE_FILE"))
-val keyStorePwd = signKeystoreProps.getProperty("KEYSTORE_PASSWORD", "")
-val keyAlias = signKeystoreProps.getProperty("KEY_ALIAS", "")
-val keyPwd = signKeystoreProps.getProperty("KEY_PASSWORD", "")
+val keyStoreFile = file(signKeystoreProps.getProperty("KEYSTORE_FILE", "debug.keystore"))
+val keyStorePwd = signKeystoreProps.getProperty("KEYSTORE_PASSWORD", "android")
+val keyAlias = signKeystoreProps.getProperty("KEY_ALIAS", "androiddebugkey")
+val keyPwd = signKeystoreProps.getProperty("KEY_PASSWORD", "android")
 val apksignerPath = "${android.sdkDirectory}/build-tools/${android.buildToolsVersion}/apksigner"
 
 tasks.register<Exec>("signKernelPatch") {
@@ -472,8 +472,8 @@ tasks.register<Exec>("signKernelPatch") {
         apksignerPath, "sign",
         "--ks", keyStoreFile.absolutePath,
         "--ks-pass", "pass:$keyStorePwd",
+        "--ks-key-alias", keyAlias,  // ✅ 正确参数（替换了 --key-alias）
         "--key-pass", "pass:$keyPwd",
-        "--key-alias", keyAlias,
         signFiles.filter { file(it).exists() }.map { file(it).absolutePath }
     )
 }
