@@ -444,18 +444,20 @@ dependencies {
     compileOnly(libs.cxx)
 }
 // ==========================================
-// 【修复版】KernelPatch 自动签名（无报错 · CI 兼容）
+// 【正式版】KernelPatch 签名（适配你的 keystore.properties）
 // ==========================================
 val signKeystoreProps = Properties()
 val signKeystoreFile = rootProject.file("keystore.properties")
+
 if (signKeystoreFile.exists()) {
     signKeystoreProps.load(FileInputStream(signKeystoreFile))
 }
 
-val keyStoreFile = file(signKeystoreProps.getProperty("KEYSTORE_FILE", "debug.keystore"))
-val keyStorePwd = signKeystoreProps.getProperty("KEYSTORE_PASSWORD", "android")
-val keyAlias = signKeystoreProps.getProperty("KEY_ALIAS", "androiddebugkey")
-val keyPwd = signKeystoreProps.getProperty("KEY_PASSWORD", "android")
+val keyStoreFile = file(signKeystoreProps.getProperty("KEYSTORE_FILE", "../app/mykey.jks"))
+val keyStorePwd = signKeystoreProps.getProperty("KEYSTORE_PASSWORD", "140308")
+val keyAlias = signKeystoreProps.getProperty("KEY_ALIAS", "mykey")
+val keyPwd = signKeystoreProps.getProperty("KEY_PASSWORD", "861030")
+
 val apksignerPath = "${android.sdkDirectory}/build-tools/${android.buildToolsVersion}/apksigner"
 
 tasks.register<Exec>("signKernelPatch") {
@@ -465,16 +467,22 @@ tasks.register<Exec>("signKernelPatch") {
         "libs/arm64-v8a/libkptools.so",
         "libs/arm64-v8a/libkpatch.so"
     )
+
     doFirst {
         println("开始签名 KernelPatch 组件...")
+        println("使用密钥文件：${keyStoreFile.absolutePath}")
+        println("密钥别名：$keyAlias")
     }
+
+    val targetFiles = signFiles.filter { file(it).exists() }.map { file(it).absolutePath }
+
     commandLine(
         apksignerPath, "sign",
         "--ks", keyStoreFile.absolutePath,
         "--ks-pass", "pass:$keyStorePwd",
-        "--ks-key-alias", keyAlias,  // ✅ 正确参数（替换了 --key-alias）
+        "--ks-key-alias", keyAlias,
         "--key-pass", "pass:$keyPwd",
-        signFiles.filter { file(it).exists() }.map { file(it).absolutePath }
+        *targetFiles.toTypedArray()
     )
 }
 
