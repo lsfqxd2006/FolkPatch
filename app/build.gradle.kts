@@ -443,3 +443,46 @@ dependencies {
 
     compileOnly(libs.cxx)
 }
+// ==========================================
+// 【新增】KernelPatch 下载后自动重签适配你的密钥
+// ==========================================
+val signKeystoreProps = Properties()
+val signKeystoreFile = rootProject.file("keystore.properties")
+if (signKeystoreFile.exists()) {
+    signKeystoreProps.load(FileInputStream(signKeystoreFile))
+}
+
+val keyStoreFile = file(signKeystoreProps.getProperty("KEYSTORE_FILE"))
+val keyStorePwd = signKeystoreProps.getProperty("KEYSTORE_PASSWORD", "")
+val keyAlias = signKeystoreProps.getProperty("KEY_ALIAS", "")
+val keyPwd = signKeystoreProps.getProperty("KEY_PASSWORD", "")
+val apksignerPath = "${android.sdkDirectory}/build-tools/${android.buildToolsVersion}/apksigner"
+
+tasks.register("signKernelPatch") {
+    dependsOn("downloadKpimg", "downloadKptools", "downloadCompatKpatch")
+    doLast {
+        listOf(
+            "src/main/assets/kpimg",
+            "libs/arm64-v8a/libkptools.so",
+            "libs/arm64-v8a/libkpatch.so"
+        ).forEach { path ->
+            val file = file(path)
+            if (file.exists()) {
+                exec {
+                    commandLine(
+                        apksignerPath, "sign",
+                        "--ks", keyStoreFile.absolutePath,
+                        "--ks-pass", "pass:$keyStorePwd",
+                        "--key-pass", "pass:$keyPwd",
+                        "--key-alias", keyAlias,
+                        file.absolutePath
+                    )
+                }
+            }
+        }
+    }
+}
+
+tasks.named("preBuild") {
+    dependsOn("signKernelPatch")
+}
