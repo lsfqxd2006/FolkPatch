@@ -11,25 +11,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.automirrored.outlined.RotateRight
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.AutoFixHigh
-import androidx.compose.material.icons.filled.InstallMobile
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PowerSettingsNew
@@ -38,10 +33,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Fingerprint
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.filled.SwapVerticalCircle
-import androidx.compose.material.icons.filled.SystemUpdate
 import me.bmax.apatch.ui.theme.MusicConfig
 import me.bmax.apatch.util.MusicManager
 import androidx.compose.material.icons.filled.Warning
@@ -67,7 +58,6 @@ import androidx.compose.material.icons.outlined.DeveloperMode
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.RestartAlt
-import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -81,7 +71,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Surface
@@ -113,14 +102,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
-import androidx.compose.ui.window.SecureFlagPolicy
 import androidx.lifecycle.compose.dropUnlessResumed
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -135,10 +119,8 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.Natives
 import me.bmax.apatch.R
 import me.bmax.apatch.apApp
-import me.bmax.apatch.ui.component.ProvideMenuShape
 import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenu
 import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenuItem
-import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.viewmodel.PatchesViewModel
 import me.bmax.apatch.util.Version
 import me.bmax.apatch.util.Version.getManagerVersion
@@ -222,6 +204,7 @@ fun HomeScreenV1(
         if (kpState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_INSTALLED) {
             AStatusCard(apState)
         }
+        ListInfoCard(kpState, apState)
         val hideApatchCard = APApplication.sharedPreferences.getBoolean("hide_apatch_card", false)
         if (!hideApatchCard) {
             LearnMoreCard()
@@ -379,184 +362,6 @@ fun UninstallDialog(showDialog: MutableState<Boolean>, navigator: DestinationsNa
             shape = MaterialTheme.shapes.extraLarge,
             tonalElevation = 4.dp,
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AuthFailedTipDialog(showDialog: MutableState<Boolean>) {
-    BasicAlertDialog(
-        onDismissRequest = { showDialog.value = false }, properties = DialogProperties(
-            decorFitsSystemWindows = true,
-            usePlatformDefaultWidth = false,
-            securePolicy = SecureFlagPolicy.SecureOff
-        )
-    ) {
-        Surface(
-            modifier = Modifier
-                .width(320.dp)
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(20.dp),
-            tonalElevation = AlertDialogDefaults.TonalElevation,
-            color = AlertDialogDefaults.containerColor,
-        ) {
-            Column(modifier = Modifier.padding(PaddingValues(all = 24.dp))) {
-                // Title
-                Box(
-                    Modifier
-                        .padding(PaddingValues(bottom = 16.dp))
-                        .align(Alignment.Start)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.home_dialog_auth_fail_title),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                }
-
-                // Content
-                Box(
-                    Modifier
-                        .weight(weight = 1f, fill = false)
-                        .padding(PaddingValues(bottom = 24.dp))
-                        .align(Alignment.Start)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.home_dialog_auth_fail_content),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-
-                // Buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
-                ) {
-                    val uriHandler = LocalUriHandler.current
-                    TextButton(onClick = {
-                        uriHandler.openUri("https://fp.mysqil.com/")
-                    }) {
-                        Text(text = stringResource(R.string.home_more_menu_document))
-                    }
-                    TextButton(onClick = { showDialog.value = false }) {
-                        Text(text = stringResource(id = android.R.string.ok))
-                    }
-                }
-            }
-            val dialogWindowProvider = LocalView.current.parent as DialogWindowProvider
-            APDialogBlurBehindUtils.setupWindowBlurListener(dialogWindowProvider.window)
-        }
-    }
-
-}
-
-val checkSuperKeyValidation: (superKey: String) -> Boolean = { superKey ->
-    superKey.length in 8..63 && superKey.all { it.isLetterOrDigit() } && superKey.any { it.isDigit() } && superKey.any { it.isLetter() }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AuthSuperKey(showDialog: MutableState<Boolean>, showFailedDialog: MutableState<Boolean>) {
-    var key by remember { mutableStateOf("") }
-    var keyVisible by remember { mutableStateOf(false) }
-    var enable by remember { mutableStateOf(false) }
-
-    BasicAlertDialog(
-        onDismissRequest = { showDialog.value = false }, properties = DialogProperties(
-            decorFitsSystemWindows = true,
-            usePlatformDefaultWidth = false,
-            securePolicy = SecureFlagPolicy.SecureOff
-        )
-    ) {
-        Surface(
-            modifier = Modifier
-                .width(310.dp)
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(30.dp),
-            tonalElevation = AlertDialogDefaults.TonalElevation,
-            color = AlertDialogDefaults.containerColor,
-        ) {
-            Column(modifier = Modifier.padding(PaddingValues(all = 24.dp))) {
-                // Title
-                Box(
-                    Modifier
-                        .padding(PaddingValues(bottom = 16.dp))
-                        .align(Alignment.Start)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.home_auth_key_title),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                }
-
-                // Content
-                Box(
-                    Modifier
-                        .weight(weight = 1f, fill = false)
-                        .align(Alignment.Start)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.home_auth_key_desc),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-
-                // Content2
-                Box(
-                    contentAlignment = Alignment.CenterEnd,
-                ) {
-                    OutlinedTextField(
-                        value = key,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 6.dp),
-                        onValueChange = {
-                            key = it
-                            enable = checkSuperKeyValidation(key)
-                        },
-                        shape = RoundedCornerShape(50.0f),
-                        label = { Text(stringResource(id = R.string.super_key)) },
-                        visualTransformation = if (keyVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-                    )
-                    IconButton(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .padding(top = 15.dp, end = 5.dp),
-                        onClick = { keyVisible = !keyVisible }) {
-                        Icon(
-                            imageVector = if (keyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = null,
-                            tint = Color.Gray
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-                // Buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = { showDialog.value = false }) {
-                        Text(stringResource(id = android.R.string.cancel))
-                    }
-
-                    Button(onClick = {
-                        showDialog.value = false
-
-                        val preVerifyKey = Natives.nativeReady(key)
-                        if (preVerifyKey) {
-                            APApplication.setSuperKeyAndRefresh(key)
-                        } else {
-                            showFailedDialog.value = true
-                        }
-
-                    }, enabled = enable) {
-                        Text(stringResource(id = android.R.string.ok))
-                    }
-                }
-            }
-        }
-        val dialogWindowProvider = LocalView.current.parent as DialogWindowProvider
-        APDialogBlurBehindUtils.setupWindowBlurListener(dialogWindowProvider.window)
     }
 }
 
@@ -812,16 +617,6 @@ fun StatusBadge(
 private fun KStatusCard(
     kpState: APApplication.State, apState: APApplication.State, navigator: DestinationsNavigator
 ) {
-
-    val showAuthFailedTipDialog = remember { mutableStateOf(false) }
-    if (showAuthFailedTipDialog.value) {
-        AuthFailedTipDialog(showDialog = showAuthFailedTipDialog)
-    }
-
-    val showAuthKeyDialog = remember { mutableStateOf(false) }
-    if (showAuthKeyDialog.value) {
-        AuthSuperKey(showDialog = showAuthKeyDialog, showFailedDialog = showAuthFailedTipDialog)
-    }
 
     val showUninstallDialog = remember { mutableStateOf(false) }
     if (showUninstallDialog.value) {
@@ -1372,6 +1167,92 @@ fun InfoCard(kpState: APApplication.State, apState: APApplication.State) {
 
             InfoCardItem(stringResource(R.string.home_selinux_status), getSELinuxStatus())
 
+        }
+    }
+}
+
+@Composable
+fun ListInfoCard(kpState: APApplication.State, apState: APApplication.State) {
+    val hideSuPath = remember { mutableStateOf(APApplication.sharedPreferences.getBoolean("hide_su_path", false)) }
+    val hideKpatchVersion = remember { mutableStateOf(APApplication.sharedPreferences.getBoolean("hide_kpatch_version", false)) }
+    val hideFingerprint = remember { mutableStateOf(APApplication.sharedPreferences.getBoolean("hide_fingerprint", false)) }
+    val hideZygisk = remember { mutableStateOf(APApplication.sharedPreferences.getBoolean("hide_zygisk", false)) }
+    val hideMount = remember { mutableStateOf(APApplication.sharedPreferences.getBoolean("hide_mount", false)) }
+
+    var zygiskImplement by remember { mutableStateOf("None") }
+    var mountImplement by remember { mutableStateOf("None") }
+    LaunchedEffect(Unit) {
+        withContext(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                zygiskImplement = me.bmax.apatch.util.getZygiskImplement()
+                mountImplement = me.bmax.apatch.util.getMountImplement()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = if (BackgroundConfig.isCustomBackgroundEnabled) {
+            MaterialTheme.colorScheme.surface
+        } else {
+            MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+        })
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 16.dp)
+        ) {
+            val uname = Os.uname()
+
+            @Composable
+            fun InfoCardItem(label: String, content: String) {
+                Text(text = label, style = MaterialTheme.typography.bodyLarge)
+                Text(text = content, style = MaterialTheme.typography.bodyMedium)
+            }
+
+            if (kpState != APApplication.State.UNKNOWN_STATE && !hideKpatchVersion.value) {
+                InfoCardItem(stringResource(R.string.home_kpatch_version), Version.installedKPVString())
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (kpState != APApplication.State.UNKNOWN_STATE && !hideSuPath.value) {
+                InfoCardItem(stringResource(R.string.home_su_path), Natives.suPath())
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (apState != APApplication.State.UNKNOWN_STATE && apState != APApplication.State.ANDROIDPATCH_NOT_INSTALLED) {
+                InfoCardItem(stringResource(R.string.home_apatch_version), managerVersion.second.toString())
+                Spacer(Modifier.height(16.dp))
+            }
+
+            InfoCardItem(stringResource(R.string.home_device_info), getDeviceInfo())
+            Spacer(Modifier.height(16.dp))
+
+            InfoCardItem(stringResource(R.string.home_kernel), uname.release)
+            Spacer(Modifier.height(16.dp))
+
+            InfoCardItem(stringResource(R.string.home_system_version), getSystemVersion())
+            Spacer(Modifier.height(16.dp))
+
+            if (!hideFingerprint.value) {
+                InfoCardItem(stringResource(R.string.home_fingerprint), Build.FINGERPRINT)
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (kpState != APApplication.State.UNKNOWN_STATE && zygiskImplement != "None" && !hideZygisk.value) {
+                InfoCardItem(stringResource(R.string.home_zygisk_implement), zygiskImplement)
+                Spacer(Modifier.height(16.dp))
+            }
+
+            if (kpState != APApplication.State.UNKNOWN_STATE && mountImplement != "None" && !hideMount.value) {
+                InfoCardItem(stringResource(R.string.home_mount_implement), mountImplement)
+                Spacer(Modifier.height(16.dp))
+            }
+
+            InfoCardItem(stringResource(R.string.home_selinux_status), getSELinuxStatus())
         }
     }
 }
