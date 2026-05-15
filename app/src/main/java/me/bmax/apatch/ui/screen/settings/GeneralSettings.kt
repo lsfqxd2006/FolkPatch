@@ -98,9 +98,6 @@ fun GeneralSettingsContent(
 
     val resetSuPathTitle = stringResource(id = R.string.setting_reset_su_path)
 
-    val launcherIconTitle = stringResource(id = R.string.settings_alt_icon)
-    val launcherIconSummary = stringResource(id = R.string.alt_icon_summary)
-
     val appTitleTitle = stringResource(id = R.string.settings_app_title)
     var currentAppTitle by remember { mutableStateOf(prefs.getString("app_title", "folkpatch") ?: "folkpatch") }
     val appTitleLabel = when (currentAppTitle) {
@@ -160,7 +157,6 @@ fun GeneralSettingsContent(
     val showNewAppProfileModeDialog = remember { mutableStateOf(false) }
     val showSELinuxModeDialog = remember { mutableStateOf(false) }
 
-    val useAltIcon = remember { mutableStateOf(prefs.getBoolean("use_alt_icon", false)) }
     var autoUpdateCheck by remember { mutableStateOf(prefs.getBoolean("auto_update_check", true)) }
     var blockUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_KERNELPATCH_UPDATE, false)) }
     var blockApUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_ANDROIDPATCH_UPDATE, false)) }
@@ -473,21 +469,6 @@ fun GeneralSettingsContent(
                     onMagicMountChange(it)
                 }
             )
-        }
-
-        item {
-            ToggleSettingCard(
-            flat = flat,
-            icon = Icons.Filled.Android,
-            title = launcherIconTitle,
-            description = launcherIconSummary,
-            checked = useAltIcon.value,
-            onCheckedChange = {
-                prefs.edit { putBoolean("use_alt_icon", it) }
-                LauncherIconUtils.updateLauncherState(context)
-                useAltIcon.value = it
-            }
-        )
         }
 
         item(visible = kPatchReady) {
@@ -1251,7 +1232,6 @@ fun DesktopAppNameChooseDialog(showDialog: MutableState<Boolean>) {
                             prefs.edit {
                                 putString("desktop_app_name", "FolkPatch")
                             }
-                            LauncherIconUtils.applySaved(context)
                         },
                         trailingContent = {
                             if (currentName == "FolkPatch" || currentName == null) {
@@ -1268,7 +1248,6 @@ fun DesktopAppNameChooseDialog(showDialog: MutableState<Boolean>) {
                             prefs.edit {
                                 putString("desktop_app_name", "FPatch")
                             }
-                            LauncherIconUtils.applySaved(context)
                         },
                         trailingContent = {
                             if (currentName == "FPatch") {

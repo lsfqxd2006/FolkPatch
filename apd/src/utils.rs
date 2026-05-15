@@ -91,7 +91,7 @@ pub fn run_command(
 pub fn write_stdout_line(line: &str) -> Result<()> {
     let mut stdout = std::io::stdout();
     match writeln!(stdout, "{line}") {
-        Ok(()) => Ok(()),
+        std::result::Result::Ok(_) => Ok(()),
         Err(err) if err.kind() == std::io::ErrorKind::BrokenPipe => {
             warn!("stdout closed while writing output, suppressing BrokenPipe");
             Ok(())

@@ -106,12 +106,12 @@ jobs:
 
       - name: Decode keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > FolkPatch.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/FolkPatch.jks
 
       - name: Create keystore.properties
         run: |
-          cat > keystore.properties << 'EOF'
-          KEYSTORE_FILE=../FolkPatch.jks
+          cat > app/keystore.properties << 'EOF'
+          KEYSTORE_FILE=FolkPatch.jks
           KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS=${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
