@@ -797,18 +797,14 @@ class MainActivity : AppCompatActivity() {
                         isScrollingDown, scrollOffset, previousScrollOffset,
                         onUserScroll = { resetBottomBarAutoHide() }
                     )
-
                     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
                     val homeRoute = BottomBarDestination.entries.first().direction.route
                     val tabBackHandler = @Composable {
                         BackHandler {
-                            val homeRoute = BottomBarDestination.entries.first().direction.route
-                            val current = navController.currentBackStackEntryAsState().value?.destination?.route
-                            if (current == homeRoute) {
-                                // 主页 → 退后台
-                                moveTaskToBack(false)
+                            val activity = this@MainActivity
+                            if (currentRoute == homeRoute) {
+                                activity.moveTaskToBack(false)
                             } else {
-                                // 其他Tab → 切回主页
                                 navController.navigate(homeRoute) {
                                     popUpTo(homeRoute)
                                     launchSingleTop = true
@@ -816,8 +812,7 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
                         }
-                    }
-                     
+                    }                     
                     Box(modifier = Modifier.fillMaxSize()) {
                         val baseContentModifier = Modifier
                             .navBarLiquefiable(
