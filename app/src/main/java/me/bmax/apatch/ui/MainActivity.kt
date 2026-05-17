@@ -170,7 +170,6 @@ import me.bmax.apatch.util.ui.navBarLiquefiable
 import me.bmax.apatch.util.ui.rememberNavBarGlassLiquidState
 import me.bmax.apatch.util.ui.isRealTimeBlurAvailable
 import me.bmax.apatch.util.ui.showToast
-import androidx.activity.compose.BackHandler
 
 data class ScrollState(
     val isScrollingDown: MutableState<Boolean>,
@@ -238,6 +237,30 @@ class MainActivity : AppCompatActivity() {
     private var startupSoundPlayed = false
     private var pendingActionModuleId by mutableStateOf<String?>(null)
     private var pendingScriptId by mutableStateOf<String?>(null)
+    // 添加这个成员变量
+    private var onBackPressedCallback: androidx.activity.OnBackPressedCallback? = null
+    //添加这个方法
+    fun setBackToFirstTabHandler(navController: NavHostController, bottomBarRoutes: Set<String>, getFirstTabRoute: () -> String?) {
+        onBackPressedCallback?.remove()
+        onBackPressedCallback = object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val currentRoute = navController.currentBackStackEntry?.destination?.route
+                if (currentRoute in bottomBarRoutes) {
+                    val firstTabRoute = getFirstTabRoute()
+                    if (firstTabRoute != null && currentRoute != firstTabRoute) {
+                        navController.navigate(firstTabRoute) {
+                            popUpTo(NavGraphs.root) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                        return
+                    }
+                }
+                finish()
+            }
+        }
+        onBackPressedDispatcher.addCallback(this, onBackPressedCallback!!)
+    }
 
     private fun getFileName(context: android.content.Context, uri: Uri): String {
         var result: String? = null
@@ -812,80 +835,48 @@ class MainActivity : AppCompatActivity() {
                                 }
                             )
 
-			if (useNavigationRail) {
-			    Row(modifier = Modifier.fillMaxSize()) {
-			        NavigationRailBar(navController)
-
-			        // 重点：这里不能用普通 Box！必须用 Row 内的 Box + 权重
-			        Box(Modifier.weight(1f)) {
-			            CompositionLocalProvider(
-			                LocalSnackbarHost provides snackBarHostState,
-			                LocalScrollState provides if (isFloatingMode) ScrollState(
-			                    isScrollingDown = isScrollingDown,
-			                    scrollOffset = scrollOffset,
-			                    previousScrollOffset = previousScrollOffset
-			                ) else null,
-			                LocalBottomBarVisible provides bottomBarVisibleState,
-			                LocalIsFloatingNavMode provides isFloatingMode
-			            ) {
-			                BackHandler {
-			                    val current = navController.currentBackStackEntryAsState().value?.destination?.route
-			                    val home = BottomBarDestination.entries.first().direction.route
-			                    if (current == home) {
-			                        moveTaskToBack(false)
-			                    } else if (current in bottomBarRoutes) {
-			                        navController.navigate(home) {
-			                            launchSingleTop = true
-			                            restoreState = true
-			                        }
-			                    }
-			                }
-
-			                DestinationsNavHost(
-			                    modifier = Modifier.fillMaxSize().then(baseContentModifier),
-			                    navGraph = NavGraphs.root,
-			                    navController = navController,
-			                    engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
-			                    defaultTransitions = navTransitions
-			                )
-			            }
-			        }
-			    }
-			} else {
-			    CompositionLocalProvider(
-			        LocalSnackbarHost provides snackBarHostState,
-			        LocalScrollState provides if (isFloatingMode) ScrollState(
-			            isScrollingDown = isScrollingDown,
-			            scrollOffset = scrollOffset,
-			            previousScrollOffset = previousScrollOffset
-			        ) else null,
-			        LocalBottomBarVisible provides bottomBarVisibleState,
-			        LocalIsFloatingNavMode provides isFloatingMode
-			    ) {
-			        Box(Modifier.fillMaxSize()) {
-			            BackHandler {
-			                val current = navController.currentBackStackEntryAsState().value?.destination?.route
-			                val home = BottomBarDestination.entries.first().direction.route
-			                if (current == home) {
-			                    moveTaskToBack(false)
-			                } else if (current in bottomBarRoutes) {
-			                    navController.navigate(home) {
-			                        launchSingleTop = true
-			                        restoreState = true
-			                    }
-			                }
-			            }
-
-			            DestinationsNavHost(
-			                modifier = Modifier.fillMaxSize().then(baseContentModifier),
-			                navGraph = NavGraphs.root,
-			                navController = navController,
-			                engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
-			                defaultTransitions = navTransitions
-			            )
-			        }
-			    }
-			}
+                        if (useNavigationRail) {
+                            Row(modifier = Modifier.fillMaxSize()) {
+                                NavigationRailBar(navController)
+                                CompositionLocalProvider(
+                                    LocalSnackbarHost provides snackBarHostState,
+                                    LocalScrollState provides if (isFloatingMode) ScrollState(
+                                        isScrollingDown = isScrollingDown,
+                                        scrollOffset = scrollOffset,
+                                        previousScrollOffset = previousScrollOffset
+                                    ) else null,
+                                    LocalBottomBarVisible provides bottomBarVisibleState,
+                                    LocalIsFloatingNavMode provides isFloatingMode
+                                ) {
+                                    DestinationsNavHost(
+                                        modifier = Modifier.weight(1f).then(baseContentModifier),
+                                        navGraph = NavGraphs.root,
+                                        navController = navController,
+                                        engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
+                                        defaultTransitions = navTransitions
+                                    )
+                                }
+                            }
+                        } else {
+                            CompositionLocalProvider(
+                                LocalSnackbarHost provides snackBarHostState,
+                                LocalScrollState provides if (isFloatingMode) ScrollState(
+                                    isScrollingDown = isScrollingDown,
+                                    scrollOffset = scrollOffset,
+                                    previousScrollOffset = previousScrollOffset
+                                ) else null,
+                                LocalBottomBarVisible provides bottomBarVisibleState,
+                                LocalIsFloatingNavMode provides isFloatingMode
+                            ) {
+                                DestinationsNavHost(
+                                    modifier = Modifier.fillMaxSize().then(baseContentModifier),
+                                    navGraph = NavGraphs.root,
+                                    navController = navController,
+                                    engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
+                                    defaultTransitions = navTransitions
+                                )
+                            }
+                        }
 
                         if (!useNavigationRail) {
                             if (isFloatingMode) {
@@ -1002,7 +993,18 @@ private fun BottomBar(
                 else -> true
             }
         }
-
+        val activity = LocalContext.current as? MainActivity
+        LaunchedEffect(visibleDestinations, navController) {
+            activity?.setBackToFirstTabHandler(
+                navController = navController,
+                bottomBarRoutes = setOf(
+                    BottomBarDestination.SuperUser.direction.route,
+                    BottomBarDestination.AModule.direction.route,
+                    BottomBarDestination.KModule.direction.route
+                ),
+                getFirstTabRoute = { visibleDestinations.firstOrNull()?.direction?.route }
+            )
+        }
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
 
@@ -1496,7 +1498,18 @@ private fun NavigationRailBar(navController: NavHostController) {
                 else -> true
             }
         }
-
+        val activity = LocalContext.current as? MainActivity
+        LaunchedEffect(visibleDestinations, navController) {
+            activity?.setBackToFirstTabHandler(
+                navController = navController,
+                bottomBarRoutes = setOf(
+                    BottomBarDestination.SuperUser.direction.route,
+                    BottomBarDestination.AModule.direction.route,
+                    BottomBarDestination.KModule.direction.route
+                ),
+                getFirstTabRoute = { visibleDestinations.firstOrNull()?.direction?.route }
+            )
+        }
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
 
