@@ -164,7 +164,7 @@ import me.bmax.apatch.ui.theme.ThemeManager
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 
-
+import me.bmax.apatch.ui.LocalBottomBarVisible
 import me.bmax.apatch.ui.screen.settings.ThemeImportDialog
 import me.bmax.apatch.util.BiometricUtils
 import me.bmax.apatch.util.ui.navBarGlassEffect
@@ -981,19 +981,20 @@ private fun BottomBar(
         }
         val isOnTabPage = currentRoute in allTabRoutes
         val activity = LocalContext.current as ComponentActivity
+        val bottomBarVisibleState = LocalBottomBarVisible.current
 
-        BackHandler(enabled = isOnTabPage) {
-            android.util.Log.d("BottomBar", "BackHandler triggered, currentRoute=$currentRoute, homeTabRoute=$homeTabRoute")
+        // 悬浮模式且导航栏隐藏时，忽略 isOnTabPage 判断
+        val backHandlerEnabled = if (isFloating && !bottomBarVisibleState.value) true else isOnTabPage
+
+        BackHandler(enabled = backHandlerEnabled) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
-                android.util.Log.d("BottomBar", "Calling onUserInteraction, isFloating=$isFloating")
+                // 显示导航栏（如果隐藏）
                 onUserInteraction?.invoke()
-                android.util.Log.d("BottomBar", "After onUserInteraction")
                 navController.popBackStack(NavGraphs.root.route, inclusive = true)
                 navController.navigate(homeTabRoute) {
                     launchSingleTop = true
                 }
             } else {
-                android.util.Log.d("BottomBar", "Moving to back")
                 activity.moveTaskToBack(false)
             }
         }
