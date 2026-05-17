@@ -741,6 +741,7 @@ class MainActivity : AppCompatActivity() {
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = currentBackStackEntry?.destination?.route
 
+
                 // Show bottom bar logic: hide when scrolling down in floating mode,
                 // plus 3s auto-hide after last interaction.
                 val isFloatingMode = navMode == "floating"
@@ -797,6 +798,7 @@ class MainActivity : AppCompatActivity() {
                         isScrollingDown, scrollOffset, previousScrollOffset,
                         onUserScroll = { resetBottomBarAutoHide() }
                     )
+
                     Box(modifier = Modifier.fillMaxSize()) {
                         val baseContentModifier = Modifier
                             .navBarLiquefiable(
@@ -824,7 +826,7 @@ class MainActivity : AppCompatActivity() {
                                     LocalIsFloatingNavMode provides isFloatingMode
                                 ) {
                                     // 直接写，不要变量！
-                                    Box {
+                                  Box {
                                         BackHandler {
                                              val current = navController.currentBackStackEntryAsState().value?.destination?.route
                                              val home = BottomBarDestination.entries.first().direction.route
@@ -837,14 +839,14 @@ class MainActivity : AppCompatActivity() {
                                                  }
                                              }
                                         }
+                                        DestinationsNavHost(
+                                            modifier = Modifier.weight(1f).then(baseContentModifier),
+                                            navGraph = NavGraphs.root,
+                                            navController = navController,
+                                            engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
+                                            defaultTransitions = navTransitions
+                                        )
                                     }
-                                    DestinationsNavHost(
-                                        modifier = Modifier.weight(1f).then(baseContentModifier),
-                                        navGraph = NavGraphs.root,
-                                        navController = navController,
-                                        engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
-                                        defaultTransitions = navTransitions
-                                    )
                                 }
                             }
                         } else {
@@ -858,7 +860,7 @@ class MainActivity : AppCompatActivity() {
                                 LocalBottomBarVisible provides bottomBarVisibleState,
                                 LocalIsFloatingNavMode provides isFloatingMode
                             ) {
-                                Box {
+                               Box {
                                     BackHandler {
                                          val current = navController.currentBackStackEntryAsState().value?.destination?.route
                                          val home = BottomBarDestination.entries.first().direction.route
@@ -871,14 +873,14 @@ class MainActivity : AppCompatActivity() {
                                              }
                                          }
                                     }
-                                }
-                                DestinationsNavHost(
-                                    modifier = Modifier.fillMaxSize().then(baseContentModifier),
-                                    navGraph = NavGraphs.root,
-                                    navController = navController,
-                                    engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
-                                    defaultTransitions = navTransitions
-                                )
+                                    DestinationsNavHost(
+                                        modifier = Modifier.fillMaxSize().then(baseContentModifier),
+                                        navGraph = NavGraphs.root,
+                                        navController = navController,
+                                        engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
+                                        defaultTransitions = navTransitions
+                                    )
+                               }
                             }
                         }
 
