@@ -984,6 +984,8 @@ private fun BottomBar(
 
         BackHandler(enabled = isOnTabPage) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
+                // 显示导航栏（如果处于隐藏状态）
+                onUserInteraction?.invoke()
                 // 先清空回退栈，再导航到主页
                 navController.popBackStack(NavGraphs.root.route, inclusive = true)
                 navController.navigate(homeTabRoute) {
