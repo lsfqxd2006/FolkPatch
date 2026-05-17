@@ -740,9 +740,14 @@ class MainActivity : AppCompatActivity() {
 
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = currentBackStackEntry?.destination?.route
-
-                BackHandler(currentRoute in bottomBarRoutes) {
+                
+                BackHandler {
                     val homeRoute = BottomBarDestination.entries.first().direction.route
+                    // 不是一级Tab → 直接放行给系统，不拦截、不抢回调
+                    if (currentRoute !in bottomBarRoutes) {
+                        return@BackHandler
+                    }
+                    // 一级Tab 走自定义逻辑
                     if (currentRoute == homeRoute) {
                         moveTaskToBack(false)
                     } else {
@@ -753,6 +758,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
+
 
                 // Show bottom bar logic: hide when scrolling down in floating mode,
                 // plus 3s auto-hide after last interaction.
