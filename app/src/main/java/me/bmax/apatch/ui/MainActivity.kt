@@ -170,6 +170,7 @@ import me.bmax.apatch.util.ui.navBarLiquefiable
 import me.bmax.apatch.util.ui.rememberNavBarGlassLiquidState
 import me.bmax.apatch.util.ui.isRealTimeBlurAvailable
 import me.bmax.apatch.util.ui.showToast
+import androidx.activity.compose.BackHandler
 
 data class ScrollState(
     val isScrollingDown: MutableState<Boolean>,
@@ -740,7 +741,19 @@ class MainActivity : AppCompatActivity() {
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = currentBackStackEntry?.destination?.route
 
-
+                BackHandler {
+                    val homeRoute = BottomBarDestination.entries.first().direction.route
+                    if (currentRoute !in bottomBarRoutes) return@BackHandler
+                    if (currentRoute == homeRoute) {
+                        moveTaskToBack(false)
+                    } else {
+                        navController.navigate(homeRoute) {
+                            popUpTo(NavGraphs.root) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                }
                 // Show bottom bar logic: hide when scrolling down in floating mode,
                 // plus 3s auto-hide after last interaction.
                 val isFloatingMode = navMode == "floating"
