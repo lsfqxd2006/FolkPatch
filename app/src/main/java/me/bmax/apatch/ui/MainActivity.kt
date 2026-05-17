@@ -981,15 +981,17 @@ private fun BottomBar(
         }
         val isOnTabPage = currentRoute in allTabRoutes
         val activity = LocalContext.current as ComponentActivity
+        val navigator = navController.rememberDestinationsNavigator()
 
         BackHandler(enabled = isOnTabPage) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
-                // 先尝试回退到已存在的主页，避免重复添加
-                if (!navController.popBackStack(homeTabRoute, false)) {
-                    // 主页不在栈中时，才执行导航
-                    navController.navigate(homeTabRoute) {
-                        launchSingleTop = true
+                // 使用与点击 tab 完全相同的导航方式
+                navigator.navigate(homeTabRoute) {
+                    popUpTo(NavGraphs.root) {
+                        saveState = true
                     }
+                    launchSingleTop = true
+                    restoreState = true
                 }
             } else {
                 activity.moveTaskToBack(false)
@@ -1495,15 +1497,17 @@ private fun NavigationRailBar(navController: NavHostController) {
         }
         val isOnTabPage = currentRoute in allTabRoutes
         val activity = LocalContext.current as ComponentActivity
+        val navigator = navController.rememberDestinationsNavigator()
 
         BackHandler(enabled = isOnTabPage) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
-                // 先尝试回退到已存在的主页，避免重复添加
-                if (!navController.popBackStack(homeTabRoute, false)) {
-                    // 主页不在栈中时，才执行导航
-                    navController.navigate(homeTabRoute) {
-                        launchSingleTop = true
+                // 使用与点击 tab 完全相同的导航方式
+                navigator.navigate(homeTabRoute) {
+                    popUpTo(NavGraphs.root) {
+                        saveState = true
                     }
+                    launchSingleTop = true
+                    restoreState = true
                 }
             } else {
                 activity.moveTaskToBack(false)
