@@ -740,25 +740,6 @@ class MainActivity : AppCompatActivity() {
 
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = currentBackStackEntry?.destination?.route
-                
-                BackHandler {
-                    val homeRoute = BottomBarDestination.entries.first().direction.route
-                    // 不是一级Tab → 直接放行给系统，不拦截、不抢回调
-                    if (currentRoute !in bottomBarRoutes) {
-                        return@BackHandler
-                    }
-                    // 一级Tab 走自定义逻辑
-                    if (currentRoute == homeRoute) {
-                        moveTaskToBack(false)
-                    } else {
-                        navController.navigate(homeRoute) {
-                            popUpTo(NavGraphs.root) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                }
-
 
                 // Show bottom bar logic: hide when scrolling down in floating mode,
                 // plus 3s auto-hide after last interaction.
@@ -817,6 +798,22 @@ class MainActivity : AppCompatActivity() {
                         onUserScroll = { resetBottomBarAutoHide() }
                     )
 
+                     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                     val homeRoute = BottomBarDestination.entries.first().direction.route
+                     val tabBackHandler = @Composable {
+                         BackHandler {
+                             if (currentRoute == homeRoute) {
+                                 (LocalActivity.current)?.moveTaskToBack(false)
+                             } else {
+                                 navController.navigate(homeRoute) {
+                                     popUpTo(homeRoute)
+                                     launchSingleTop = true
+                                     restoreState = true
+                                 }
+                             }
+                         }
+                     }
+                     
                     Box(modifier = Modifier.fillMaxSize()) {
                         val baseContentModifier = Modifier
                             .navBarLiquefiable(
@@ -843,6 +840,7 @@ class MainActivity : AppCompatActivity() {
                                     LocalBottomBarVisible provides bottomBarVisibleState,
                                     LocalIsFloatingNavMode provides isFloatingMode
                                 ) {
+                                    tabBackHandler()
                                     DestinationsNavHost(
                                         modifier = Modifier.weight(1f).then(baseContentModifier),
                                         navGraph = NavGraphs.root,
@@ -863,6 +861,7 @@ class MainActivity : AppCompatActivity() {
                                 LocalBottomBarVisible provides bottomBarVisibleState,
                                 LocalIsFloatingNavMode provides isFloatingMode
                             ) {
+                                tabBackHandler()
                                 DestinationsNavHost(
                                     modifier = Modifier.fillMaxSize().then(baseContentModifier),
                                     navGraph = NavGraphs.root,
