@@ -974,23 +974,26 @@ private fun BottomBar(
 
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
+        // ========== 返回键处理 ==========
         val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
         val allTabRoutes = remember(visibleDestinations) {
             visibleDestinations.map { it.direction.route }.toSet()
         }
         val isOnTabPage = currentRoute in allTabRoutes
-        val activity = LocalContext.current as ComponentActivity  // ← 提前获取
+        val activity = LocalContext.current as ComponentActivity
 
         BackHandler(enabled = isOnTabPage) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
+                // 不在主页 tab，跳转到主页 tab（简化版，避免序列化崩溃）
                 navController.navigate(homeTabRoute) {
-                    popUpTo(NavGraphs.root) {
-                        saveState = true
-                    }
                     launchSingleTop = true
-                    restoreState = true
+                    // 清除回退栈到根，但使用更安全的方式
+                    popUpTo(NavGraphs.root) {
+                        inclusive = false
+                    }
                 }
             } else {
+                // 已在主页 tab，退出应用到桌面
                 activity.moveTaskToBack(false)
             }
         }
@@ -1487,23 +1490,26 @@ private fun NavigationRailBar(navController: NavHostController) {
 
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
+        // ========== 返回键处理 ==========
         val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
         val allTabRoutes = remember(visibleDestinations) {
             visibleDestinations.map { it.direction.route }.toSet()
         }
         val isOnTabPage = currentRoute in allTabRoutes
-        val activity = LocalContext.current as ComponentActivity  // ← 提前获取
+        val activity = LocalContext.current as ComponentActivity
 
         BackHandler(enabled = isOnTabPage) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
+                // 不在主页 tab，跳转到主页 tab（简化版，避免序列化崩溃）
                 navController.navigate(homeTabRoute) {
-                    popUpTo(NavGraphs.root) {
-                        saveState = true
-                    }
                     launchSingleTop = true
-                    restoreState = true
+                    // 清除回退栈到根，但使用更安全的方式
+                    popUpTo(NavGraphs.root) {
+                        inclusive = false
+                    }
                 }
             } else {
+                // 已在主页 tab，退出应用到桌面
                 activity.moveTaskToBack(false)
             }
         }
