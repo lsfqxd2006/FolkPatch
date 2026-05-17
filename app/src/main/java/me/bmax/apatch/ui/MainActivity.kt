@@ -9,6 +9,8 @@ import android.os.Handler
 import android.os.Looper
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.compose.BackHandler
+import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -170,8 +172,6 @@ import me.bmax.apatch.util.ui.navBarLiquefiable
 import me.bmax.apatch.util.ui.rememberNavBarGlassLiquidState
 import me.bmax.apatch.util.ui.isRealTimeBlurAvailable
 import me.bmax.apatch.util.ui.showToast
-import androidx.activity.compose.BackHandler
-import androidx.activity.ComponentActivity
 
 data class ScrollState(
     val isScrollingDown: MutableState<Boolean>,
@@ -974,11 +974,25 @@ private fun BottomBar(
 
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
-        TabBackHandler(
-            navController = navController,
-            visibleDestinations = visibleDestinations,
-            currentRoute = currentRoute
-        )
+        val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
+        val allTabRoutes = remember(visibleDestinations) {
+            visibleDestinations.map { it.direction.route }.toSet()
+        }
+        val isOnTabPage = currentRoute in allTabRoutes
+
+        BackHandler(enabled = isOnTabPage) {
+            if (homeTabRoute != null && currentRoute != homeTabRoute) {
+                navController.navigate(homeTabRoute) {
+                    popUpTo(NavGraphs.root) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            } else {
+                (LocalContext.current as ComponentActivity).moveTaskToBack(false)
+            }
+        }
         val isOnBackStack = visibleDestinations.map { destination ->
             navController.isRouteOnBackStackAsState(destination.direction).value
         }
@@ -1472,11 +1486,25 @@ private fun NavigationRailBar(navController: NavHostController) {
 
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
-        TabBackHandler(
-            navController = navController,
-            visibleDestinations = visibleDestinations,
-            currentRoute = currentRoute
-        )
+        val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
+        val allTabRoutes = remember(visibleDestinations) {
+            visibleDestinations.map { it.direction.route }.toSet()
+        }
+        val isOnTabPage = currentRoute in allTabRoutes
+
+        BackHandler(enabled = isOnTabPage) {
+            if (homeTabRoute != null && currentRoute != homeTabRoute) {
+                navController.navigate(homeTabRoute) {
+                    popUpTo(NavGraphs.root) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            } else {
+                (LocalContext.current as ComponentActivity).moveTaskToBack(false)
+            }
+        }
         val isOnBackStack = visibleDestinations.map { destination ->
             navController.isRouteOnBackStackAsState(destination.direction).value
         }
@@ -1563,39 +1591,7 @@ private fun NavigationRailBar(navController: NavHostController) {
         }
     }
 }
-@Composable
-private fun TabBackHandler(
-    navController: NavHostController,
-    visibleDestinations: List<BottomBarDestination>,
-    currentRoute: String?
-) {
-    // 获取第一个可见 tab 的路由（主页）
-    val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
-    
-    // 所有可见 tab 页面的路由集合
-    val allTabRoutes = remember(visibleDestinations) {
-        visibleDestinations.map { it.direction.route }.toSet()
-    }
-    
-    // 只在当前页面是可见 tab 页面时启用返回拦截
-    val isOnTabPage = currentRoute in allTabRoutes
 
-    BackHandler(enabled = isOnTabPage) {
-        if (homeTabRoute != null && currentRoute != homeTabRoute) {
-            // 不在主页 tab，跳转到主页 tab
-            navController.navigate(homeTabRoute) {
-                popUpTo(NavGraphs.root) { 
-                    saveState = true 
-                }
-                launchSingleTop = true
-                restoreState = true
-            }
-        } else {
-            // 已在主页 tab，退出应用到桌面
-            (LocalContext.current as ComponentActivity).moveTaskToBack(false)
-        }
-    }
-}
 private fun createNavTransitions(
     folkXEngineEnabled: Boolean,
     folkXAnimationType: String?,
