@@ -797,26 +797,6 @@ class MainActivity : AppCompatActivity() {
                         isScrollingDown, scrollOffset, previousScrollOffset,
                         onUserScroll = { resetBottomBarAutoHide() }
                     )
-                    val homeRoute = BottomBarDestination.entries.first().direction.route
-                    val tabBackHandler = @Composable {
-                        BackHandler {
-                            // 必须在这里实时拿当前路由！！
-                            val current = navController.currentBackStackEntryAsState().value?.destination?.route
-                            val activity = this@MainActivity
-                    
-                            if (current == homeRoute) {
-                                // 主页：退后台
-                                activity.moveTaskToBack(false)
-                            } else if (current in bottomBarRoutes) {
-                                // 其他一级 Tab：切主页（不弹栈，保留 Tab 状态）
-                                navController.navigate(homeRoute) {
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                            // 二级页面：什么都不做，系统处理（预测返回正常）
-                        }
-                    }                 
                     Box(modifier = Modifier.fillMaxSize()) {
                         val baseContentModifier = Modifier
                             .navBarLiquefiable(
@@ -843,7 +823,22 @@ class MainActivity : AppCompatActivity() {
                                     LocalBottomBarVisible provides bottomBarVisibleState,
                                     LocalIsFloatingNavMode provides isFloatingMode
                                 ) {
-                                    tabBackHandler()
+                                    BackHandler {
+                                        // 实时拿路由，不写死
+                                        val current = navController.currentBackStackEntryAsState().value?.destination?.route
+                                        val home = BottomBarDestination.entries.first().direction.route
+                                    
+                                        if (current == home) {
+                                            moveTaskToBack(false) // 主页：退后台
+                                        } else if (current in bottomBarRoutes) {
+                                            navController.navigate(home) {
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
+                                        }
+                                        // 二级页面：不拦截，系统预测返回正常
+                                    }
+
                                     DestinationsNavHost(
                                         modifier = Modifier.weight(1f).then(baseContentModifier),
                                         navGraph = NavGraphs.root,
@@ -864,7 +859,22 @@ class MainActivity : AppCompatActivity() {
                                 LocalBottomBarVisible provides bottomBarVisibleState,
                                 LocalIsFloatingNavMode provides isFloatingMode
                             ) {
-                                tabBackHandler()
+                                BackHandler {
+                                    // 实时拿路由，不写死
+                                    val current = navController.currentBackStackEntryAsState().value?.destination?.route
+                                    val home = BottomBarDestination.entries.first().direction.route
+                                
+                                    if (current == home) {
+                                        moveTaskToBack(false) // 主页：退后台
+                                    } else if (current in bottomBarRoutes) {
+                                        navController.navigate(home) {
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                    // 二级页面：不拦截，系统预测返回正常
+                                }
+
                                 DestinationsNavHost(
                                     modifier = Modifier.fillMaxSize().then(baseContentModifier),
                                     navGraph = NavGraphs.root,
