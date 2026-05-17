@@ -858,17 +858,22 @@ class MainActivity : AppCompatActivity() {
 
                         if (!useNavigationRail) {
                             if (isFloatingMode) {
-                                // ========== 悬浮导航栏返回键处理（始终存活）==========
-                                BackHandler(enabled = true) {
-                                    val realRoute = navController.currentBackStackEntry?.destination?.route
-                                    if (realRoute != null && realRoute != BottomBarDestination.SuperUser.direction.route) {
-                                        resetBottomBarAutoHide()  // 直接调用，不需要 onUserInteraction
+                                val currentRouteForBack = navController.currentBackStackEntry?.destination?.route
+                                val homeRoute = BottomBarDestination.SuperUser.direction.route
+                                
+                                // bottomBarRoutes 包含所有一级 tab（SuperUser、APM、KPM、设置等）
+                                val isOnTabPage = currentRouteForBack in bottomBarRoutes
+                                val activityForBack = LocalContext.current as ComponentActivity
+
+                                BackHandler(enabled = isOnTabPage) {
+                                    if (currentRouteForBack != null && currentRouteForBack != homeRoute) {
+                                        resetBottomBarAutoHide()
                                         navController.popBackStack(NavGraphs.root.route, inclusive = true)
-                                        navController.navigate(BottomBarDestination.SuperUser.direction.route) {
+                                        navController.navigate(homeRoute) {
                                             launchSingleTop = true
                                         }
-                                    } else if (realRoute == BottomBarDestination.SuperUser.direction.route) {
-                                        finish()
+                                    } else {
+                                        activityForBack.moveTaskToBack(false)
                                     }
                                 }
                                 AnimatedVisibility(
