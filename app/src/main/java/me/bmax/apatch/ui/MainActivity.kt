@@ -952,52 +952,46 @@ private fun BottomBar(
             prefs.unregisterOnSharedPreferenceChangeListener(listener)
         }
     }
+    // ========== 返回键处理（移到 Crossfade 外面）==========
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
 
+    val kPatchReady = state != APApplication.State.UNKNOWN_STATE
+    val aPatchReady = state == APApplication.State.ANDROIDPATCH_INSTALLED
+
+    val visibleDestinations = BottomBarDestination.entries.filter { destination ->
+        when {
+            destination == BottomBarDestination.AModule && !showNavApm -> false
+            destination == BottomBarDestination.KModule && !showNavKpm -> false
+            destination == BottomBarDestination.SuperUser && !showNavSuperUser -> false
+            (destination.kPatchRequired && !kPatchReady) || (destination.aPatchRequired && !aPatchReady) -> false
+            else -> true
+        }
+    }
+
+    val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
+    val allTabRoutes = remember(visibleDestinations) {
+        visibleDestinations.map { it.direction.route }.toSet()
+    }
+    val isOnTabPage = currentRoute in allTabRoutes
+    val activity = LocalContext.current as ComponentActivity
+
+    BackHandler(enabled = isOnTabPage) {
+        if (homeTabRoute != null && currentRoute != homeTabRoute) {
+            onUserInteraction?.invoke()
+            navController.popBackStack(NavGraphs.root.route, inclusive = true)
+            navController.navigate(homeTabRoute) {
+                launchSingleTop = true
+            }
+        } else {
+            activity.moveTaskToBack(false)
+        }
+    }
     Crossfade(
         modifier = modifier,
         targetState = state,
         label = "BottomBarStateCrossfade"
     ) { state ->
-        val kPatchReady = state != APApplication.State.UNKNOWN_STATE
-        val aPatchReady = state == APApplication.State.ANDROIDPATCH_INSTALLED
-
-        // Determine visible destinations
-        val visibleDestinations = BottomBarDestination.entries.filter { destination ->
-            when {
-                destination == BottomBarDestination.AModule && !showNavApm -> false
-                destination == BottomBarDestination.KModule && !showNavKpm -> false
-                destination == BottomBarDestination.SuperUser && !showNavSuperUser -> false
-                (destination.kPatchRequired && !kPatchReady) || (destination.aPatchRequired && !aPatchReady) -> false
-                else -> true
-            }
-        }
-
-        val currentBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = currentBackStackEntry?.destination?.route
-        // ========== 返回键处理 ==========
-        val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
-        val allTabRoutes = remember(visibleDestinations) {
-            visibleDestinations.map { it.direction.route }.toSet()
-        }
-        val isOnTabPage = currentRoute in allTabRoutes
-        val activity = LocalContext.current as ComponentActivity
-        val bottomBarVisibleState = LocalBottomBarVisible.current
-
-        // 悬浮模式且导航栏隐藏时，忽略 isOnTabPage 判断
-        val backHandlerEnabled = if (isFloating && !bottomBarVisibleState.value) true else isOnTabPage
-
-        BackHandler(enabled = backHandlerEnabled) {
-            if (homeTabRoute != null && currentRoute != homeTabRoute) {
-                // 显示导航栏（如果隐藏）
-                onUserInteraction?.invoke()
-                navController.popBackStack(NavGraphs.root.route, inclusive = true)
-                navController.navigate(homeTabRoute) {
-                    launchSingleTop = true
-                }
-            } else {
-                activity.moveTaskToBack(false)
-            }
-        }
         val isOnBackStack = visibleDestinations.map { destination ->
             navController.isRouteOnBackStackAsState(destination.direction).value
         }
