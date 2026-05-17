@@ -741,9 +741,8 @@ class MainActivity : AppCompatActivity() {
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = currentBackStackEntry?.destination?.route
 
-                BackHandler {
+                BackHandler(currentRoute in bottomBarRoutes) {
                     val homeRoute = BottomBarDestination.entries.first().direction.route
-                    if (currentRoute !in bottomBarRoutes) return@BackHandler
                     if (currentRoute == homeRoute) {
                         moveTaskToBack(false)
                     } else {
@@ -754,6 +753,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
+
                 // Show bottom bar logic: hide when scrolling down in floating mode,
                 // plus 3s auto-hide after last interaction.
                 val isFloatingMode = navMode == "floating"
