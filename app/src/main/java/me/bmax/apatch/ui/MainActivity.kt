@@ -164,7 +164,7 @@ import me.bmax.apatch.ui.theme.ThemeManager
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 
-import me.bmax.apatch.ui.LocalBottomBarVisible
+
 import me.bmax.apatch.ui.screen.settings.ThemeImportDialog
 import me.bmax.apatch.util.BiometricUtils
 import me.bmax.apatch.util.ui.navBarGlassEffect
@@ -858,6 +858,19 @@ class MainActivity : AppCompatActivity() {
 
                         if (!useNavigationRail) {
                             if (isFloatingMode) {
+                                // ========== 悬浮导航栏返回键处理（始终存活）==========
+                                BackHandler(enabled = true) {
+                                    val realRoute = navController.currentBackStackEntry?.destination?.route
+                                    if (realRoute != null && realRoute != BottomBarDestination.SuperUser.direction.route) {
+                                        resetBottomBarAutoHide()  // 直接调用，不需要 onUserInteraction
+                                        navController.popBackStack(NavGraphs.root.route, inclusive = true)
+                                        navController.navigate(BottomBarDestination.SuperUser.direction.route) {
+                                            launchSingleTop = true
+                                        }
+                                    } else if (realRoute == BottomBarDestination.SuperUser.direction.route) {
+                                        finish()
+                                    }
+                                }
                                 AnimatedVisibility(
                                     visible = showBottomBar,
                                     modifier = Modifier.align(Alignment.BottomCenter),
@@ -952,46 +965,49 @@ private fun BottomBar(
             prefs.unregisterOnSharedPreferenceChangeListener(listener)
         }
     }
-    // ========== 返回键处理（移到 Crossfade 外面）==========
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = currentBackStackEntry?.destination?.route
 
-    val kPatchReady = state != APApplication.State.UNKNOWN_STATE
-    val aPatchReady = state == APApplication.State.ANDROIDPATCH_INSTALLED
-
-    val visibleDestinations = BottomBarDestination.entries.filter { destination ->
-        when {
-            destination == BottomBarDestination.AModule && !showNavApm -> false
-            destination == BottomBarDestination.KModule && !showNavKpm -> false
-            destination == BottomBarDestination.SuperUser && !showNavSuperUser -> false
-            (destination.kPatchRequired && !kPatchReady) || (destination.aPatchRequired && !aPatchReady) -> false
-            else -> true
-        }
-    }
-
-    val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
-    val allTabRoutes = remember(visibleDestinations) {
-        visibleDestinations.map { it.direction.route }.toSet()
-    }
-    val isOnTabPage = currentRoute in allTabRoutes
-    val activity = LocalContext.current as ComponentActivity
-
-    BackHandler(enabled = isOnTabPage) {
-        if (homeTabRoute != null && currentRoute != homeTabRoute) {
-            onUserInteraction?.invoke()
-            navController.popBackStack(NavGraphs.root.route, inclusive = true)
-            navController.navigate(homeTabRoute) {
-                launchSingleTop = true
-            }
-        } else {
-            activity.moveTaskToBack(false)
-        }
-    }
     Crossfade(
         modifier = modifier,
         targetState = state,
         label = "BottomBarStateCrossfade"
     ) { state ->
+        val kPatchReady = state != APApplication.State.UNKNOWN_STATE
+        val aPatchReady = state == APApplication.State.ANDROIDPATCH_INSTALLED
+
+        // Determine visible destinations
+        val visibleDestinations = BottomBarDestination.entries.filter { destination ->
+            when {
+                destination == BottomBarDestination.AModule && !showNavApm -> false
+                destination == BottomBarDestination.KModule && !showNavKpm -> false
+                destination == BottomBarDestination.SuperUser && !showNavSuperUser -> false
+                (destination.kPatchRequired && !kPatchReady) || (destination.aPatchRequired && !aPatchReady) -> false
+                else -> true
+            }
+        }
+
+        val currentBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = currentBackStackEntry?.destination?.route
+        // ========== 返回键处理 ==========
+        val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
+        val allTabRoutes = remember(visibleDestinations) {
+            visibleDestinations.map { it.direction.route }.toSet()
+        }
+        val isOnTabPage = currentRoute in allTabRoutes
+        val activity = LocalContext.current as ComponentActivity
+
+        if (!isFloating) {
+            BackHandler(enabled = isOnTabPage) {
+                if (homeTabRoute != null && currentRoute != homeTabRoute) {
+                    onUserInteraction?.invoke()  // 保留，用于普通模式的音效/震动
+                    navController.popBackStack(NavGraphs.root.route, inclusive = true)
+                    navController.navigate(homeTabRoute) {
+                        launchSingleTop = true
+                    }
+                } else {
+                    activity.moveTaskToBack(false)
+                }
+            }
+        }
         val isOnBackStack = visibleDestinations.map { destination ->
             navController.isRouteOnBackStackAsState(destination.direction).value
         }
