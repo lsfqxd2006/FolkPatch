@@ -824,19 +824,20 @@ class MainActivity : AppCompatActivity() {
                                     LocalIsFloatingNavMode provides isFloatingMode
                                 ) {
                                     // 直接写，不要变量！
-                                    BackHandler {
-                                         val current = navController.currentBackStackEntryAsState().value?.destination?.route
-                                         val home = BottomBarDestination.entries.first().direction.route
-                                         if (current == home) {
-                                             moveTaskToBack(false)
-                                         } else if (current in bottomBarRoutes) {
-                                             navController.navigate(home) {
-                                                 launchSingleTop = true
-                                                 restoreState = true
+                                    Box {
+                                        BackHandler {
+                                             val current = navController.currentBackStackEntryAsState().value?.destination?.route
+                                             val home = BottomBarDestination.entries.first().direction.route
+                                             if (current == home) {
+                                                 moveTaskToBack(false)
+                                             } else if (current in bottomBarRoutes) {
+                                                 navController.navigate(home) {
+                                                     launchSingleTop = true
+                                                     restoreState = true
+                                                 }
                                              }
-                                         }
+                                        }
                                     }
-                        
                                     DestinationsNavHost(
                                         modifier = Modifier.weight(1f).then(baseContentModifier),
                                         navGraph = NavGraphs.root,
@@ -857,19 +858,20 @@ class MainActivity : AppCompatActivity() {
                                 LocalBottomBarVisible provides bottomBarVisibleState,
                                 LocalIsFloatingNavMode provides isFloatingMode
                             ) {
-                                BackHandler {
-                                     val current = navController.currentBackStackEntryAsState().value?.destination?.route
-                                     val home = BottomBarDestination.entries.first().direction.route
-                                     if (current == home) {
-                                         moveTaskToBack(false)
-                                     } else if (current in bottomBarRoutes) {
-                                         navController.navigate(home) {
-                                             launchSingleTop = true
-                                             restoreState = true
+                                Box {
+                                    BackHandler {
+                                         val current = navController.currentBackStackEntryAsState().value?.destination?.route
+                                         val home = BottomBarDestination.entries.first().direction.route
+                                         if (current == home) {
+                                             moveTaskToBack(false)
+                                         } else if (current in bottomBarRoutes) {
+                                             navController.navigate(home) {
+                                                 launchSingleTop = true
+                                                 restoreState = true
+                                             }
                                          }
-                                     }
+                                    }
                                 }
-
                                 DestinationsNavHost(
                                     modifier = Modifier.fillMaxSize().then(baseContentModifier),
                                     navGraph = NavGraphs.root,
