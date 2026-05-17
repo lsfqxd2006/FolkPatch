@@ -798,21 +798,25 @@ class MainActivity : AppCompatActivity() {
                         onUserScroll = { resetBottomBarAutoHide() }
                     )
 
-                     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-                     val homeRoute = BottomBarDestination.entries.first().direction.route
-                     val tabBackHandler = @Composable {
-                         BackHandler {
-                             if (currentRoute == homeRoute) {
-                                 (LocalActivity.current)?.moveTaskToBack(false)
-                             } else {
-                                 navController.navigate(homeRoute) {
-                                     popUpTo(homeRoute)
-                                     launchSingleTop = true
-                                     restoreState = true
-                                 }
-                             }
-                         }
-                     }
+                    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                    val homeRoute = BottomBarDestination.entries.first().direction.route
+                    val tabBackHandler = @Composable {
+                        BackHandler {
+                            val homeRoute = BottomBarDestination.entries.first().direction.route
+                            val current = navController.currentBackStackEntryAsState().value?.destination?.route
+                            if (current == homeRoute) {
+                                // 主页 → 退后台
+                                moveTaskToBack(false)
+                            } else {
+                                // 其他Tab → 切回主页
+                                navController.navigate(homeRoute) {
+                                    popUpTo(homeRoute)
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        }
+                    }
                      
                     Box(modifier = Modifier.fillMaxSize()) {
                         val baseContentModifier = Modifier
