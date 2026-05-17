@@ -576,20 +576,7 @@ class MainActivity : AppCompatActivity() {
                     delay(3000L)
                 }
             }
-            val state by APApplication.apStateLiveData.observeAsState(APApplication.State.UNKNOWN_STATE)
-            val kPatchReady = state != APApplication.State.UNKNOWN_STATE
-            val aPatchReady = state == APApplication.State.ANDROIDPATCH_INSTALLED
-            val visibleDestinationsForBack = BottomBarDestination.entries.filter { destination ->
-                when {
-                    destination == BottomBarDestination.AModule && !showNavApm -> false
-                    destination == BottomBarDestination.KModule && !showNavKpm -> false
-                    destination == BottomBarDestination.SuperUser && !showNavSuperUser -> false
-                    (destination.kPatchRequired && !kPatchReady) || (destination.aPatchRequired && !aPatchReady) -> false
-                    else -> true
-                }
-            }
-            val homeRouteForBack = visibleDestinationsForBack.firstOrNull()?.direction?.route
-            val allTabRoutesForBack = visibleDestinationsForBack.map { it.direction.route }.toSet()
+
             APatchThemeWithBackground(
                 navController = navController,
                 folkXEngineEnabled = folkXEngineEnabled,
@@ -871,14 +858,16 @@ class MainActivity : AppCompatActivity() {
 
                         if (!useNavigationRail) {
                             if (isFloatingMode) {
+                                // ========== 悬浮导航栏返回键处理（始终存活）==========
                                 val currentRouteForBack = navController.currentBackStackEntry?.destination?.route
+                                val homeRoute = bottomBarRoutes.first()  // 最左侧的 tab 就是主页
                                 val activityForBack = LocalContext.current as ComponentActivity
 
-                                BackHandler(enabled = currentRouteForBack in allTabRoutesForBack) {
-                                    if (currentRouteForBack != null && currentRouteForBack != homeRouteForBack) {
+                                BackHandler(enabled = currentRouteForBack in bottomBarRoutes) {
+                                    if (currentRouteForBack != null && currentRouteForBack != homeRoute) {
                                         resetBottomBarAutoHide()
                                         navController.popBackStack(NavGraphs.root.route, inclusive = true)
-                                        navController.navigate(homeRouteForBack!!) {
+                                        navController.navigate(homeRoute) {
                                             launchSingleTop = true
                                         }
                                     } else {
