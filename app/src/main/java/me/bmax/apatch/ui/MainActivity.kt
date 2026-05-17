@@ -812,77 +812,80 @@ class MainActivity : AppCompatActivity() {
                                 }
                             )
 
-                        if (useNavigationRail) {
-                            Row(modifier = Modifier.fillMaxSize()) {
-                                NavigationRailBar(navController)
-                                CompositionLocalProvider(
-                                    LocalSnackbarHost provides snackBarHostState,
-                                    LocalScrollState provides if (isFloatingMode) ScrollState(
-                                        isScrollingDown = isScrollingDown,
-                                        scrollOffset = scrollOffset,
-                                        previousScrollOffset = previousScrollOffset
-                                    ) else null,
-                                    LocalBottomBarVisible provides bottomBarVisibleState,
-                                    LocalIsFloatingNavMode provides isFloatingMode
-                                ) {
-                                    // 直接写，不要变量！
-                                  Box {
-                                        BackHandler {
-                                             val current = navController.currentBackStackEntryAsState().value?.destination?.route
-                                             val home = BottomBarDestination.entries.first().direction.route
-                                             if (current == home) {
-                                                 moveTaskToBack(false)
-                                             } else if (current in bottomBarRoutes) {
-                                                 navController.navigate(home) {
-                                                     launchSingleTop = true
-                                                     restoreState = true
-                                                 }
-                                             }
-                                        }
-                                        DestinationsNavHost(
-                                            modifier = Modifier.weight(1f).then(baseContentModifier),
-                                            navGraph = NavGraphs.root,
-                                            navController = navController,
-                                            engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
-                                            defaultTransitions = navTransitions
-                                        )
-                                    }
-                                }
-                            }
-                        } else {
-                            CompositionLocalProvider(
-                                LocalSnackbarHost provides snackBarHostState,
-                                LocalScrollState provides if (isFloatingMode) ScrollState(
-                                    isScrollingDown = isScrollingDown,
-                                    scrollOffset = scrollOffset,
-                                    previousScrollOffset = previousScrollOffset
-                                ) else null,
-                                LocalBottomBarVisible provides bottomBarVisibleState,
-                                LocalIsFloatingNavMode provides isFloatingMode
-                            ) {
-                               Box {
-                                    BackHandler {
-                                         val current = navController.currentBackStackEntryAsState().value?.destination?.route
-                                         val home = BottomBarDestination.entries.first().direction.route
-                                         if (current == home) {
-                                             moveTaskToBack(false)
-                                         } else if (current in bottomBarRoutes) {
-                                             navController.navigate(home) {
-                                                 launchSingleTop = true
-                                                 restoreState = true
-                                             }
-                                         }
-                                    }
-                                    DestinationsNavHost(
-                                        modifier = Modifier.fillMaxSize().then(baseContentModifier),
-                                        navGraph = NavGraphs.root,
-                                        navController = navController,
-                                        engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
-                                        defaultTransitions = navTransitions
-                                    )
-                               }
-                            }
-                        }
+			if (useNavigationRail) {
+			    Row(modifier = Modifier.fillMaxSize()) {
+			        NavigationRailBar(navController)
+
+			        // 重点：这里不能用普通 Box！必须用 Row 内的 Box + 权重
+			        Box(Modifier.weight(1f)) {
+			            CompositionLocalProvider(
+			                LocalSnackbarHost provides snackBarHostState,
+			                LocalScrollState provides if (isFloatingMode) ScrollState(
+			                    isScrollingDown = isScrollingDown,
+			                    scrollOffset = scrollOffset,
+			                    previousScrollOffset = previousScrollOffset
+			                ) else null,
+			                LocalBottomBarVisible provides bottomBarVisibleState,
+			                LocalIsFloatingNavMode provides isFloatingMode
+			            ) {
+			                BackHandler {
+			                    val current = navController.currentBackStackEntryAsState().value?.destination?.route
+			                    val home = BottomBarDestination.entries.first().direction.route
+			                    if (current == home) {
+			                        moveTaskToBack(false)
+			                    } else if (current in bottomBarRoutes) {
+			                        navController.navigate(home) {
+			                            launchSingleTop = true
+			                            restoreState = true
+			                        }
+			                    }
+			                }
+
+			                DestinationsNavHost(
+			                    modifier = Modifier.fillMaxSize().then(baseContentModifier),
+			                    navGraph = NavGraphs.root,
+			                    navController = navController,
+			                    engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
+			                    defaultTransitions = navTransitions
+			                )
+			            }
+			        }
+			    }
+			} else {
+			    CompositionLocalProvider(
+			        LocalSnackbarHost provides snackBarHostState,
+			        LocalScrollState provides if (isFloatingMode) ScrollState(
+			            isScrollingDown = isScrollingDown,
+			            scrollOffset = scrollOffset,
+			            previousScrollOffset = previousScrollOffset
+			        ) else null,
+			        LocalBottomBarVisible provides bottomBarVisibleState,
+			        LocalIsFloatingNavMode provides isFloatingMode
+			    ) {
+			        Box(Modifier.fillMaxSize()) {
+			            BackHandler {
+			                val current = navController.currentBackStackEntryAsState().value?.destination?.route
+			                val home = BottomBarDestination.entries.first().direction.route
+			                if (current == home) {
+			                    moveTaskToBack(false)
+			                } else if (current in bottomBarRoutes) {
+			                    navController.navigate(home) {
+			                        launchSingleTop = true
+			                        restoreState = true
+			                    }
+			                }
+			            }
+
+			            DestinationsNavHost(
+			                modifier = Modifier.fillMaxSize().then(baseContentModifier),
+			                navGraph = NavGraphs.root,
+			                navController = navController,
+			                engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
+			                defaultTransitions = navTransitions
+			            )
+			        }
+			    }
+			}
 
                         if (!useNavigationRail) {
                             if (isFloatingMode) {
