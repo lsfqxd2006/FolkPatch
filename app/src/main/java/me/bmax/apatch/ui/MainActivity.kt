@@ -983,15 +983,17 @@ private fun BottomBar(
         val activity = LocalContext.current as ComponentActivity
 
         BackHandler(enabled = isOnTabPage) {
+            android.util.Log.d("BottomBar", "BackHandler triggered, currentRoute=$currentRoute, homeTabRoute=$homeTabRoute")
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
-                // 显示导航栏（如果处于隐藏状态）
+                android.util.Log.d("BottomBar", "Calling onUserInteraction, isFloating=$isFloating")
                 onUserInteraction?.invoke()
-                // 先清空回退栈，再导航到主页
+                android.util.Log.d("BottomBar", "After onUserInteraction")
                 navController.popBackStack(NavGraphs.root.route, inclusive = true)
                 navController.navigate(homeTabRoute) {
                     launchSingleTop = true
                 }
             } else {
+                android.util.Log.d("BottomBar", "Moving to back")
                 activity.moveTaskToBack(false)
             }
         }
