@@ -981,17 +981,13 @@ private fun BottomBar(
         }
         val isOnTabPage = currentRoute in allTabRoutes
         val activity = LocalContext.current as ComponentActivity
-        val navigator = navController.rememberDestinationsNavigator()
 
         BackHandler(enabled = isOnTabPage) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
-                // 使用与点击 tab 完全相同的导航方式
-                navigator.navigate(homeTabRoute) {
-                    popUpTo(NavGraphs.root) {
-                        saveState = true
-                    }
+                // 先清空回退栈，再导航到主页
+                navController.popBackStack(NavGraphs.root.route, inclusive = true)
+                navController.navigate(homeTabRoute) {
                     launchSingleTop = true
-                    restoreState = true
                 }
             } else {
                 activity.moveTaskToBack(false)
@@ -1497,17 +1493,13 @@ private fun NavigationRailBar(navController: NavHostController) {
         }
         val isOnTabPage = currentRoute in allTabRoutes
         val activity = LocalContext.current as ComponentActivity
-        val navigator = navController.rememberDestinationsNavigator()
 
         BackHandler(enabled = isOnTabPage) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
-                // 使用与点击 tab 完全相同的导航方式
-                navigator.navigate(homeTabRoute) {
-                    popUpTo(NavGraphs.root) {
-                        saveState = true
-                    }
+                // 先清空回退栈，再导航到主页
+                navController.popBackStack(NavGraphs.root.route, inclusive = true)
+                navController.navigate(homeTabRoute) {
                     launchSingleTop = true
-                    restoreState = true
                 }
             } else {
                 activity.moveTaskToBack(false)
