@@ -823,22 +823,20 @@ class MainActivity : AppCompatActivity() {
                                     LocalBottomBarVisible provides bottomBarVisibleState,
                                     LocalIsFloatingNavMode provides isFloatingMode
                                 ) {
+                                    // 直接写，不要变量！
                                     BackHandler {
-                                        // 实时拿路由，不写死
-                                        val current = navController.currentBackStackEntryAsState().value?.destination?.route
-                                        val home = BottomBarDestination.entries.first().direction.route
-                                    
-                                        if (current == home) {
-                                            moveTaskToBack(false) // 主页：退后台
-                                        } else if (current in bottomBarRoutes) {
-                                            navController.navigate(home) {
-                                                launchSingleTop = true
-                                                restoreState = true
-                                            }
-                                        }
-                                        // 二级页面：不拦截，系统预测返回正常
+                                         val current = navController.currentBackStackEntryAsState().value?.destination?.route
+                                         val home = BottomBarDestination.entries.first().direction.route
+                                         if (current == home) {
+                                             moveTaskToBack(false)
+                                         } else if (current in bottomBarRoutes) {
+                                             navController.navigate(home) {
+                                                 launchSingleTop = true
+                                                 restoreState = true
+                                             }
+                                         }
                                     }
-
+                        
                                     DestinationsNavHost(
                                         modifier = Modifier.weight(1f).then(baseContentModifier),
                                         navGraph = NavGraphs.root,
@@ -860,19 +858,16 @@ class MainActivity : AppCompatActivity() {
                                 LocalIsFloatingNavMode provides isFloatingMode
                             ) {
                                 BackHandler {
-                                    // 实时拿路由，不写死
-                                    val current = navController.currentBackStackEntryAsState().value?.destination?.route
-                                    val home = BottomBarDestination.entries.first().direction.route
-                                
-                                    if (current == home) {
-                                        moveTaskToBack(false) // 主页：退后台
-                                    } else if (current in bottomBarRoutes) {
-                                        navController.navigate(home) {
-                                            launchSingleTop = true
-                                            restoreState = true
-                                        }
-                                    }
-                                    // 二级页面：不拦截，系统预测返回正常
+                                     val current = navController.currentBackStackEntryAsState().value?.destination?.route
+                                     val home = BottomBarDestination.entries.first().direction.route
+                                     if (current == home) {
+                                         moveTaskToBack(false)
+                                     } else if (current in bottomBarRoutes) {
+                                         navController.navigate(home) {
+                                             launchSingleTop = true
+                                             restoreState = true
+                                         }
+                                     }
                                 }
 
                                 DestinationsNavHost(
