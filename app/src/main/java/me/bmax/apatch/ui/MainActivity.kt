@@ -170,6 +170,8 @@ import me.bmax.apatch.util.ui.navBarLiquefiable
 import me.bmax.apatch.util.ui.rememberNavBarGlassLiquidState
 import me.bmax.apatch.util.ui.isRealTimeBlurAvailable
 import me.bmax.apatch.util.ui.showToast
+import androidx.activity.compose.BackHandler
+import androidx.activity.ComponentActivity
 
 data class ScrollState(
     val isScrollingDown: MutableState<Boolean>,
@@ -237,30 +239,6 @@ class MainActivity : AppCompatActivity() {
     private var startupSoundPlayed = false
     private var pendingActionModuleId by mutableStateOf<String?>(null)
     private var pendingScriptId by mutableStateOf<String?>(null)
-    // 添加这个成员变量
-    private var onBackPressedCallback: androidx.activity.OnBackPressedCallback? = null
-    //添加这个方法
-    fun setBackToFirstTabHandler(navController: NavHostController, bottomBarRoutes: Set<String>, getFirstTabRoute: () -> String?) {
-        onBackPressedCallback?.remove()
-        onBackPressedCallback = object : androidx.activity.OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                val currentRoute = navController.currentBackStackEntry?.destination?.route
-                if (currentRoute in bottomBarRoutes) {
-                    val firstTabRoute = getFirstTabRoute()
-                    if (firstTabRoute != null && currentRoute != firstTabRoute) {
-                        navController.navigate(firstTabRoute) {
-                            popUpTo(NavGraphs.root) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                        return
-                    }
-                }
-                finish()
-            }
-        }
-        onBackPressedDispatcher.addCallback(this, onBackPressedCallback!!)
-    }
 
     private fun getFileName(context: android.content.Context, uri: Uri): String {
         var result: String? = null
@@ -993,21 +971,14 @@ private fun BottomBar(
                 else -> true
             }
         }
-        val activity = LocalContext.current as? MainActivity
-        LaunchedEffect(visibleDestinations, navController) {
-            activity?.setBackToFirstTabHandler(
-                navController = navController,
-                bottomBarRoutes = setOf(
-                    BottomBarDestination.SuperUser.direction.route,
-                    BottomBarDestination.AModule.direction.route,
-                    BottomBarDestination.KModule.direction.route
-                ),
-                getFirstTabRoute = { visibleDestinations.firstOrNull()?.direction?.route }
-            )
-        }
+
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
-
+        TabBackHandler(
+            navController = navController,
+            visibleDestinations = visibleDestinations,
+            currentRoute = currentRoute
+        )
         val isOnBackStack = visibleDestinations.map { destination ->
             navController.isRouteOnBackStackAsState(destination.direction).value
         }
@@ -1498,21 +1469,14 @@ private fun NavigationRailBar(navController: NavHostController) {
                 else -> true
             }
         }
-        val activity = LocalContext.current as? MainActivity
-        LaunchedEffect(visibleDestinations, navController) {
-            activity?.setBackToFirstTabHandler(
-                navController = navController,
-                bottomBarRoutes = setOf(
-                    BottomBarDestination.SuperUser.direction.route,
-                    BottomBarDestination.AModule.direction.route,
-                    BottomBarDestination.KModule.direction.route
-                ),
-                getFirstTabRoute = { visibleDestinations.firstOrNull()?.direction?.route }
-            )
-        }
+
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
-
+        TabBackHandler(
+            navController = navController,
+            visibleDestinations = visibleDestinations,
+            currentRoute = currentRoute
+        )
         val isOnBackStack = visibleDestinations.map { destination ->
             navController.isRouteOnBackStackAsState(destination.direction).value
         }
@@ -1599,7 +1563,39 @@ private fun NavigationRailBar(navController: NavHostController) {
         }
     }
 }
+@Composable
+private fun TabBackHandler(
+    navController: NavHostController,
+    visibleDestinations: List<BottomBarDestination>,
+    currentRoute: String?
+) {
+    // 获取第一个可见 tab 的路由（主页）
+    val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
+    
+    // 所有可见 tab 页面的路由集合
+    val allTabRoutes = remember(visibleDestinations) {
+        visibleDestinations.map { it.direction.route }.toSet()
+    }
+    
+    // 只在当前页面是可见 tab 页面时启用返回拦截
+    val isOnTabPage = currentRoute in allTabRoutes
 
+    BackHandler(enabled = isOnTabPage) {
+        if (homeTabRoute != null && currentRoute != homeTabRoute) {
+            // 不在主页 tab，跳转到主页 tab
+            navController.navigate(homeTabRoute) {
+                popUpTo(NavGraphs.root) { 
+                    saveState = true 
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        } else {
+            // 已在主页 tab，退出应用到桌面
+            (LocalContext.current as ComponentActivity).moveTaskToBack(false)
+        }
+    }
+}
 private fun createNavTransitions(
     folkXEngineEnabled: Boolean,
     folkXAnimationType: String?,
