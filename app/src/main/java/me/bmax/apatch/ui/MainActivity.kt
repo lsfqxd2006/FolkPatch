@@ -979,6 +979,7 @@ private fun BottomBar(
             visibleDestinations.map { it.direction.route }.toSet()
         }
         val isOnTabPage = currentRoute in allTabRoutes
+        val activity = LocalContext.current as ComponentActivity  // ← 提前获取
 
         BackHandler(enabled = isOnTabPage) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
@@ -990,7 +991,7 @@ private fun BottomBar(
                     restoreState = true
                 }
             } else {
-                (LocalContext.current as ComponentActivity).moveTaskToBack(false)
+                activity.moveTaskToBack(false)
             }
         }
         val isOnBackStack = visibleDestinations.map { destination ->
@@ -1491,6 +1492,7 @@ private fun NavigationRailBar(navController: NavHostController) {
             visibleDestinations.map { it.direction.route }.toSet()
         }
         val isOnTabPage = currentRoute in allTabRoutes
+        val activity = LocalContext.current as ComponentActivity  // ← 提前获取
 
         BackHandler(enabled = isOnTabPage) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
@@ -1502,7 +1504,7 @@ private fun NavigationRailBar(navController: NavHostController) {
                     restoreState = true
                 }
             } else {
-                (LocalContext.current as ComponentActivity).moveTaskToBack(false)
+                activity.moveTaskToBack(false)
             }
         }
         val isOnBackStack = visibleDestinations.map { destination ->
