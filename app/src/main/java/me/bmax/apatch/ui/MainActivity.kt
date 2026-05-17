@@ -984,16 +984,9 @@ private fun BottomBar(
 
         BackHandler(enabled = isOnTabPage) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
-                // 不在主页 tab，跳转到主页 tab（简化版，避免序列化崩溃）
-                navController.navigate(homeTabRoute) {
-                    launchSingleTop = true
-                    // 清除回退栈到根，但使用更安全的方式
-                    popUpTo(NavGraphs.root) {
-                        inclusive = false
-                    }
-                }
+                // 最简跳转，避免序列化问题
+                navController.navigate(homeTabRoute)
             } else {
-                // 已在主页 tab，退出应用到桌面
                 activity.moveTaskToBack(false)
             }
         }
@@ -1500,16 +1493,9 @@ private fun NavigationRailBar(navController: NavHostController) {
 
         BackHandler(enabled = isOnTabPage) {
             if (homeTabRoute != null && currentRoute != homeTabRoute) {
-                // 不在主页 tab，跳转到主页 tab（简化版，避免序列化崩溃）
-                navController.navigate(homeTabRoute) {
-                    launchSingleTop = true
-                    // 清除回退栈到根，但使用更安全的方式
-                    popUpTo(NavGraphs.root) {
-                        inclusive = false
-                    }
-                }
+                // 最简跳转，避免序列化问题
+                navController.navigate(homeTabRoute)
             } else {
-                // 已在主页 tab，退出应用到桌面
                 activity.moveTaskToBack(false)
             }
         }
