@@ -859,10 +859,24 @@ class MainActivity : AppCompatActivity() {
                         if (!useNavigationRail) {
                             if (isFloatingMode) {
                                 val currentRouteForBack = navController.currentBackStackEntry?.destination?.route
-                                val homeRoute = BottomBarDestination.SuperUser.direction.route
                                 
-                                // bottomBarRoutes 包含所有一级 tab（SuperUser、APM、KPM、设置等）
-                                val isOnTabPage = currentRouteForBack in bottomBarRoutes
+                                // 动态获取第一个可见的 tab 作为主页（与 BottomBar 内部逻辑一致）
+                                val kPatchReadyForBack = state != APApplication.State.UNKNOWN_STATE
+                                val aPatchReadyForBack = state == APApplication.State.ANDROIDPATCH_INSTALLED
+                                val visibleDestinationsForBack = BottomBarDestination.entries.filter { destination ->
+                                    when {
+                                        destination == BottomBarDestination.AModule && !showNavApm -> false
+                                        destination == BottomBarDestination.KModule && !showNavKpm -> false
+                                        destination == BottomBarDestination.SuperUser && !showNavSuperUser -> false
+                                        (destination.kPatchRequired && !kPatchReadyForBack) || (destination.aPatchRequired && !aPatchReadyForBack) -> false
+                                        else -> true
+                                    }
+                                }
+                                val homeRoute = visibleDestinationsForBack.firstOrNull()?.direction?.route ?: BottomBarDestination.SuperUser.direction.route
+                                
+                                // 所有一级 tab 路由（用于判断当前是否在一级页面）
+                                val allTabRoutes = visibleDestinationsForBack.map { it.direction.route }.toSet()
+                                val isOnTabPage = currentRouteForBack in allTabRoutes
                                 val activityForBack = LocalContext.current as ComponentActivity
 
                                 BackHandler(enabled = isOnTabPage) {
