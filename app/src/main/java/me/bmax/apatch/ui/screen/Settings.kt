@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Visibility
@@ -73,6 +74,7 @@ import com.ramcosta.composedestinations.generated.destinations.BackupSettingsScr
 import com.ramcosta.composedestinations.generated.destinations.ModuleSettingsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FunctionSettingsScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.MultimediaSettingsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SettingsSearchScreenDestination
 
 @Destination<RootGraph>
 @Composable
@@ -95,7 +97,13 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { navigator.navigate(FunctionSettingsScreenDestination) }) {
+                    IconButton(onClick = { navigator.navigate(SettingsSearchScreenDestination) }) {
+                        Icon(Icons.Filled.Search, contentDescription = null)
+                    }
+                    IconButton(onClick = { showDevDialog = true }) {
+                        Icon(Icons.Outlined.Info, contentDescription = null)
+                    }
+                    IconButton(onClick = { navigator.navigate(FunctionSettingsScreenDestination(null)) }) {
                         Icon(Icons.Filled.Tune, contentDescription = null)
                     }
                 },
@@ -119,7 +127,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             icon = Icons.Filled.Settings,
                             title = stringResource(R.string.settings_category_general),
                             summary = stringResource(R.string.settings_category_general_summary),
-                            onClick = { navigator.navigate(GeneralSettingsScreenDestination) },
+                            onClick = { navigator.navigate(GeneralSettingsScreenDestination(null)) },
                         )
                     }
                     item {
@@ -127,7 +135,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             icon = Icons.Filled.Palette,
                             title = stringResource(R.string.settings_category_appearance),
                             summary = stringResource(R.string.settings_category_appearance_summary),
-                            onClick = { navigator.navigate(AppearanceSettingsScreenDestination) },
+                            onClick = { navigator.navigate(AppearanceSettingsScreenDestination(null)) },
                         )
                     }
                     item {
@@ -135,7 +143,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             icon = Icons.Filled.Visibility,
                             title = stringResource(R.string.settings_category_behavior),
                             summary = stringResource(R.string.settings_category_behavior_summary),
-                            onClick = { navigator.navigate(BehaviorSettingsScreenDestination) },
+                            onClick = { navigator.navigate(BehaviorSettingsScreenDestination(null)) },
                         )
                     }
                     item {
@@ -143,7 +151,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             icon = Icons.Filled.Security,
                             title = stringResource(R.string.settings_category_security),
                             summary = stringResource(R.string.settings_category_security_summary),
-                            onClick = { navigator.navigate(SecuritySettingsScreenDestination) },
+                            onClick = { navigator.navigate(SecuritySettingsScreenDestination(null)) },
                         )
                     }
                     item(visible = aPatchReady) {
@@ -151,7 +159,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             icon = Icons.Filled.Cloud,
                             title = stringResource(R.string.settings_category_backup),
                             summary = stringResource(R.string.settings_category_backup_summary),
-                            onClick = { navigator.navigate(BackupSettingsScreenDestination) },
+                            onClick = { navigator.navigate(BackupSettingsScreenDestination(null)) },
                         )
                     }
                     item(visible = aPatchReady) {
@@ -159,7 +167,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             icon = Icons.Filled.Extension,
                             title = stringResource(R.string.settings_category_module),
                             summary = stringResource(R.string.settings_category_module_summary),
-                            onClick = { navigator.navigate(ModuleSettingsScreenDestination) },
+                            onClick = { navigator.navigate(ModuleSettingsScreenDestination(null)) },
                         )
                     }
                     item {
@@ -167,7 +175,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             icon = Icons.Filled.MusicNote,
                             title = stringResource(R.string.settings_category_multimedia),
                             summary = stringResource(R.string.settings_category_multimedia_summary),
-                            onClick = { navigator.navigate(MultimediaSettingsScreenDestination) },
+                            onClick = { navigator.navigate(MultimediaSettingsScreenDestination(null)) },
                         )
                     }
                 }

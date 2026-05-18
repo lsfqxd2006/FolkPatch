@@ -37,7 +37,7 @@ import me.bmax.apatch.util.ui.NavigationBarsSpacer
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SecuritySettingsScreen(navigator: DestinationsNavigator) {
+fun SecuritySettingsScreen(navigator: DestinationsNavigator, highlightKey: String? = null) {
     val state by APApplication.apStateLiveData.observeAsState(APApplication.State.UNKNOWN_STATE)
     val kPatchReady = state != APApplication.State.UNKNOWN_STATE
 
@@ -70,6 +70,7 @@ fun SecuritySettingsScreen(navigator: DestinationsNavigator) {
                     snackBarHost = snackBarHost,
                     kPatchReady = kPatchReady,
                     flat = flat,
+                    highlightKey = highlightKey,
                 )
             }
             item { Spacer(Modifier.height(8.dp)) }

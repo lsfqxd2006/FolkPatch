@@ -39,7 +39,7 @@ import me.bmax.apatch.util.ui.NavigationBarsSpacer
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BackupSettingsScreen(navigator: DestinationsNavigator) {
+fun BackupSettingsScreen(navigator: DestinationsNavigator, highlightKey: String? = null) {
     val prefs = APApplication.sharedPreferences
     var autoBackupModule by rememberSaveable { mutableStateOf(prefs.getBoolean("auto_backup_module", false)) }
 
@@ -72,6 +72,7 @@ fun BackupSettingsScreen(navigator: DestinationsNavigator) {
                     autoBackupModule = autoBackupModule,
                     onAutoBackupModuleChange = { autoBackupModule = it },
                     flat = flat,
+                    highlightKey = highlightKey,
                 )
             }
             item { Spacer(Modifier.height(8.dp)) }

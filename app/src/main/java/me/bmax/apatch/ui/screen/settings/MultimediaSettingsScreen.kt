@@ -34,7 +34,7 @@ import me.bmax.apatch.util.ui.NavigationBarsSpacer
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MultimediaSettingsScreen(navigator: DestinationsNavigator) {
+fun MultimediaSettingsScreen(navigator: DestinationsNavigator, highlightKey: String? = null) {
     val snackBarHost = LocalSnackbarHost.current
     val flat = BackgroundConfig.isCustomBackgroundEnabled || BackgroundConfig.settingsBackgroundUri != null
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -63,6 +63,7 @@ fun MultimediaSettingsScreen(navigator: DestinationsNavigator) {
                 MultimediaSettingsContent(
                     snackBarHost = snackBarHost,
                     flat = flat,
+                    highlightKey = highlightKey,
                 )
             }
             item { Spacer(Modifier.height(8.dp)) }

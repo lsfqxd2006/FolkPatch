@@ -47,6 +47,7 @@ fun BehaviorSettingsContent(
     kPatchReady: Boolean,
     aPatchReady: Boolean,
     flat: Boolean = false,
+    highlightKey: String? = null,
 ) {
     val prefs = APApplication.sharedPreferences
 
@@ -63,9 +64,9 @@ fun BehaviorSettingsContent(
         }
     }
 
-    SplicedColumnGroup(flat = flat) {
+    SplicedColumnGroup(flat = flat, highlightKey = highlightKey) {
 
-    item {
+    item(key = "behavior_web_debugging") {
     var enableWebDebugging by remember { mutableStateOf(prefs.getBoolean("enable_web_debugging", false)) }
     ToggleSettingCard(
             flat = flat,
@@ -80,7 +81,7 @@ fun BehaviorSettingsContent(
     )
     }
 
-    item(visible = aPatchReady) {
+    item(key = "behavior_install_confirm", visible = aPatchReady) {
         var installConfirm by remember { mutableStateOf(prefs.getBoolean("apm_install_confirm_enabled", true)) }
         ToggleSettingCard(
             flat = flat,
@@ -95,7 +96,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    item(visible = aPatchReady) {
+    item(key = "behavior_module_shortcut", visible = aPatchReady) {
         var enableModuleShortcutAdd by remember { mutableStateOf(prefs.getBoolean("enable_module_shortcut_add", true)) }
         ToggleSettingCard(
             flat = flat,
@@ -110,7 +111,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    item(visible = aPatchReady) {
+    item(key = "behavior_stay_on_page", visible = aPatchReady) {
         var stayOnPage by remember { mutableStateOf(prefs.getBoolean("apm_action_stay_on_page", true)) }
         ToggleSettingCard(
             flat = flat,
@@ -125,7 +126,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    item(visible = currentStyle != "focus") {
+    item(key = "behavior_hide_apatch_card", visible = currentStyle != "focus") {
         var hideApatchCard by remember { mutableStateOf(prefs.getBoolean("hide_apatch_card", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -140,7 +141,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    item(visible = kPatchReady) {
+    item(key = "behavior_hide_su_path", visible = kPatchReady) {
         var hideSuPath by remember { mutableStateOf(prefs.getBoolean("hide_su_path", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -155,7 +156,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    item(visible = kPatchReady) {
+    item(key = "behavior_hide_kpatch_version", visible = kPatchReady) {
         var hideKpatchVersion by remember { mutableStateOf(prefs.getBoolean("hide_kpatch_version", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -170,7 +171,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    item(visible = kPatchReady) {
+    item(key = "behavior_hide_fingerprint", visible = kPatchReady) {
         var hideFingerprint by remember { mutableStateOf(prefs.getBoolean("hide_fingerprint", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -185,7 +186,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    item(visible = kPatchReady) {
+    item(key = "behavior_hide_zygisk", visible = kPatchReady) {
         var hideZygisk by remember { mutableStateOf(prefs.getBoolean("hide_zygisk", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -200,7 +201,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    item(visible = kPatchReady) {
+    item(key = "behavior_hide_mount", visible = kPatchReady) {
         var hideMount by remember { mutableStateOf(prefs.getBoolean("hide_mount", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -215,7 +216,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    item(visible = kPatchReady) {
+    item(key = "behavior_legacy_su_page", visible = kPatchReady) {
         var useLegacySuPage by remember { mutableStateOf(prefs.getBoolean("use_legacy_su_page", false)) }
         ToggleSettingCard(
             flat = flat,
@@ -230,7 +231,7 @@ fun BehaviorSettingsContent(
         )
     }
 
-    item(visible = kPatchReady) {
+    item(key = "behavior_badge_count", visible = kPatchReady) {
         var enableSuperUserBadge by remember { mutableStateOf(prefs.getBoolean("badge_superuser", true)) }
         var enableApmBadge by remember { mutableStateOf(prefs.getBoolean("badge_apm", true)) }
         var enableKernelBadge by remember { mutableStateOf(prefs.getBoolean("badge_kernel", true)) }

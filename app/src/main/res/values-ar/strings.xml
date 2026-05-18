@@ -1060,4 +1060,8 @@
     <string name="netisolate_uids_label">التطبيقات المحظورة</string>
     <string name="netisolate_uids_hint">أدخل معرّفات UID للحظر (واحد لكل سطر)</string>
     <string name="netisolate_no_uids">لا توجد تطبيقات محظورة</string>
+    <string name="settings_search_title">بحث في الإعدادات</string>
+    <string name="settings_search_hint">البحث في الإعدادات…</string>
+    <string name="settings_search_empty_hint">اكتب للبحث في جميع الإعدادات…</string>
+    <string name="settings_no_results">لا توجد نتائج</string>
 </resources>

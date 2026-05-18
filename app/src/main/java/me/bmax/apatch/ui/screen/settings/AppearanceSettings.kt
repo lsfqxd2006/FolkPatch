@@ -73,6 +73,7 @@ fun AppearanceSettingsContent(
     onNavigateToThemeStore: () -> Unit,
     onNavigateToApiMarketplace: () -> Unit,
     flat: Boolean = false,
+    highlightKey: String? = null,
 ) {
     val prefs = APApplication.sharedPreferences
     val context = LocalContext.current
@@ -279,9 +280,9 @@ fun AppearanceSettingsContent(
 
     Column(modifier = Modifier.fillMaxWidth()) {
 
-        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_night_mode), flat = flat) {
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_night_mode), flat = flat, highlightKey = highlightKey) {
             if (isNightModeSupported) {
-                item {
+                item(key = "appearance_theme_mode") {
                     ThemeModeSelector(
                         selectedMode = themeMode,
                         onModeSelected = { mode ->
@@ -309,7 +310,7 @@ fun AppearanceSettingsContent(
                 }
             }
 
-            item {
+            item(key = "appearance_theme_color") {
                 ThemeColorPicker(
                     selectedColorKey = customColorScheme ?: "indigo",
                     onColorSelected = { key ->
@@ -332,7 +333,7 @@ fun AppearanceSettingsContent(
             }
 
             if (isDarkTheme) {
-                item {
+                item(key = "appearance_amoled_theme") {
                     val isWallpaperEnabled = BackgroundConfig.isCustomBackgroundEnabled
                     Row(
                         modifier = Modifier
@@ -382,7 +383,7 @@ fun AppearanceSettingsContent(
                 }
             }
 
-            item {
+            item(key = "appearance_switch_icon") {
                 var showSwitchIcon by remember { mutableStateOf(SwitchIconState.showIcon) }
                 ToggleSettingCard(
                     icon = Icons.Filled.ToggleOn,
@@ -399,8 +400,8 @@ fun AppearanceSettingsContent(
             }
         }
 
-        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_layout), flat = flat) {
-            item {
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_layout), flat = flat, highlightKey = highlightKey) {
+            item(key = "appearance_home_layout") {
                 ExpressiveCard(flat = flat, onClick = { showHomeLayoutChooseDialog.value = true }) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -425,7 +426,7 @@ fun AppearanceSettingsContent(
                 }
             }
 
-            item(visible = isStatsLayout) {
+            item(key = "appearance_stats_top_layout", visible = isStatsLayout) {
                 ExpressiveCard(flat = flat, onClick = { showStatsTopLayoutDialog = true }) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -451,7 +452,7 @@ fun AppearanceSettingsContent(
             }
 
             if (kPatchReady) {
-                item {
+                item(key = "appearance_nav_layout") {
                     var expanded by remember { mutableStateOf(false) }
                     val rotationState by animateFloatAsState(
                         targetValue = if (expanded) 180f else 0f,
@@ -522,7 +523,7 @@ fun AppearanceSettingsContent(
                 }
             }
 
-            item {
+            item(key = "appearance_nav_scheme") {
                 ExpressiveCard(flat = flat, onClick = { showNavSchemeDialog = true }) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -548,7 +549,7 @@ fun AppearanceSettingsContent(
             }
 
             if (isFloatingNav) {
-                item {
+                item(key = "appearance_navbar_glass") {
                     ToggleSettingCard(
                         flat = flat,
                         icon = Icons.Filled.AutoAwesome,
@@ -563,7 +564,7 @@ fun AppearanceSettingsContent(
                 }
 
                 if (BackgroundConfig.isNavBarGlassEnabled) {
-                    item {
+                    item(key = "appearance_navbar_glass_blur") {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                 Text(
@@ -585,7 +586,7 @@ fun AppearanceSettingsContent(
                         }
                     }
 
-                    item {
+                    item(key = "appearance_navbar_glass_transparency") {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                 Text(
@@ -607,7 +608,7 @@ fun AppearanceSettingsContent(
                         }
                     }
 
-                    item {
+                    item(key = "appearance_navbar_glass_highlight") {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                 Text(
@@ -629,7 +630,7 @@ fun AppearanceSettingsContent(
                         }
                     }
 
-                    item {
+                    item(key = "appearance_navbar_glass_specular") {
                         ToggleSettingCard(
                             flat = flat,
                             icon = Icons.Filled.LensBlur,
@@ -643,7 +644,7 @@ fun AppearanceSettingsContent(
                         )
                     }
 
-                    item {
+                    item(key = "appearance_navbar_glass_glow") {
                         ToggleSettingCard(
                             flat = flat,
                             icon = Icons.Filled.Grain,
@@ -657,7 +658,7 @@ fun AppearanceSettingsContent(
                         )
                     }
 
-                    item {
+                    item(key = "appearance_navbar_glass_border") {
                         ToggleSettingCard(
                             flat = flat,
                             icon = Icons.Filled.BorderStyle,
@@ -672,7 +673,7 @@ fun AppearanceSettingsContent(
                     }
                 }
 
-                item {
+                item(key = "appearance_floating_auto_hide") {
                     ToggleSettingCard(
                         flat = flat,
                         icon = Icons.Filled.VisibilityOff,
@@ -686,7 +687,7 @@ fun AppearanceSettingsContent(
                     )
                 }
 
-                item {
+                item(key = "appearance_floating_swipe_hide") {
                     ToggleSettingCard(
                         flat = flat,
                         icon = Icons.Filled.Swipe,
@@ -701,7 +702,7 @@ fun AppearanceSettingsContent(
                 }
             }
 
-            item(visible = isListStyle) {
+            item(key = "appearance_list_card_badge", visible = isListStyle) {
                 ToggleSettingCard(
                     flat = flat,
                     icon = Icons.Filled.LabelOff,
@@ -715,7 +716,7 @@ fun AppearanceSettingsContent(
                 )
             }
 
-            item(visible = isListStyle && !BackgroundConfig.isListWorkingCardModeHidden) {
+            item(key = "appearance_custom_badge_text_list", visible = isListStyle && !BackgroundConfig.isListWorkingCardModeHidden) {
                 ExpressiveCard(flat = flat, onClick = { showCustomBadgeTextDialog.value = true }) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -740,7 +741,7 @@ fun AppearanceSettingsContent(
                 }
             }
 
-            item {
+            item(key = "appearance_advanced_title") {
                 ToggleSettingCard(
                     flat = flat,
                     icon = Icons.Filled.Title,
@@ -756,7 +757,7 @@ fun AppearanceSettingsContent(
             }
 
             if (BackgroundConfig.isAdvancedTitleStyleEnabled) {
-                item {
+                item(key = "appearance_title_day_opacity") {
                     ExpressiveCard(flat = flat) {
                         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                             Text(text = stringResource(id = R.string.settings_title_image_day_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -774,7 +775,7 @@ fun AppearanceSettingsContent(
                     }
                 }
 
-                item {
+                item(key = "appearance_title_night_opacity") {
                     ExpressiveCard(flat = flat) {
                         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                             Text(text = stringResource(id = R.string.settings_title_image_night_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -792,7 +793,7 @@ fun AppearanceSettingsContent(
                     }
                 }
 
-                item {
+                item(key = "appearance_title_image_dim") {
                     ExpressiveCard(flat = flat) {
                         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                             Text(text = stringResource(id = R.string.settings_title_image_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -810,7 +811,7 @@ fun AppearanceSettingsContent(
                     }
                 }
 
-                item {
+                item(key = "appearance_title_image_offset_x") {
                     ExpressiveCard(flat = flat) {
                         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                             Text(text = stringResource(id = R.string.settings_title_image_offset_x), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -828,7 +829,7 @@ fun AppearanceSettingsContent(
                     }
                 }
 
-                item {
+                item(key = "appearance_select_title_image") {
                     ExpressiveCard(
                         flat = flat,
                         onClick = {
@@ -861,7 +862,7 @@ fun AppearanceSettingsContent(
                 }
 
                 if (!BackgroundConfig.titleImageUri.isNullOrEmpty()) {
-                    item {
+                    item(key = "appearance_clear_title_image") {
                         val clearTitleImageDialog = rememberConfirmDialog(
                             onConfirm = {
                                 scope.launch {
@@ -897,8 +898,8 @@ fun AppearanceSettingsContent(
             }
         }
 
-        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_background), flat = flat) {
-            item {
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_background), flat = flat, highlightKey = highlightKey) {
+            item(key = "appearance_custom_background") {
                 ToggleSettingCard(
                     flat = flat,
                     icon = Icons.Filled.Wallpaper,
@@ -915,7 +916,7 @@ fun AppearanceSettingsContent(
 
             if (BackgroundConfig.isCustomBackgroundEnabled) {
                 if (!BackgroundConfig.isVideoBackgroundEnabled) {
-                    item {
+                    item(key = "appearance_bg_dual_dim") {
                         ToggleSettingCard(
                             flat = flat,
                             icon = Icons.Filled.Contrast,
@@ -930,7 +931,7 @@ fun AppearanceSettingsContent(
                         )
                     }
 
-                    item {
+                    item(key = "appearance_bg_opacity") {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                 Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -948,7 +949,7 @@ fun AppearanceSettingsContent(
                         }
                     }
 
-                    item {
+                    item(key = "appearance_bg_blur") {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                 Text(text = stringResource(id = R.string.settings_custom_background_blur), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -967,7 +968,7 @@ fun AppearanceSettingsContent(
                     }
 
                     if (!BackgroundConfig.isDualBackgroundDimEnabled) {
-                        item {
+                        item(key = "appearance_bg_dim") {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                     Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -985,7 +986,7 @@ fun AppearanceSettingsContent(
                             }
                         }
                     } else {
-                        item {
+                        item(key = "appearance_bg_day_dim") {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                     Text(text = stringResource(id = R.string.settings_custom_background_day_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -1003,7 +1004,7 @@ fun AppearanceSettingsContent(
                             }
                         }
 
-                        item {
+                        item(key = "appearance_bg_night_dim") {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                     Text(text = stringResource(id = R.string.settings_custom_background_night_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -1023,7 +1024,7 @@ fun AppearanceSettingsContent(
                     }
                 }
 
-                item {
+                item(key = "appearance_video_background") {
                     ToggleSettingCard(
                         flat = flat,
                         icon = Icons.Filled.VideoFile,
@@ -1039,7 +1040,7 @@ fun AppearanceSettingsContent(
                 }
 
                 if (BackgroundConfig.isVideoBackgroundEnabled) {
-                    item {
+                    item(key = "appearance_select_video") {
                         ExpressiveCard(
                             flat = flat,
                             onClick = {
@@ -1068,7 +1069,7 @@ fun AppearanceSettingsContent(
                     }
 
                     if (!BackgroundConfig.videoBackgroundUri.isNullOrEmpty()) {
-                        item {
+                        item(key = "appearance_clear_video") {
                             val clearVideoDialog = rememberConfirmDialog(
                                 onConfirm = {
                                     scope.launch {
@@ -1104,7 +1105,7 @@ fun AppearanceSettingsContent(
                         }
                     }
 
-                    item {
+                    item(key = "appearance_video_volume") {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                 Text(text = stringResource(id = R.string.settings_video_volume), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -1122,7 +1123,7 @@ fun AppearanceSettingsContent(
                         }
                     }
                 } else {
-                    item {
+                    item(key = "appearance_multi_background") {
                         ToggleSettingCard(
                             flat = flat,
                             icon = Icons.Filled.GridView,
@@ -1138,7 +1139,7 @@ fun AppearanceSettingsContent(
                     }
 
                     if (BackgroundConfig.isMultiBackgroundEnabled) {
-                        item {
+                        item(key = "appearance_multi_background_select") {
                             val multiItems = listOf(
                                 Triple(R.string.settings_select_home_background, "home", BackgroundConfig.homeBackgroundUri),
                                 Triple(R.string.settings_select_kernel_background, "kernel", BackgroundConfig.kernelBackgroundUri),
@@ -1183,7 +1184,7 @@ fun AppearanceSettingsContent(
                             }
                         }
                     } else {
-                        item {
+                        item(key = "appearance_select_background") {
                             ExpressiveCard(
                                 flat = flat,
                                 onClick = {
@@ -1218,7 +1219,7 @@ fun AppearanceSettingsContent(
                         }
 
                         if (!BackgroundConfig.customBackgroundUri.isNullOrEmpty()) {
-                            item {
+                            item(key = "appearance_clear_background") {
                                 val clearBackgroundDialog = rememberConfirmDialog(
                                     onConfirm = {
                                         scope.launch {
@@ -1258,7 +1259,7 @@ fun AppearanceSettingsContent(
             }
 
             if (showGridCardSettings) {
-                item {
+                item(key = "appearance_grid_card_bg") {
                     ToggleSettingCard(
                         flat = flat,
                         icon = Icons.Filled.GridView,
@@ -1273,7 +1274,7 @@ fun AppearanceSettingsContent(
                 }
 
                 if (BackgroundConfig.isGridWorkingCardBackgroundEnabled) {
-                    item {
+                    item(key = "appearance_grid_dual_opacity") {
                         ToggleSettingCard(
                             flat = flat,
                             icon = Icons.Filled.Contrast,
@@ -1288,7 +1289,7 @@ fun AppearanceSettingsContent(
                     }
 
                     if (!BackgroundConfig.isGridDualOpacityEnabled) {
-                        item {
+                        item(key = "appearance_grid_opacity") {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                     Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -1306,7 +1307,7 @@ fun AppearanceSettingsContent(
                             }
                         }
                     } else {
-                        item {
+                        item(key = "appearance_grid_day_opacity") {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                     Text(text = stringResource(id = R.string.settings_grid_working_card_day_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -1324,7 +1325,7 @@ fun AppearanceSettingsContent(
                             }
                         }
 
-                        item {
+                        item(key = "appearance_grid_night_opacity") {
                             ExpressiveCard(flat = flat) {
                                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                     Text(text = stringResource(id = R.string.settings_grid_working_card_night_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -1343,7 +1344,7 @@ fun AppearanceSettingsContent(
                         }
                     }
 
-                    item {
+                    item(key = "appearance_grid_dim") {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                 Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -1361,7 +1362,7 @@ fun AppearanceSettingsContent(
                         }
                     }
 
-                    item {
+                    item(key = "appearance_grid_select_image") {
                         ExpressiveCard(
                             flat = flat,
                             onClick = {
@@ -1393,7 +1394,7 @@ fun AppearanceSettingsContent(
                         }
                     }
 
-                    item {
+                    item(key = "appearance_grid_clear_image") {
                         val clearGridBackgroundDialog = rememberConfirmDialog(
                             onConfirm = {
                                 scope.launch {
@@ -1426,7 +1427,7 @@ fun AppearanceSettingsContent(
                     }
                 }
 
-                item {
+                item(key = "appearance_grid_card_check") {
                     ToggleSettingCard(
                         flat = flat,
                         icon = Icons.Filled.CheckCircle,
@@ -1440,7 +1441,7 @@ fun AppearanceSettingsContent(
                     )
                 }
 
-                item {
+                item(key = "appearance_grid_card_text") {
                     ToggleSettingCard(
                         flat = flat,
                         icon = Icons.Filled.TextFields,
@@ -1454,7 +1455,7 @@ fun AppearanceSettingsContent(
                     )
                 }
 
-                item {
+                item(key = "appearance_grid_card_mode") {
                     ToggleSettingCard(
                         flat = flat,
                         icon = Icons.Filled.Label,
@@ -1468,7 +1469,7 @@ fun AppearanceSettingsContent(
                     )
                 }
 
-                item(visible = !BackgroundConfig.isGridWorkingCardModeHidden) {
+                item(key = "appearance_grid_badge_text", visible = !BackgroundConfig.isGridWorkingCardModeHidden) {
                     ExpressiveCard(flat = flat, onClick = { showCustomBadgeTextDialog.value = true }) {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -1536,8 +1537,8 @@ fun AppearanceSettingsContent(
             )
         }
 
-        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_banner), flat = flat) {
-            item {
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_banner), flat = flat, highlightKey = highlightKey) {
+            item(key = "appearance_banner") {
                 ToggleSettingCard(
                     flat = flat,
                     icon = Icons.Filled.Campaign,
@@ -1552,7 +1553,7 @@ fun AppearanceSettingsContent(
             }
 
             if (BackgroundConfig.isBannerEnabled) {
-                item {
+                item(key = "appearance_folk_banner") {
                     ToggleSettingCard(
                         flat = flat,
                         icon = Icons.Filled.Image,
@@ -1567,7 +1568,7 @@ fun AppearanceSettingsContent(
                 }
 
                 if (BackgroundConfig.isFolkBannerEnabled) {
-                    item {
+                    item(key = "appearance_banner_api_mode") {
                         ToggleSettingCard(
                             flat = flat,
                             icon = Icons.Filled.Api,
@@ -1582,7 +1583,7 @@ fun AppearanceSettingsContent(
                     }
 
                     if (BackgroundConfig.isBannerApiModeEnabled) {
-                        item {
+                        item(key = "appearance_banner_api_source") {
                             val showBannerApiConfigDialog = remember { mutableStateOf(false) }
                             val apiSourceSummary = if (BackgroundConfig.bannerApiSource.isNotBlank()) {
                                 if (BackgroundConfig.bannerApiSource.startsWith("/")) {
@@ -1656,7 +1657,7 @@ fun AppearanceSettingsContent(
                     }
                 }
 
-                item {
+                item(key = "appearance_banner_opacity") {
                     ToggleSettingCard(
                         flat = flat,
                         icon = Icons.Filled.Opacity,
@@ -1671,7 +1672,7 @@ fun AppearanceSettingsContent(
                 }
 
                 if (BackgroundConfig.isBannerCustomOpacityEnabled) {
-                    item {
+                    item(key = "appearance_banner_opacity_slider") {
                         ExpressiveCard(flat = flat) {
                             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                                 Text(text = stringResource(id = R.string.settings_banner_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -1692,8 +1693,8 @@ fun AppearanceSettingsContent(
             }
         }
 
-        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_font), flat = flat) {
-            item {
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_font), flat = flat, highlightKey = highlightKey) {
+            item(key = "appearance_custom_font") {
                 ToggleSettingCard(
                     flat = flat,
                     icon = Icons.Filled.FormatSize,
@@ -1714,7 +1715,7 @@ fun AppearanceSettingsContent(
             }
 
             if (FontConfig.isCustomFontEnabled) {
-                item {
+                item(key = "appearance_select_font") {
                     ExpressiveCard(
                         flat = flat,
                         onClick = {
@@ -1737,7 +1738,7 @@ fun AppearanceSettingsContent(
                 }
 
                 if (FontConfig.customFontFilename != null) {
-                    item {
+                    item(key = "appearance_clear_font") {
                         val clearFontDialog = rememberConfirmDialog(
                             onConfirm = {
                                 FontConfig.clearFont(context)
@@ -1772,8 +1773,8 @@ fun AppearanceSettingsContent(
             }
         }
 
-        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_theme), flat = flat) {
-            item {
+        SplicedColumnGroup(title = stringResource(R.string.settings_appearance_theme), flat = flat, highlightKey = highlightKey) {
+            item(key = "appearance_theme_store") {
                 ExpressiveCard(flat = flat, onClick = { onNavigateToThemeStore() }) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -1786,7 +1787,7 @@ fun AppearanceSettingsContent(
                 }
             }
 
-            item {
+            item(key = "appearance_save_theme") {
                 ExpressiveCard(flat = flat, onClick = { showExportDialog.value = true }) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -1799,7 +1800,7 @@ fun AppearanceSettingsContent(
                 }
             }
 
-            item {
+            item(key = "appearance_import_theme") {
                 ExpressiveCard(flat = flat, onClick = { showFilePicker.value = true }) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -1812,7 +1813,7 @@ fun AppearanceSettingsContent(
                 }
             }
 
-            item {
+            item(key = "appearance_reset_theme") {
                 val resetThemeDialog = rememberConfirmDialog(
                     onConfirm = {
                         scope.launch {

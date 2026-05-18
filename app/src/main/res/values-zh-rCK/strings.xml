@@ -1056,4 +1056,8 @@
     <string name="netisolate_uids_label">已断网应用</string>
     <string name="netisolate_uids_hint">输入要断网的 UID（每行一个）</string>
     <string name="netisolate_no_uids">莫得断网应用</string>
+    <string name="settings_search_title">菜谱检索</string>
+    <string name="settings_search_hint">检索菜谱…</string>
+    <string name="settings_search_empty_hint">输入以检索所有菜谱配方…</string>
+    <string name="settings_no_results">莫得这个菜谱</string>
 </resources>

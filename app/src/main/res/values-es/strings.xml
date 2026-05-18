@@ -1075,4 +1075,8 @@ Por ejemplo, los KPM que previenen la modificación de particiones solo pueden u
     <string name="netisolate_uids_label">Aplicaciones bloqueadas</string>
     <string name="netisolate_uids_hint">Ingrese los UIDs a bloquear (uno por línea)</string>
     <string name="netisolate_no_uids">No hay aplicaciones bloqueadas</string>
+    <string name="settings_search_title">Buscar ajustes</string>
+    <string name="settings_search_hint">Buscar ajustes…</string>
+    <string name="settings_search_empty_hint">Escribe para buscar todos los ajustes…</string>
+    <string name="settings_no_results">Sin resultados</string>
 </resources>

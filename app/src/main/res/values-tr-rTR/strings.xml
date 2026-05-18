@@ -1077,4 +1077,8 @@ Komutların çalışması için uygulamanın tamamen kapatılıp yeniden açıld
     <string name="netisolate_uids_label">Engellenen Uygulamalar</string>
     <string name="netisolate_uids_hint">Engellenecek UID\'leri girin (satır başına bir)</string>
     <string name="netisolate_no_uids">Engellenen uygulama yok</string>
+    <string name="settings_search_title">Arama Ayarları</string>
+    <string name="settings_search_hint">Ayar ara…</string>
+    <string name="settings_search_empty_hint">Tüm ayarları aramak için yazın…</string>
+    <string name="settings_no_results">Sonuç bulunamadı</string>
 </resources>

@@ -50,6 +50,7 @@ fun formatTime(millis: Int): String {
 fun MultimediaSettingsContent(
     snackBarHost: SnackbarHostState,
     flat: Boolean = false,
+    highlightKey: String? = null,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -218,10 +219,10 @@ fun MultimediaSettingsContent(
     // Vibration scope dialog
     var showVibrationScopeDialog by remember { mutableStateOf(false) }
 
-    SplicedColumnGroup(flat = flat) {
+    SplicedColumnGroup(flat = flat, highlightKey = highlightKey) {
 
         // --- Background Music Toggle ---
-        item {
+        item(key = "multimedia_bg_music") {
             ToggleSettingCard(
                 flat = flat,
                 icon = Icons.Filled.MusicNote,
@@ -245,7 +246,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Music: Select Music File ---
-        item(visible = MusicConfig.isMusicEnabled) {
+        item(key = "multimedia_select_music", visible = MusicConfig.isMusicEnabled) {
             ExpressiveCard(
                 flat = flat,
                 onClick = {
@@ -285,7 +286,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Music: Auto Play Toggle ---
-        item(visible = MusicConfig.isMusicEnabled) {
+        item(key = "multimedia_music_auto_play", visible = MusicConfig.isMusicEnabled) {
             ToggleSettingCard(
                 flat = flat,
                 icon = Icons.Filled.PlayArrow,
@@ -300,7 +301,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Music: Looping Toggle ---
-        item(visible = MusicConfig.isMusicEnabled) {
+        item(key = "multimedia_music_looping", visible = MusicConfig.isMusicEnabled) {
             ToggleSettingCard(
                 flat = flat,
                 icon = Icons.Filled.Repeat,
@@ -316,7 +317,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Music: Volume Slider ---
-        item(visible = MusicConfig.isMusicEnabled) {
+        item(key = "multimedia_music_volume", visible = MusicConfig.isMusicEnabled) {
             ExpressiveCard(flat = flat) {
                 Column(
                     modifier = Modifier
@@ -348,7 +349,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Music: Playback Control ---
-        item(visible = MusicConfig.isMusicEnabled && MusicConfig.musicFilename != null) {
+        item(key = "multimedia_playback_control", visible = MusicConfig.isMusicEnabled && MusicConfig.musicFilename != null) {
             ExpressiveCard(flat = flat) {
                 Column(
                     modifier = Modifier
@@ -400,7 +401,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Music: Clear Music ---
-        item(visible = MusicConfig.isMusicEnabled && MusicConfig.musicFilename != null) {
+        item(key = "multimedia_clear_music", visible = MusicConfig.isMusicEnabled && MusicConfig.musicFilename != null) {
             ExpressiveCard(
                 flat = flat,
                 onClick = {
@@ -429,7 +430,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Sound Effect Toggle ---
-        item {
+        item(key = "multimedia_sound_effect") {
             ToggleSettingCard(
                 flat = flat,
                 icon = Icons.Filled.SurroundSound,
@@ -452,7 +453,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Sound Effect: Source Selector ---
-        item(visible = SoundEffectConfig.isSoundEffectEnabled) {
+        item(key = "multimedia_sound_effect_source", visible = SoundEffectConfig.isSoundEffectEnabled) {
             ExpressiveCard(
                 flat = flat,
                 onClick = { showSoundEffectSourceDialog = true }
@@ -484,7 +485,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Sound Effect: Select Local File (local source) ---
-        item(visible = SoundEffectConfig.isSoundEffectEnabled && SoundEffectConfig.sourceType == SoundEffectConfig.SOURCE_TYPE_LOCAL) {
+        item(key = "multimedia_select_sound_effect", visible = SoundEffectConfig.isSoundEffectEnabled && SoundEffectConfig.sourceType == SoundEffectConfig.SOURCE_TYPE_LOCAL) {
             ExpressiveCard(
                 flat = flat,
                 onClick = {
@@ -524,7 +525,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Sound Effect: Clear Sound Effect (local source with file) ---
-        item(visible = SoundEffectConfig.isSoundEffectEnabled && SoundEffectConfig.sourceType == SoundEffectConfig.SOURCE_TYPE_LOCAL && SoundEffectConfig.soundEffectFilename != null) {
+        item(key = "multimedia_clear_sound_effect", visible = SoundEffectConfig.isSoundEffectEnabled && SoundEffectConfig.sourceType == SoundEffectConfig.SOURCE_TYPE_LOCAL && SoundEffectConfig.soundEffectFilename != null) {
             ExpressiveCard(
                 flat = flat,
                 onClick = {
@@ -553,7 +554,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Sound Effect: Preset Selector (preset source) ---
-        item(visible = SoundEffectConfig.isSoundEffectEnabled && SoundEffectConfig.sourceType == SoundEffectConfig.SOURCE_TYPE_PRESET) {
+        item(key = "multimedia_sound_effect_preset", visible = SoundEffectConfig.isSoundEffectEnabled && SoundEffectConfig.sourceType == SoundEffectConfig.SOURCE_TYPE_PRESET) {
             ExpressiveCard(
                 flat = flat,
                 onClick = { showSoundEffectPresetDialog = true }
@@ -585,7 +586,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Sound Effect: Scope Selector ---
-        item(visible = SoundEffectConfig.isSoundEffectEnabled) {
+        item(key = "multimedia_sound_effect_scope", visible = SoundEffectConfig.isSoundEffectEnabled) {
             ExpressiveCard(
                 flat = flat,
                 onClick = {
@@ -622,7 +623,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Startup Sound Toggle ---
-        item {
+        item(key = "multimedia_startup_sound") {
             ToggleSettingCard(
                 flat = flat,
                 icon = Icons.Filled.Alarm,
@@ -645,7 +646,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Startup Sound: Source Selector ---
-        item(visible = SoundEffectConfig.isStartupSoundEnabled) {
+        item(key = "multimedia_startup_sound_source", visible = SoundEffectConfig.isStartupSoundEnabled) {
             ExpressiveCard(
                 flat = flat,
                 onClick = { showStartupSourceDialog = true }
@@ -677,7 +678,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Startup Sound: Select Local File (local source) ---
-        item(visible = SoundEffectConfig.isStartupSoundEnabled && SoundEffectConfig.startupSourceType == SoundEffectConfig.SOURCE_TYPE_LOCAL) {
+        item(key = "multimedia_select_startup_sound", visible = SoundEffectConfig.isStartupSoundEnabled && SoundEffectConfig.startupSourceType == SoundEffectConfig.SOURCE_TYPE_LOCAL) {
             ExpressiveCard(
                 flat = flat,
                 onClick = {
@@ -717,7 +718,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Startup Sound: Clear Startup Sound (local source with file) ---
-        item(visible = SoundEffectConfig.isStartupSoundEnabled && SoundEffectConfig.startupSourceType == SoundEffectConfig.SOURCE_TYPE_LOCAL && SoundEffectConfig.startupSoundFilename != null) {
+        item(key = "multimedia_clear_startup_sound", visible = SoundEffectConfig.isStartupSoundEnabled && SoundEffectConfig.startupSourceType == SoundEffectConfig.SOURCE_TYPE_LOCAL && SoundEffectConfig.startupSoundFilename != null) {
             ExpressiveCard(
                 flat = flat,
                 onClick = {
@@ -746,7 +747,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Startup Sound: Preset Selector (preset source) ---
-        item(visible = SoundEffectConfig.isStartupSoundEnabled && SoundEffectConfig.startupSourceType == SoundEffectConfig.SOURCE_TYPE_PRESET) {
+        item(key = "multimedia_startup_sound_preset", visible = SoundEffectConfig.isStartupSoundEnabled && SoundEffectConfig.startupSourceType == SoundEffectConfig.SOURCE_TYPE_PRESET) {
             ExpressiveCard(
                 flat = flat,
                 onClick = { showStartupPresetDialog = true }
@@ -778,7 +779,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Vibration Toggle ---
-        item {
+        item(key = "multimedia_vibration") {
             ToggleSettingCard(
                 flat = flat,
                 icon = Icons.Filled.Vibration,
@@ -793,7 +794,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Vibration: Scope Selector ---
-        item(visible = VibrationConfig.isVibrationEnabled) {
+        item(key = "multimedia_vibration_scope", visible = VibrationConfig.isVibrationEnabled) {
             ExpressiveCard(
                 flat = flat,
                 onClick = {
@@ -830,7 +831,7 @@ fun MultimediaSettingsContent(
         }
 
         // --- Vibration: Intensity Slider ---
-        item(visible = VibrationConfig.isVibrationEnabled) {
+        item(key = "multimedia_vibration_intensity", visible = VibrationConfig.isVibrationEnabled) {
             ExpressiveCard(flat = flat) {
                 Column(
                     modifier = Modifier

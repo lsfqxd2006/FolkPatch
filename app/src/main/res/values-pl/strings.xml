@@ -990,4 +990,8 @@ Upewnij się, że aplikacja jest całkowicie zamknięta i ponownie otwarta, aby 
     <string name="netisolate_uids_label">Zablokowane aplikacje</string>
     <string name="netisolate_uids_hint">Wprowadź UID do zablokowania (jedno na linię)</string>
     <string name="netisolate_no_uids">Brak zablokowanych aplikacji</string>
+    <string name="settings_search_title">Szukaj ustawień</string>
+    <string name="settings_search_hint">Szukaj ustawień…</string>
+    <string name="settings_search_empty_hint">Wpisz, aby wyszukać wszystkie ustawienia…</string>
+    <string name="settings_no_results">Brak wyników</string>
 </resources>

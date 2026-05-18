@@ -1072,4 +1072,8 @@
     <string name="netisolate_uids_label">Заблокированные приложения</string>
     <string name="netisolate_uids_hint">Введите UID для блокировки (по одному на строку)</string>
     <string name="netisolate_no_uids">Нет заблокированных приложений</string>
+    <string name="settings_search_title">Поиск настроек</string>
+    <string name="settings_search_hint">Поиск настроек…</string>
+    <string name="settings_search_empty_hint">Введите для поиска всех настроек…</string>
+    <string name="settings_no_results">Ничего не найдено</string>
 </resources>

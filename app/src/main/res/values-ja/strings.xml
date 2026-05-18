@@ -984,4 +984,8 @@
     <string name="netisolate_uids_label">ブロック済みアプリ</string>
     <string name="netisolate_uids_hint">ブロックする UID を入力（1行に1つ）</string>
     <string name="netisolate_no_uids">ブロックされたアプリはありません</string>
+    <string name="settings_search_title">設定を検索</string>
+    <string name="settings_search_hint">設定を検索…</string>
+    <string name="settings_search_empty_hint">すべての設定を検索するには入力してください…</string>
+    <string name="settings_no_results">結果が見つかりません</string>
 </resources>

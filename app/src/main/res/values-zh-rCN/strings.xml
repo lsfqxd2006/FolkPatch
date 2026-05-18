@@ -1067,4 +1067,8 @@
     <string name="netisolate_uids_label">已隔离应用</string>
     <string name="netisolate_uids_hint">输入要隔离的 UID（每行一个）</string>
     <string name="netisolate_no_uids">暂无隔离应用</string>
+    <string name="settings_search_title">设置搜索</string>
+    <string name="settings_search_hint">搜索设置…</string>
+    <string name="settings_search_empty_hint">输入以搜索所有设置项…</string>
+    <string name="settings_no_results">未找到结果</string>
 </resources>

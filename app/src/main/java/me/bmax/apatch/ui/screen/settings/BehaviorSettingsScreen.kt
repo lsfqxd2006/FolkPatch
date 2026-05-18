@@ -37,7 +37,7 @@ import me.bmax.apatch.util.ui.NavigationBarsSpacer
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BehaviorSettingsScreen(navigator: DestinationsNavigator) {
+fun BehaviorSettingsScreen(navigator: DestinationsNavigator, highlightKey: String? = null) {
     val state by APApplication.apStateLiveData.observeAsState(APApplication.State.UNKNOWN_STATE)
     val kPatchReady = state != APApplication.State.UNKNOWN_STATE
     val aPatchReady = (state == APApplication.State.ANDROIDPATCH_INSTALLING || state == APApplication.State.ANDROIDPATCH_INSTALLED || state == APApplication.State.ANDROIDPATCH_NEED_UPDATE)
@@ -71,6 +71,7 @@ fun BehaviorSettingsScreen(navigator: DestinationsNavigator) {
                     kPatchReady = kPatchReady,
                     aPatchReady = aPatchReady,
                     flat = flat,
+                    highlightKey = highlightKey,
                 )
             }
             item { Spacer(Modifier.height(8.dp)) }

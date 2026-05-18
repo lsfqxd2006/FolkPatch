@@ -20,6 +20,7 @@ import me.bmax.apatch.ui.component.ToggleSettingCard
 fun ModuleSettingsContent(
     aPatchReady: Boolean,
     flat: Boolean = false,
+    highlightKey: String? = null,
 ) {
     val prefs = APApplication.sharedPreferences
 
@@ -52,8 +53,8 @@ fun ModuleSettingsContent(
     var simpleListBottomBar by remember { mutableStateOf(prefs.getBoolean("simple_list_bottom_bar", false)) }
     var splicedCardGroup by remember { mutableStateOf(prefs.getBoolean("spliced_card_group", true)) }
 
-    SplicedColumnGroup(flat = flat) {
-        item {
+    SplicedColumnGroup(flat = flat, highlightKey = highlightKey) {
+        item(key = "module_disable_update") {
             ToggleSettingCard(
                 icon = Icons.Filled.Update,
                 flat = flat,
@@ -67,7 +68,7 @@ fun ModuleSettingsContent(
             )
         }
 
-        item {
+        item(key = "module_more_info") {
             ToggleSettingCard(
                 icon = Icons.Filled.Info,
                 flat = flat,
@@ -81,7 +82,7 @@ fun ModuleSettingsContent(
             )
         }
 
-        item {
+        item(key = "module_sort_opt") {
             ToggleSettingCard(
                 icon = Icons.Filled.Sort,
                 flat = flat,
@@ -95,7 +96,7 @@ fun ModuleSettingsContent(
             )
         }
 
-        item {
+        item(key = "module_fold_system") {
             ToggleSettingCard(
                 icon = Icons.Filled.Folder,
                 flat = flat,
@@ -109,7 +110,7 @@ fun ModuleSettingsContent(
             )
         }
 
-        item {
+        item(key = "module_batch_install") {
             ToggleSettingCard(
                 icon = Icons.Filled.Download,
                 flat = flat,
@@ -123,7 +124,7 @@ fun ModuleSettingsContent(
             )
         }
 
-        item {
+        item(key = "module_simple_list") {
             ToggleSettingCard(
                 icon = Icons.Filled.Dock,
                 flat = flat,
@@ -137,7 +138,7 @@ fun ModuleSettingsContent(
             )
         }
 
-        item {
+        item(key = "module_spliced_card") {
             ToggleSettingCard(
                 icon = Icons.Filled.ViewAgenda,
                 flat = flat,

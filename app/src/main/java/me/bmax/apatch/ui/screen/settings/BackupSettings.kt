@@ -43,14 +43,15 @@ fun BackupSettingsContent(
     autoBackupModule: Boolean,
     onAutoBackupModuleChange: (Boolean) -> Unit,
     flat: Boolean = false,
+    highlightKey: String? = null,
 ) {
     val prefs = APApplication.sharedPreferences
     val context = LocalContext.current
 
     val showWebDavDialog = remember { mutableStateOf(false) }
 
-    SplicedColumnGroup(flat = flat) {
-        item {
+    SplicedColumnGroup(flat = flat, highlightKey = highlightKey) {
+        item(key = "backup_local") {
             ToggleSettingCard(
                 flat = flat,
                 icon = Icons.Filled.Save,
@@ -64,7 +65,7 @@ fun BackupSettingsContent(
             )
         }
 
-        item {
+        item(key = "backup_boot") {
             var autoBackupBoot by remember { mutableStateOf(prefs.getBoolean("auto_backup_boot", false)) }
             ToggleSettingCard(
                 flat = flat,
@@ -79,7 +80,7 @@ fun BackupSettingsContent(
             )
         }
 
-        item(visible = autoBackupModule) {
+        item(key = "backup_open_dir", visible = autoBackupModule) {
             val openBackupDirTitle = stringResource(id = R.string.settings_open_backup_dir)
             ExpressiveCard(
                 flat = flat,
@@ -138,7 +139,7 @@ fun BackupSettingsContent(
             }
         }
 
-        item {
+        item(key = "backup_cloud") {
             ToggleSettingCard(
                 flat = flat,
                 icon = Icons.Filled.Cloud,
@@ -152,7 +153,7 @@ fun BackupSettingsContent(
             )
         }
 
-        item(visible = BackupConfig.isBackupEnabled) {
+        item(key = "backup_webdav", visible = BackupConfig.isBackupEnabled) {
             val configureWebDavTitle = stringResource(id = R.string.settings_configure_webdav)
             ExpressiveCard(
                 flat = flat,

@@ -20,6 +20,7 @@ fun SecuritySettingsContent(
     snackBarHost: SnackbarHostState,
     kPatchReady: Boolean,
     flat: Boolean = false,
+    highlightKey: String? = null,
 ) {
     val prefs = APApplication.sharedPreferences
     val context = LocalContext.current
@@ -33,8 +34,8 @@ fun SecuritySettingsContent(
                 androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
     ) == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS
 
-    SplicedColumnGroup(flat = flat) {
-        item(visible = canAuthenticate) {
+    SplicedColumnGroup(flat = flat, highlightKey = highlightKey) {
+        item(key = "security_biometric_login", visible = canAuthenticate) {
             ToggleSettingCard(
                 flat = flat,
                 icon = Icons.Filled.Fingerprint,
@@ -77,7 +78,7 @@ fun SecuritySettingsContent(
             )
         }
 
-        item(visible = biometricLogin && canAuthenticate) {
+        item(key = "security_strong_biometric", visible = biometricLogin && canAuthenticate) {
             var strongBiometric by remember { mutableStateOf(prefs.getBoolean("strong_biometric", false)) }
             ToggleSettingCard(
                 flat = flat,

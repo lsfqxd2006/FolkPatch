@@ -19,7 +19,8 @@ object UpdateChecker {
                 val result = FolkApiClient.fetchJson(
                     UPDATE_API_URL,
                     ttlMs = 30 * 60 * 1000L,
-                    maxRetries = 1
+                    maxRetries = 1,
+                    forceRefresh = true
                 )
                 val rawResponse = result.getOrNull() ?: return@withContext false
 

@@ -1073,4 +1073,8 @@ Por favor, certifique-se de fechar completamente o app e reabri-lo para que os c
     <string name="netisolate_uids_label">Apps bloqueados</string>
     <string name="netisolate_uids_hint">Insira os UIDs para bloquear (um por linha)</string>
     <string name="netisolate_no_uids">Nenhum app bloqueado</string>
+    <string name="settings_search_title">Pesquisar configurações</string>
+    <string name="settings_search_hint">Pesquisar configurações…</string>
+    <string name="settings_search_empty_hint">Digite para pesquisar todas as configurações…</string>
+    <string name="settings_no_results">Nenhum resultado</string>
 </resources>

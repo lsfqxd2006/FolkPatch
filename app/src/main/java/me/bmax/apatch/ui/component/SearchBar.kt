@@ -53,10 +53,11 @@ fun SearchAppBar(
     dropdownContent: @Composable (() -> Unit)? = null,
     leadingActions: @Composable (() -> Unit)? = null,
     trailingActions: @Composable (() -> Unit)? = null,
+    startInSearchMode: Boolean = false,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
-    var onSearch by remember { mutableStateOf(false) }
+    var onSearch by remember { mutableStateOf(startInSearchMode) }
 
     if (onSearch) {
         LaunchedEffect(Unit) { focusRequester.requestFocus() }

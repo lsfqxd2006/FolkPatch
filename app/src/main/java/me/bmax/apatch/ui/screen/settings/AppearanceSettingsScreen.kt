@@ -39,7 +39,7 @@ import me.bmax.apatch.util.ui.NavigationBarsSpacer
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppearanceSettingsScreen(navigator: DestinationsNavigator) {
+fun AppearanceSettingsScreen(navigator: DestinationsNavigator, highlightKey: String? = null) {
     val state by APApplication.apStateLiveData.observeAsState(APApplication.State.UNKNOWN_STATE)
     val kPatchReady = state != APApplication.State.UNKNOWN_STATE
 
@@ -74,6 +74,7 @@ fun AppearanceSettingsScreen(navigator: DestinationsNavigator) {
                     onNavigateToThemeStore = { navigator.navigate(ThemeStoreScreenDestination) },
                     onNavigateToApiMarketplace = { navigator.navigate(ApiMarketplaceScreenDestination) },
                     flat = flat,
+                    highlightKey = highlightKey,
                 )
             }
             item { Spacer(Modifier.height(8.dp)) }

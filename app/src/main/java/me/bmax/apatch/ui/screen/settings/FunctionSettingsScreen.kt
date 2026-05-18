@@ -74,7 +74,7 @@ import kotlinx.coroutines.FlowPreview
 @OptIn(FlowPreview::class, ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
-fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
+fun FunctionSettingsScreen(navigator: DestinationsNavigator, highlightKey: String? = null) {
     val state by APApplication.apStateLiveData.observeAsState(APApplication.State.UNKNOWN_STATE)
     val kPatchReady = state != APApplication.State.UNKNOWN_STATE
     val aPatchReady = (state == APApplication.State.ANDROIDPATCH_INSTALLING || state == APApplication.State.ANDROIDPATCH_INSTALLED || state == APApplication.State.ANDROIDPATCH_NEED_UPDATE)
@@ -445,6 +445,7 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator) {
                         }
                     },
                     flat = flat,
+                    highlightKey = highlightKey,
                     isNetIsolateEnabled = isNetIsolateEnabled,
                     onNetIsolateChange = { enabled ->
                         isNetIsolateEnabled = enabled

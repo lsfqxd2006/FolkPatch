@@ -118,6 +118,7 @@ fun FunctionSettingsContent(
     niSelectedUids: Set<Int>,
     onNiUidToggle: (Int) -> Unit,
     flat: Boolean = false,
+    highlightKey: String? = null,
 ) {
     val context = LocalContext.current
     val hideServiceTitle = stringResource(id = R.string.settings_hide_service)
@@ -125,8 +126,8 @@ fun FunctionSettingsContent(
     val umountServiceTitle = stringResource(id = R.string.settings_umount_service)
     val umountServiceSummary = stringResource(id = R.string.settings_umount_service_summary)
 
-    SplicedColumnGroup(flat = flat) {
-        item(visible = kPatchReady && aPatchReady) {
+    SplicedColumnGroup(flat = flat, highlightKey = highlightKey) {
+        item(key = "function_hide_service", visible = kPatchReady && aPatchReady) {
             ToggleSettingCard(
                 flat = flat,
                 icon = Icons.Filled.VisibilityOff,
@@ -140,7 +141,7 @@ fun FunctionSettingsContent(
             )
         }
 
-        item(visible = kPatchReady && aPatchReady) {
+        item(key = "function_umount", visible = kPatchReady && aPatchReady) {
             val umountPathsLabel = stringResource(id = R.string.umount_config_paths_label)
             val umountPathsPlaceholder = stringResource(id = R.string.umount_config_paths_placeholder)
             val umountPathsHelper = stringResource(id = R.string.umount_config_paths_helper)
@@ -216,7 +217,7 @@ fun FunctionSettingsContent(
             }
         }
 
-        item(visible = kPatchReady && aPatchReady) {
+        item(key = "function_kernel_spoof", visible = kPatchReady && aPatchReady) {
             val kernelSpoofTitle = stringResource(id = R.string.settings_kernel_spoof)
             val kernelSpoofSummary = stringResource(id = R.string.settings_kernel_spoof_summary)
             val versionLabel = stringResource(id = R.string.settings_kernel_spoof_version)
@@ -310,7 +311,7 @@ fun FunctionSettingsContent(
             }
         }
 
-        item(visible = kPatchReady && aPatchReady) {
+        item(key = "function_path_hide", visible = kPatchReady && aPatchReady) {
             val pathHideTitle = stringResource(id = R.string.settings_path_hide)
             val pathHideSummary = stringResource(id = R.string.settings_path_hide_summary)
             val pathsLabel = stringResource(id = R.string.path_hide_paths_label)
@@ -572,7 +573,7 @@ fun FunctionSettingsContent(
             }
         }
 
-        item(visible = kPatchReady && aPatchReady) {
+        item(key = "function_net_isolate", visible = kPatchReady && aPatchReady) {
             val niTitle = stringResource(id = R.string.netisolate_title)
             val niSummary = stringResource(id = R.string.netisolate_enable_summary)
             val noAppsText = stringResource(R.string.netisolate_no_uids)

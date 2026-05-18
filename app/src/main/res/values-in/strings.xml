@@ -1054,4 +1054,8 @@ Pastikan aplikasi ditutup sepenuhnya dan dimulai ulang untuk menjalankan perinta
     <string name="netisolate_uids_label">Aplikasi Diblokir</string>
     <string name="netisolate_uids_hint">Masukkan UID untuk diblokir (satu per baris)</string>
     <string name="netisolate_no_uids">Tidak ada aplikasi yang diblokir</string>
+    <string name="settings_search_title">Cari Pengaturan</string>
+    <string name="settings_search_hint">Cari pengaturan…</string>
+    <string name="settings_search_empty_hint">Ketik untuk mencari semua pengaturan…</string>
+    <string name="settings_no_results">Tidak ada hasil</string>
 </resources>

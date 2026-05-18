@@ -4,12 +4,15 @@ import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -18,14 +21,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import kotlinx.coroutines.delay
 
 /** Whether the current composable is inside a [SplicedColumnGroup]. */
 val LocalInsideSplicedGroup = compositionLocalOf { false }
@@ -52,6 +65,7 @@ fun SplicedColumnGroup(
     modifier: Modifier = Modifier,
     title: String = "",
     flat: Boolean = false,
+    highlightKey: String? = null,
     content: SplicedGroupScope.() -> Unit,
 ) {
     val scope = SplicedGroupScope().apply(content)
@@ -143,13 +157,55 @@ fun SplicedColumnGroup(
                                 MaterialTheme.colorScheme.surfaceContainer
                             }
 
+                            val isHighlighted = highlightKey != null && itemData.key?.toString() == highlightKey
+                            val itemFocusRequester = remember { FocusRequester() }
+
                             Column(
                                 modifier = Modifier
                                     .padding(top = currentTopPadding)
                                     .clip(shape)
-                                    .background(containerColor, shape),
+                                    .background(containerColor, shape)
+                                    .then(
+                                        if (isHighlighted) Modifier.focusRequester(itemFocusRequester).focusable()
+                                        else Modifier
+                                    ),
                             ) {
-                                itemData.content()
+                                var highlightAlpha by remember { mutableStateOf(0f) }
+
+                                if (isHighlighted) {
+                                    LaunchedEffect(Unit) {
+                                        itemFocusRequester.requestFocus()
+                                        delay(600)
+                                        animate(
+                                            initialValue = 0f,
+                                            targetValue = 0.18f,
+                                            animationSpec = tween(300),
+                                        ) { value, _ ->
+                                            highlightAlpha = value
+                                        }
+                                        delay(2000)
+                                        animate(
+                                            initialValue = 0.18f,
+                                            targetValue = 0f,
+                                            animationSpec = tween(500),
+                                        ) { value, _ ->
+                                            highlightAlpha = value
+                                        }
+                                    }
+                                }
+
+                                val highlightColor = MaterialTheme.colorScheme.primary
+                                Column(
+                                    modifier = Modifier.drawBehind {
+                                        if (highlightAlpha > 0.01f) {
+                                            drawRect(
+                                                color = highlightColor.copy(alpha = highlightAlpha),
+                                            )
+                                        }
+                                    }
+                                ) {
+                                    itemData.content()
+                                }
                             }
                         }
                     }
