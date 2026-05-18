@@ -100,9 +100,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     IconButton(onClick = { navigator.navigate(SettingsSearchScreenDestination) }) {
                         Icon(Icons.Filled.Search, contentDescription = null)
                     }
-                    IconButton(onClick = { showDevDialog = true }) {
-                        Icon(Icons.Outlined.Info, contentDescription = null)
-                    }
                     IconButton(onClick = { navigator.navigate(FunctionSettingsScreenDestination(null)) }) {
                         Icon(Icons.Filled.Tune, contentDescription = null)
                     }
