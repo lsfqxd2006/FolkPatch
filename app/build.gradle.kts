@@ -286,7 +286,7 @@ fun downloadFile(url: String, destFile: File) {
 
 registerDownloadTask(
     taskName = "downloadKpimg",
-    srcUrl = "https://github.com/LyraVoid/KernelPatch/releases/download/$kernelPatchVersion/kpimg-android",
+    srcUrl = "https://github.com/lsfqxd2006/KernelPatch/releases/download/$kernelPatchVersion/kpimg-android",
     destPath = "${project.projectDir}/src/main/assets/kpimg",
     project = project,
     version = kernelPatchVersion
@@ -294,21 +294,23 @@ registerDownloadTask(
 
 registerDownloadTask(
     taskName = "downloadKptools",
-    srcUrl = "https://github.com/LyraVoid/KernelPatch/releases/download/$kernelPatchVersion/kptools-android",
+    srcUrl = "https://github.com/lsfqxd2006/KernelPatch/releases/download/$kernelPatchVersion/kptools-android",
     destPath = "${project.projectDir}/libs/arm64-v8a/libkptools.so",
     project = project,
     version = kernelPatchVersion
 )
 
 // Compat kp version less than 0.10.7
-// TODO: Remove in future
-registerDownloadTask(
-    taskName = "downloadCompatKpatch",
-    srcUrl = "https://github.com/bmax121/KernelPatch/releases/download/0.10.7/kpatch-android",
-    destPath = "${project.projectDir}/libs/arm64-v8a/libkpatch.so",
-    project = project,
-    version = "0.10.7"
-)
+// https://github.com/bmax121/KernelPatch/releases/download/0.10.7/kpatch-android
+// TODO: Remove
+
+//registerDownloadTask(
+//   taskName = "downloadKpatch",
+//    srcUrl = "https://github.com/bmax121/KernelPatch/releases/download/0.10.7/kpatch-android",
+//    destPath = "${project.projectDir}/libs/arm64-v8a/libkpatch.so",
+//    project = project,
+//    version = "0.10.7"
+//)
 
 tasks.register<Copy>("mergeScripts") {
     into("${project.projectDir}/src/main/resources/META-INF/com/google/android")
@@ -340,7 +342,7 @@ tasks.register<Exec>("buildFpd") {
 tasks.getByName("preBuild").dependsOn(
     "downloadKpimg",
     "downloadKptools",
-    "downloadCompatKpatch",
+//    "downloadKpatch",
     "mergeScripts",
     "buildFpd",
 )
