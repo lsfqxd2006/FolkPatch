@@ -9,6 +9,8 @@ import android.os.Handler
 import android.os.Looper
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.compose.BackHandler
+import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -731,6 +733,7 @@ class MainActivity : AppCompatActivity() {
 
                 fun resetBottomBarAutoHide() {
                     isBottomBarVisible = true
+                    isScrollingDown.value = false
                     autoHideKey++
                 }
 
@@ -856,6 +859,26 @@ class MainActivity : AppCompatActivity() {
 
                         if (!useNavigationRail) {
                             if (isFloatingMode) {
+                                // ========== 悬浮导航栏返回键处理（始终存活）==========
+                                val currentRouteForBack = navController.currentBackStackEntry?.destination?.route
+                                val homeRoute = bottomBarRoutes.first()
+                                val activityForBack = LocalContext.current as ComponentActivity
+                        
+                                BackHandler(enabled = currentRouteForBack in bottomBarRoutes) {
+                                    if (currentRouteForBack != null && currentRouteForBack != homeRoute) {
+                                        resetBottomBarAutoHide()
+                                        // 关键：pop 后不触发动画，直接回主页
+                                        navController.popBackStack(NavGraphs.root.route, inclusive = true)
+                                        // 只在非主页时 navigate
+                                        if (navController.currentDestination?.route != homeRoute) {
+                                            navController.navigate(homeRoute) {
+                                                launchSingleTop = true
+                                            }
+                                        }
+                                    } else {
+                                        activityForBack.moveTaskToBack(false)
+                                    }
+                                }
                                 AnimatedVisibility(
                                     visible = showBottomBar,
                                     modifier = Modifier.align(Alignment.BottomCenter),
@@ -972,7 +995,26 @@ private fun BottomBar(
 
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
+        // ========== 返回键处理 ==========
+        val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
+        val allTabRoutes = remember(visibleDestinations) {
+            visibleDestinations.map { it.direction.route }.toSet()
+        }
+        val isOnTabPage = currentRoute in allTabRoutes
+        val activity = LocalContext.current as ComponentActivity
 
+        if (!isFloating) {
+            BackHandler(enabled = isOnTabPage) {
+                if (homeTabRoute != null && currentRoute != homeTabRoute) {
+                    navController.popBackStack(NavGraphs.root.route, inclusive = true)
+                    navController.navigate(homeTabRoute) {
+                        launchSingleTop = true
+                    }
+                } else {
+                    activity.moveTaskToBack(false)
+                }
+            }
+        }
         val isOnBackStack = visibleDestinations.map { destination ->
             navController.isRouteOnBackStackAsState(destination.direction).value
         }
@@ -1466,7 +1508,25 @@ private fun NavigationRailBar(navController: NavHostController) {
 
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
+        // ========== 返回键处理 ==========
+        val homeTabRoute = visibleDestinations.firstOrNull()?.direction?.route
+        val allTabRoutes = remember(visibleDestinations) {
+            visibleDestinations.map { it.direction.route }.toSet()
+        }
+        val isOnTabPage = currentRoute in allTabRoutes
+        val activity = LocalContext.current as ComponentActivity
 
+        BackHandler(enabled = isOnTabPage) {
+            if (homeTabRoute != null && currentRoute != homeTabRoute) {
+                // 先清空回退栈，再导航到主页
+                navController.popBackStack(NavGraphs.root.route, inclusive = true)
+                navController.navigate(homeTabRoute) {
+                    launchSingleTop = true
+                }
+            } else {
+                activity.moveTaskToBack(false)
+            }
+        }
         val isOnBackStack = visibleDestinations.map { destination ->
             navController.isRouteOnBackStackAsState(destination.direction).value
         }
