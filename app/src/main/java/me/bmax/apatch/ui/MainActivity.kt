@@ -767,6 +767,22 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
 
+                // 从二级页面返回一级 tab 时，强制显示导航栏并重置滚动方向
+                val previousRoute = remember { mutableStateOf<String?>(null) }
+                LaunchedEffect(currentRoute, isFloatingMode) {
+                    if (isFloatingMode) {
+                        val isCurrentTab = currentRoute in bottomBarRoutes
+                        val wasPreviousTab = previousRoute.value in bottomBarRoutes
+                        if (isCurrentTab && !wasPreviousTab && previousRoute.value != null) {
+                            resetBottomBarAutoHide()
+                            isScrollingDown.value = false
+                            scrollOffset.value = 0f
+                            previousScrollOffset.value = 0f
+                        }
+                        previousRoute.value = currentRoute
+                    }
+                }
+
                 // 使用 BoxWithConstraints 检测屏幕宽度
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                     val useNavigationRail = when (navMode) {
