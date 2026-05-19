@@ -1186,6 +1186,7 @@ private fun BottomBar(
                         NavigationBarItem(
                             selected = isSelected,
                             onClick = {
+                                if (destination.direction.route == currentRoute) return@NavigationBarItem
                                 onUserInteraction?.invoke()
                                 if (me.bmax.apatch.ui.theme.SoundEffectConfig.scope == me.bmax.apatch.ui.theme.SoundEffectConfig.SCOPE_BOTTOM_BAR) {
                                     me.bmax.apatch.util.SoundEffectManager.play(context)
@@ -1552,6 +1553,7 @@ private fun NavigationRailBar(navController: NavHostController) {
                     NavigationRailItem(
                         selected = isSelected,
                         onClick = {
+                            if (destination.direction.route == currentRoute) return@NavigationRailItem
                             if (me.bmax.apatch.ui.theme.SoundEffectConfig.scope == me.bmax.apatch.ui.theme.SoundEffectConfig.SCOPE_BOTTOM_BAR) {
                                 me.bmax.apatch.util.SoundEffectManager.play(context)
                             }
