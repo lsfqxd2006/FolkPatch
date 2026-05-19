@@ -733,7 +733,6 @@ class MainActivity : AppCompatActivity() {
 
                 fun resetBottomBarAutoHide() {
                     isBottomBarVisible = true
-                    isScrollingDown.value = false
                     autoHideKey++
                 }
 
