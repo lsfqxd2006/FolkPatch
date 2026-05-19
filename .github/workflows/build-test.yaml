@@ -1,0 +1,153 @@
+name: Build FolkPatch (Test)
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: [ 'app/**', 'fpd/**', '.github/workflows/build.yml' ]
+  pull_request:
+    branches: [ main, develop ]
+    paths: [ 'app/**', 'fpd/**', '.github/workflows/build.yml' ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'both'
+        type: choice
+        options: [ both, debug, release ]
+
+env:
+  KEYSTORE_FILE: debug.keystore
+  KEYSTORE_PASSWORD: android
+  KEY_ALIAS: androiddebugkey
+  KEY_PASSWORD: android
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      build_debug: ${{ steps.set.outputs.debug }}
+      build_release: ${{ steps.set.outputs.release }}
+      commit_msg: ${{ steps.msg.outputs.text }}
+      commit_author: ${{ steps.msg.outputs.author }}
+      artifact_list: ${{ steps.set.outputs.artifact_list }}
+      version_name: ${{ steps.version.outputs.version_name }}
+      version_code: ${{ steps.version.outputs.version_code }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - id: version
+        name: Extract version from build.gradle.kts
+        run: |
+          VERSION_NAME=$(grep -oP 'return\s+"\K[^"]+' build.gradle.kts | head -1)
+          if [ -z "$VERSION_NAME" ]; then
+            VERSION_NAME=$(grep -A2 'fun getVersionName()' build.gradle.kts | grep -oP 'return\s+"\K[^"]+' | head -1)
+          fi
+          VERSION_CODE=$(grep -oP 'return\s+\K\d+' build.gradle.kts | head -1)
+          
+          echo "version_name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+          echo "version_code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
+          echo "Extracted version: ${VERSION_NAME} (code: ${VERSION_CODE})"
+
+      - id: set
+        run: |
+          TYPE="${{ inputs.build_type }}"
+          [ "${{ github.event_name }}" != "workflow_dispatch" ] && TYPE="both"
+
+          DEBUG="false"; RELEASE="false"; LIST=""
+          [ "$TYPE" = "both" -o "$TYPE" = "debug" ] && { DEBUG="true"; LIST="folkpatch-debug-${GITHUB_SHA::8}"; }
+          [ "$TYPE" = "both" -o "$TYPE" = "release" ] && {
+            RELEASE="true"
+            [ -n "$LIST" ] && LIST="$LIST," || true
+            LIST="${LIST}folkpatch-release-${GITHUB_SHA::8}"
+          }
+
+          echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
+          echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
+          echo "artifact_list=$LIST" >> "$GITHUB_OUTPUT"
+
+      - id: msg
+        run: |
+          case "${{ github.event_name }}" in
+            push)         TEXT="${{ github.event.head_commit.message }}"
+                           AUTHOR="${{ github.event.head_commit.author.name }}" ;;
+            pull_request) TEXT="PR: ${{ github.event.pull_request.title }}"
+                           AUTHOR="${{ github.event.pull_request.user.login }}" ;;
+            *)            TEXT="FolkPatch Build"
+                           AUTHOR="${{ github.actor }}" ;;
+          esac
+          TEXT="${TEXT%%$'\n'*}"
+          echo "text=$TEXT" >> "$GITHUB_OUTPUT"
+          echo "author=$AUTHOR" >> "$GITHUB_OUTPUT"
+
+  build_debug:
+    name: Build Debug
+    needs: prepare
+    if: needs.prepare.outputs.build_debug == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/setup-build-env
+
+      - run: ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK
+        run: |
+          VERSION_NAME="${{ needs.prepare.outputs.version_name }}"
+          VERSION_CODE="${{ needs.prepare.outputs.version_code }}"
+          APK=$(find app/build/outputs/apk/debug -name "*.apk" -type f | head -1)
+          [ -n "$APK" ] && mv "$APK" "FolkPatch-Debug-${VERSION_NAME}-${VERSION_CODE}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: folkpatch-debug-${GITHUB_SHA::8}
+          path: FolkPatch-Debug-*.apk
+          retention-days: 30
+
+  build_release:
+    name: Build Release
+    needs: prepare
+    if: needs.prepare.outputs.build_release == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/setup-build-env
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/FolkPatch.jks
+
+      - name: Create keystore.properties
+        run: |
+          cat > app/keystore.properties << 'EOF'
+          KEYSTORE_FILE=FolkPatch.jks
+          KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS=${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
+          EOF
+
+      - run: ./gradlew assembleRelease --no-daemon
+
+      - name: Rename APK
+        run: |
+          VERSION_NAME="${{ needs.prepare.outputs.version_name }}"
+          VERSION_CODE="${{ needs.prepare.outputs.version_code }}"
+          APK=$(find app/build/outputs/apk/release -name "*.apk" -type f | head -1)
+          [ -n "$APK" ] && mv "$APK" "FolkPatch-Release-${VERSION_NAME}-${VERSION_CODE}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: folkpatch-release-${GITHUB_SHA::8}
+          path: FolkPatch-Release-*.apk
+          retention-days: 30
