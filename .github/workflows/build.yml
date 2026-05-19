@@ -1,19 +1,19 @@
 name: Build FolkPatch
 
-于:
+on:
   push:
-    分支: [ main, develop ]
+    branches: [ main, develop ]
     paths: [ 'app/**', 'fpd/**', '.github/workflows/build.yml' ]
   pull_request:
-    分支: [ main, develop ]
+    branches: [ main, develop ]
     paths: [ 'app/**', 'fpd/**', '.github/workflows/build.yml' ]
   workflow_dispatch:
     inputs:
       build_type:
         description: 'Build type'
         required: true
-        默认: 'both'
-        输入: choice
+        default: 'both'
+        type: choice
         options: [ both, debug, release ]
 
 env:
