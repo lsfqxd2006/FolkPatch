@@ -1,30 +1,199 @@
-- name: 从 APK 文件名读取版本信息
-  id: version
-  run: |
-    VERSION_NAME=""
-    VERSION_CODE=""
-    
-    for apk in artifacts/*.apk; do
-      if [ -f "$apk" ]; then
-        filename=$(basename "$apk")
-        if [[ "$filename" =~ FolkPatch-(Debug|Release)-([0-9.]+)-([0-9]+)\.apk$ ]]; then
-          VERSION_NAME="${BASH_REMATCH[2]}"
-          VERSION_CODE="${BASH_REMATCH[3]}"
-          echo "version_name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
-          echo "version_code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
-          echo "✓ 从 APK 文件名读取到版本名: ${VERSION_NAME}"
-          echo "✓ 从 APK 文件名读取到版本号: ${VERSION_CODE}"
-          echo "✓ 使用的 APK: ${filename}"
-          break
-        fi
-      fi
-    done
-    
-    # 检查是否成功读取到版本信息
-    if [ -z "$VERSION_NAME" ] || [ -z "$VERSION_CODE" ]; then
-      echo "::error::无法从 APK 文件名解析版本信息！"
-      echo "::error::APK 文件名格式应为: FolkPatch-类型-版本名-版本号.apk"
-      echo "::error::实际文件列表:"
-      ls -la artifacts/ || echo "无文件"
-      exit 1
-    fi
+name: Publish Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: '构建运行ID（留空则使用最新的成功构建）'
+        required: false
+        type: string
+        default: ''
+      build_type:
+        description: '要发布的构建类型（只上传实际存在的文件）'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - debug
+          - both
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish to GitHub Releases
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Find build workflow run
+        id: find_build
+        run: |
+          if [ -n "${{ inputs.build_run_id }}" ]; then
+            RUN_ID="${{ inputs.build_run_id }}"
+            echo "✓ 使用指定的构建运行ID: ${RUN_ID}"
+          else
+            RUN_ID=$(gh run list --workflow build.yml --status success --json databaseId --jq '.[0].databaseId' --limit 1)
+            if [ -z "$RUN_ID" ]; then
+              echo "::error::没有找到成功的构建记录！"
+              exit 1
+            fi
+            echo "✓ 使用最新的构建运行ID: ${RUN_ID}"
+          fi
+          echo "run_id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Create artifacts directory
+        run: mkdir -p artifacts
+
+      - name: Download release artifacts
+        if: inputs.build_type == 'release' || inputs.build_type == 'both'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: folkpatch-release-*
+          path: artifacts
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.find_build.outputs.run_id }}
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Download debug artifacts
+        if: inputs.build_type == 'debug' || inputs.build_type == 'both'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: folkpatch-debug-*
+          path: artifacts
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.find_build.outputs.run_id }}
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: 验证下载的构建产物
+        run: |
+          echo "=== 下载的文件列表 ==="
+          if [ -d "artifacts" ] && [ -n "$(ls -A artifacts 2>/dev/null)" ]; then
+            ls -la artifacts/
+            FILE_COUNT=$(ls -1 artifacts/*.apk 2>/dev/null | wc -l)
+            echo "✓ 找到 ${FILE_COUNT} 个 APK 文件"
+          else
+            echo "::error::没有下载到任何构建产物！"
+            exit 1
+          fi
+
+      - name: 从 APK 文件名读取版本信息
+        id: version
+        run: |
+          VERSION_NAME=""
+          VERSION_CODE=""
+          
+          for apk in artifacts/*.apk; do
+            if [ -f "$apk" ]; then
+              filename=$(basename "$apk")
+              if [[ "$filename" =~ FolkPatch-(Debug|Release)-([0-9.]+)-([0-9]+)\.apk$ ]]; then
+                VERSION_NAME="${BASH_REMATCH[2]}"
+                VERSION_CODE="${BASH_REMATCH[3]}"
+                echo "version_name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+                echo "version_code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
+                echo "✓ 从 APK 文件名读取到版本名: ${VERSION_NAME}"
+                echo "✓ 从 APK 文件名读取到版本号: ${VERSION_CODE}"
+                echo "✓ 使用的 APK: ${filename}"
+                break
+              fi
+            fi
+          done
+          
+          if [ -z "$VERSION_NAME" ] || [ -z "$VERSION_CODE" ]; then
+            echo "::error::无法从 APK 文件名解析版本信息！"
+            echo "::error::APK 文件名格式应为: FolkPatch-类型-版本名-版本号.apk"
+            echo "::error::实际文件列表:"
+            ls -la artifacts/ || echo "无文件"
+            exit 1
+          fi
+
+      - name: 显示实际发布的文件
+        run: |
+          echo "=== 实际将发布的文件 ==="
+          for apk in artifacts/*.apk; do
+            if [ -f "$apk" ]; then
+              echo "  📱 $(basename "$apk")"
+            fi
+          done
+
+      - name: 检查 Tag 是否存在
+        id: check_tag
+        run: |
+          TAG="FolkPatch-${{ steps.version.outputs.version_name }}-${{ steps.version.outputs.version_code }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "⚠ Tag ${TAG} 已存在，将更新现有发布"
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "✓ Tag ${TAG} 不存在，将创建新发布"
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: 创建 Git Tag
+        if: steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.check_tag.outputs.tag }}" -m "发布版本 ${{ steps.version.outputs.version_name }} (版本号: ${{ steps.version.outputs.version_code }})"
+          git push origin "${{ steps.check_tag.outputs.tag }}"
+          echo "✓ Git Tag 已创建并推送"
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.check_tag.outputs.tag }}
+          name: FolkPatch ${{ steps.version.outputs.version_name }} (${{ steps.version.outputs.version_code }})
+          body: |
+            ## 🎉 FolkPatch Release ${{ steps.version.outputs.version_name }}
+            
+            ### 📦 构建信息
+            | 项目 | 值 |
+            |------|-----|
+            | 版本名 | `${{ steps.version.outputs.version_name }}` |
+            | 版本号 | `${{ steps.version.outputs.version_code }}` |
+            | 构建类型 | `${{ inputs.build_type }}` |
+            | 源构建 | [#${{ steps.find_build.outputs.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.find_build.outputs.run_id }}) |
+            
+            ### 📱 下载
+            APK 文件已附在下方。
+            
+            ### 📝 更新日志
+            - [查看代码变更](${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.check_tag.outputs.tag }}...HEAD)
+            
+            ---
+            *由 GitHub Actions 自动发布*
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/*.apk
+          
+      - name: 发布摘要
+        run: |
+          echo "## ✅ 发布成功" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 项目 | 值 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Tag** | \`${{ steps.check_tag.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **版本名** | ${{ steps.version.outputs.version_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **版本号** | ${{ steps.version.outputs.version_code }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **构建类型** | ${{ inputs.build_type }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **实际发布** | $(ls -1 artifacts/*.apk 2>/dev/null | wc -l) 个 APK |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📱 APK 文件" >> $GITHUB_STEP_SUMMARY
+          for apk in artifacts/*.apk; do
+            if [ -f "$apk" ]; then
+              echo "- \`$(basename "$apk")\`" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
