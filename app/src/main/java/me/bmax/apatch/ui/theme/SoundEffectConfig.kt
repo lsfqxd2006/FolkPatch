@@ -28,17 +28,17 @@ object SoundEffectConfig {
     const val SOURCE_TYPE_PRESET = "preset"
 
     val PRESETS = listOf(
-        "Zako",
-        "Zako2",
-        "Imoi",
-        "Ehe",
-        "Baka",
-        "Ciallo"
+        "Airbubble",
+        "‌Boing",
+        "Click",
+        "Cute",
+        "Snap",
+        "Fast"
     )
 
     val STARTUP_PRESETS = listOf(
-        "Zako",
-        "Hentai"
+        "Appear",
+        "Fastxiu"
     )
 
     var isSoundEffectEnabled: Boolean by mutableStateOf(false)
