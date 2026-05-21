@@ -147,7 +147,11 @@ fun AppProfileScreen(
             )
 
             SegmentedControl(
-                items = listOf("ROOT", "NO ROOT", "Exclude"),
+                items = listOf(
+                    stringResource(R.string.settings_new_app_profile_root),
+                    stringResource(R.string.settings_new_app_profile_normal),
+                    stringResource(R.string.settings_new_app_profile_exclude)
+                ),
                 selectedIndex = selectedIndex,
                 onItemSelection = { index ->
                     selectedIndex = index
