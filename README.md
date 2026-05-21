@@ -61,7 +61,7 @@ FolkPatch - 专注界面优化与功能扩展的Root管理工具
 ### 📦 使用指导
 
 1. **下载安装：**
-   从 [发布页面](https://github.com/LyraVoid/FolkPatch/releases/latest) 下载最新版安装包
+   从 [发布页面](https://github.com/lsfqxd2006/FolkPatch/releases/latest) 下载最新版安装包
 
 2. **安装应用：**
    安装最新版安装包到你的 Android 设备
