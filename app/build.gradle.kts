@@ -73,6 +73,7 @@ val baseArgs = mutableListOf(
 
 android {
     namespace = "me.bmax.apatch"
+    resConfigs "en", "zh-rCN", "zh-rTW"
     signingConfigs {
         create("release") {
             storeFile = file(keystoreProperties.getProperty("KEYSTORE_FILE") ?: "debug.keystore")
