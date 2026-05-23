@@ -73,7 +73,6 @@ val baseArgs = mutableListOf(
 
 android {
     namespace = "me.bmax.apatch"
-    resourceConfigurations.addAll(listOf("en", "zh-rCN", "zh-rTW"))
     signingConfigs {
         create("release") {
             storeFile = file(keystoreProperties.getProperty("KEYSTORE_FILE") ?: "debug.keystore")
@@ -146,6 +145,7 @@ android {
         targetSdk = androidTargetSdkVersion
         versionCode = managerVersionCode
         versionName = managerVersionName
+        resourceConfigurations += listOf("en", "zh-rCN", "zh-rTW")
         buildConfigField("String", "buildKPV", "\"$kernelPatchVersion\"")
         buildConfigField("boolean", "DEBUG_FAKE_ROOT", localProperties.getProperty("debug.fake_root", "false"))
 
