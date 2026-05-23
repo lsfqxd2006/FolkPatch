@@ -1521,7 +1521,7 @@ private fun ModuleItem(
         .animateContentSize()
         .combinedClickable(
             interactionSource = interactionSource,
-            indication = androidx.compose.foundation.ripple.rememberRipple(
+            indication = androidx.compose.foundation.indication.rememberRipple(
                 bounded = true,
                 shape = cardShape
             ),
