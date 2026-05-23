@@ -24,6 +24,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CircleShape
@@ -1516,13 +1517,13 @@ private fun ModuleItem(
 
     val cardShape = RoundedCornerShape(20.dp)
 
-    val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val interactionSource = remember { MutableInteractionSource() }
     val clickModifier = Modifier
         .fillMaxWidth()
         .animateContentSize()
         .combinedClickable(
             interactionSource = interactionSource,
-            indication = androidx.compose.foundation.indication.rememberRipple(
+            indication = rememberRipple(
                 bounded = true,
                 shape = cardShape
             ),
