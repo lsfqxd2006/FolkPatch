@@ -1788,14 +1788,12 @@ private fun ModuleItem(
 
     // Render: inside spliced group → no Surface wrapper; standalone → Surface card
     if (insideSplicedGroup) {
-        Box(
-            modifier = modifier
-                .clip(cardShape)
-                .then(clickModifier)
-        ) {
+        // 拼接卡片保持原样不动
+        Box(modifier = modifier.then(clickModifier)) {
             contentBlock()
         }
     } else {
+        // 非拼接卡片 增加前置clip限制点击范围
         Surface(
             modifier = modifier
                 .clip(cardShape)
@@ -1807,6 +1805,7 @@ private fun ModuleItem(
             contentBlock()
         }
     }
+
 
     if (showShortcutDialog) {
         AlertDialog(
