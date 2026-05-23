@@ -419,7 +419,10 @@ private fun AppItemM3E(
             )
             FlowRow(modifier = Modifier.padding(top = 4.dp)) {
                 if (rootGranted) {
-                    LabelText(label = "ROOT", containerColor = MaterialTheme.colorScheme.primaryContainer)
+                    LabelText(
+                        label = stringResource(id = R.string.superuser),
+                        containerColor = MaterialTheme.colorScheme.primaryContainer, 
+                    )
                 }
                 if (excludeApp) {
                     LabelText(

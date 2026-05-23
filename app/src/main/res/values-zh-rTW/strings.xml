@@ -471,13 +471,13 @@
     <string name="dpi_apply_settings">套用</string>
     <string name="dpi_confirm_title">確認變更 DPI</string>
     <string name="dpi_confirm_message">將應用程式 DPI 從 %1$s 變更為 %2$s？</string>
-    <string name="settings_magic_mount">Folk Mount API</string>
+    <string name="settings_magic_mount">Folk 掛載服務</string>
     <string name="settings_magic_mount_summary">啟用內建的模組掛載系統</string>
     <string name="settings_new_app_profile_mode">新軟體預設模式</string>
     <string name="settings_new_app_profile_normal">一般</string>
     <string name="settings_new_app_profile_root">超級使用者</string>
     <string name="settings_new_app_profile_exclude">排除</string>
-    <string name="settings_hide_service">FolkPatch Hide</string>
+    <string name="settings_hide_service">FolkPatch 隱藏</string>
     <string name="settings_hide_service_summary">一定程度上隱藏Bootloader解鎖狀態</string>
     <string name="settings_app_title">應用程式標題</string>
     <string name="app_title_custom">自訂</string>
@@ -953,7 +953,7 @@
     <string name="search_scripts">搜尋腳本...</string>
 
     <!-- Umount Service -->
-    <string name="settings_umount_service">Umount Service</string>
+    <string name="settings_umount_service">Umount 服務</string>
     <string name="settings_umount_service_summary">配置開機自動卸載的掛載點</string>
     <string name="umount_config_title">Umount 配置</string>
     <string name="umount_config_enabled">啟用 Umount</string>
