@@ -1515,10 +1515,16 @@ private fun ModuleItem(
 
     val cardShape = RoundedCornerShape(20.dp)
 
+    val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     val clickModifier = Modifier
         .fillMaxWidth()
         .animateContentSize()
         .combinedClickable(
+            interactionSource = interactionSource,
+            indication = androidx.compose.foundation.ripple.rememberRipple(
+                bounded = true,
+                shape = cardShape
+            ),
             onClick = {
                 if (foldSystemModule) {
                     onExpandToggle()
@@ -1788,12 +1794,18 @@ private fun ModuleItem(
 
     // Render: inside spliced group → no Surface wrapper; standalone → Surface card
     if (insideSplicedGroup) {
-        Box(modifier = modifier.then(clickModifier)) {
+        Box(
+            modifier = modifier
+                .then(clickModifier)
+                .clip(cardShape)
+        ) {
             contentBlock()
         }
     } else {
         Surface(
-            modifier = modifier.then(clickModifier),
+            modifier = modifier
+                .then(clickModifier)
+                .clip(cardShape),
             shape = cardShape,
             color = cardColor,
             tonalElevation = 0.dp
