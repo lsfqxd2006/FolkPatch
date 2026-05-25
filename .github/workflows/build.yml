@@ -1,4 +1,4 @@
-name: Build FolkPatch test
+name: Build FolkPatch
 
 on:
   push:
