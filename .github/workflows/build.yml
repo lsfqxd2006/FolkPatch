@@ -93,8 +93,6 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.build_debug == 'true'
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # 消除 Node 20 警告
     steps:
       - uses: actions/checkout@v5
         with:
@@ -110,7 +108,8 @@ jobs:
           app.signature.hash=${{ secrets.APP_SIGNATURE_HASH }}
           EOF
 
-      - run: ./gradlew assembleDebug --no-daemon
+      # ✅ 最快构建命令
+      - run: ./gradlew assembleDebug --no-daemon --build-cache --configuration-cache
 
       - name: Rename APK
         run: |
@@ -130,8 +129,6 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.build_release == 'true'
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # 消除 Node 20 警告
     steps:
       - uses: actions/checkout@v5
         with:
@@ -162,7 +159,8 @@ jobs:
           KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
           EOF
 
-      - run: ./gradlew assembleRelease --no-daemon
+      # ✅ 最快构建命令
+      - run: ./gradlew assembleRelease --no-daemon --build-cache --configuration-cache
 
       - name: Rename APK
         run: |

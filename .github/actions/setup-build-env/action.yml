@@ -18,10 +18,13 @@ runs:
     # Android SDK (升级到 v4，支持 Node24)
     - uses: android-actions/setup-android@v4
 
-    # Gradle 官方 v4，自带缓存，缓存失败不中断构建
+    # ✅ 极速缓存配置（最稳定、最快）
     - uses: gradle/actions/setup-gradle@v4
       with:
-        gradle-home-cache-failure: warn
+        cache-cleanup: always
+        gradle-home-cache-includes: |
+          caches
+          wrapper
 
     # Rust 新版官方 action（无 set-output 警告）
     - uses: dtolnay/rust-toolchain@stable
