@@ -4,33 +4,36 @@ description: Install all build dependencies (Java, Android SDK, Gradle, Rust too
 runs:
   using: composite
   steps:
+    # 强制启用 Node.js 24，消除所有弃用警告
+    - name: Enable Node.js 24
+      shell: bash
+      run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> "$GITHUB_ENV"
+
+    # Java
     - uses: actions/setup-java@v4
       with:
         distribution: temurin
         java-version: '21'
 
-    - uses: android-actions/setup-android@v3
+    # Android SDK (升级到 v4，支持 Node24)
+    - uses: android-actions/setup-android@v4
 
-    - uses: gradle/actions/setup-gradle@v3
-
-    - uses: actions-rs/toolchain@v1
+    # Gradle 官方 v4，自带缓存，缓存失败不中断构建
+    - uses: gradle/actions/setup-gradle@v4
       with:
-        toolchain: stable
-        target: aarch64-linux-android
-        override: true
+        gradle-home-cache-failure: warn
 
+    # Rust 新版官方 action（无 set-output 警告）
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-linux-android
+
+    # 安装 cargo-ndk
     - name: Install cargo-ndk
       shell: bash
       run: cargo install cargo-ndk
 
+    # 授权
     - name: Grant execute permission
       shell: bash
       run: chmod +x gradlew
-
-    - uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: ${{ runner.os }}-gradle-

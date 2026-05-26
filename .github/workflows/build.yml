@@ -93,7 +93,8 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.build_debug == 'true'
     runs-on: ubuntu-latest
-
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # 消除 Node 20 警告
     steps:
       - uses: actions/checkout@v5
         with:
@@ -129,7 +130,8 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.build_release == 'true'
     runs-on: ubuntu-latest
-
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # 消除 Node 20 警告
     steps:
       - uses: actions/checkout@v5
         with:
