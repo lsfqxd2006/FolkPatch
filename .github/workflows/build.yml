@@ -17,6 +17,8 @@ on:
         options: [ both, debug, release ]
 
 env:
+  # 🔥 新增：强制所有 JavaScript Actions 运行于 Node.js 24，消除弃用警告
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   KEYSTORE_FILE: debug.keystore
   KEYSTORE_PASSWORD: android
   KEY_ALIAS: androiddebugkey
@@ -36,7 +38,8 @@ jobs:
       commit_short: ${{ steps.version.outputs.commit_short }}
 
     steps:
-      - uses: actions/checkout@v5
+      # ✅ 修正：actions/checkout@v5 -> v4（v5 不存在，v4 稳定且受环境变量支持）
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -94,7 +97,7 @@ jobs:
     if: needs.prepare.outputs.build_debug == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -109,7 +112,7 @@ jobs:
           EOF
 
       # ✅ 最快构建命令
-      - run: ./gradlew assembleDebug --no-daemon --build-cache
+      - run: ./gradlew assembleDebug --no-daemon --build-cache --configuration-cache
 
       - name: Rename APK
         run: |
@@ -118,7 +121,8 @@ jobs:
           APK=$(find app/build/outputs/apk/debug -name "*.apk" -type f | head -1)
           [ -n "$APK" ] && mv "$APK" "FolkPatch-Debug-${VERSION_NAME}-${VERSION_CODE}.apk"
 
-      - uses: actions/upload-artifact@v4
+      # ✅ 升级到 v6，原生支持 Node 24
+      - uses: actions/upload-artifact@v6
         with:
           name: folkpatch-debug-${{ needs.prepare.outputs.commit_short }}
           path: FolkPatch-Debug-*.apk
@@ -130,7 +134,7 @@ jobs:
     if: needs.prepare.outputs.build_release == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -160,7 +164,7 @@ jobs:
           EOF
 
       # ✅ 最快构建命令
-      - run: ./gradlew assembleRelease --no-daemon --build-cache
+      - run: ./gradlew assembleRelease --no-daemon --build-cache --configuration-cache
 
       - name: Rename APK
         run: |
@@ -169,7 +173,7 @@ jobs:
           APK=$(find app/build/outputs/apk/release -name "*.apk" -type f | head -1)
           [ -n "$APK" ] && mv "$APK" "FolkPatch-Release-${VERSION_NAME}-${VERSION_CODE}.apk"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: folkpatch-release-${{ needs.prepare.outputs.commit_short }}
           path: FolkPatch-Release-*.apk
