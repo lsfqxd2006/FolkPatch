@@ -109,7 +109,7 @@ jobs:
           EOF
 
       # ✅ 最快构建命令
-      - run: ./gradlew assembleDebug --no-daemon --build-cache --configuration-cache
+      - run: ./gradlew assembleDebug --no-daemon --build-cache
 
       - name: Rename APK
         run: |
@@ -160,7 +160,7 @@ jobs:
           EOF
 
       # ✅ 最快构建命令
-      - run: ./gradlew assembleRelease --no-daemon --build-cache --configuration-cache
+      - run: ./gradlew assembleRelease --no-daemon --build-cache
 
       - name: Rename APK
         run: |
