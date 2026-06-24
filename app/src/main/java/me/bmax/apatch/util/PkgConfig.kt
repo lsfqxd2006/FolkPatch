@@ -23,10 +23,24 @@ object PkgConfig {
         var pkg: String = "", var exclude: Int = 0, var allow: Int = 0, var profile: Natives.Profile
     ) : Parcelable {
         companion object {
-            fun fromLine(line: String): Config {
+            /**
+             * 解析单行配置。期望格式：pkg,exclude,allow,uid,to_uid,sctx
+             * 对格式异常的行（字段不足、类型不匹配等）返回 null，由调用方跳过，
+             * 避免配置文件中的一行坏数据导致整个应用崩溃（见 IndexOutOfBoundsException）。
+             */
+            fun fromLine(line: String): Config? {
                 val sp = line.split(",")
-                val profile = Natives.Profile(sp[3].toInt(), sp[4].toInt(), sp[5])
-                return Config(sp[0], sp[1].toInt(), sp[2].toInt(), profile)
+                if (sp.size < 6) {
+                    Log.w(TAG, "Skipping malformed config line (expected >=6 fields, got ${sp.size}): $line")
+                    return null
+                }
+                return try {
+                    val profile = Natives.Profile(sp[3].toInt(), sp[4].toInt(), sp[5])
+                    Config(sp[0], sp[1].toInt(), sp[2].toInt(), profile)
+                } catch (e: NumberFormatException) {
+                    Log.w(TAG, "Skipping config line with non-numeric field: $line", e)
+                    null
+                }
             }
         }
 
@@ -45,7 +59,7 @@ object PkgConfig {
         if (file.exists()) {
             file.readLines().drop(1).filter { it.isNotEmpty() }.forEach {
                 Log.d(TAG, it)
-                val p = Config.fromLine(it)
+                val p = Config.fromLine(it) ?: return@forEach // 跳过格式异常的行
                 if (!p.isDefault()) {
                     configs[p.profile.uid] = p
                 }

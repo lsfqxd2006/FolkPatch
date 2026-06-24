@@ -66,10 +66,33 @@ enum class MODULE_TYPE {
 @Composable
 @Destination<RootGraph>
 fun InstallScreen(navigator: DestinationsNavigator, uri: Uri, type: MODULE_TYPE) {
-    var text by remember { mutableStateOf("") }
+    var text by rememberSaveable { mutableStateOf("") }
     val displayBuffer = remember { StringBuffer() }
     val fullLogBuffer = remember { StringBuffer() }
     var showFloatAction by rememberSaveable { mutableStateOf(false) }
+
+    /**
+     * Append a line to the display buffer, truncating to the last 100K chars so the
+     * saveable [text] state never exceeds the Binder transaction limit and triggers
+     * TransactionTooLargeException on large module install logs. The full, untruncated
+     * log is kept in [fullLogBuffer] for saving to a file.
+     */
+    fun appendDisplay(line: String) {
+        if (line.startsWith("\u001B[H\u001BJ")) { // clear command
+            displayBuffer.setLength(0)
+            displayBuffer.append(line.substring(6))
+        } else {
+            displayBuffer.append(line)
+            val len = displayBuffer.length
+            if (len > 100_000) {
+                displayBuffer.delete(0, len - 100_000)
+            }
+        }
+    }
+
+    fun appendLog(line: String) {
+        fullLogBuffer.append(line).append("\n")
+    }
 
     val snackBarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
@@ -111,22 +134,12 @@ fun InstallScreen(navigator: DestinationsNavigator, uri: Uri, type: MODULE_TYPE)
                 }
             }, onStdout = {
                 val tempText = "$it\n"
-                if (tempText.startsWith("[H[J")) { // clear command
-                    displayBuffer.setLength(0)
-                    displayBuffer.append(tempText.substring(6))
-                } else {
-                    displayBuffer.append(tempText)
-                }
-                fullLogBuffer.append(it).append("\n")
+                appendDisplay(tempText)
+                appendLog(it)
             }, onStderr = {
                 val tempText = "$it\n"
-                if (tempText.startsWith("[H[J")) { // clear command
-                    displayBuffer.setLength(0)
-                    displayBuffer.append(tempText.substring(6))
-                } else {
-                    displayBuffer.append(tempText)
-                }
-                fullLogBuffer.append(it).append("\n")
+                appendDisplay(tempText)
+                appendLog(it)
             })
         }
     }

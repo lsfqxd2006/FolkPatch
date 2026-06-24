@@ -60,6 +60,29 @@ fun ExecuteAPMActionScreen(navigator: DestinationsNavigator, moduleId: String) {
     val scrollState = rememberScrollState()
     var actionResult: Boolean
 
+    fun appendLog(line: String) {
+        fullLogBuffer.append(line).append("\n")
+    }
+
+    /**
+     * Append a line to the display buffer, truncating to the last 100K chars so the
+     * saveable [text] state (mirrored from [displayBuffer] via the polling job) never
+     * exceeds the Binder transaction limit and triggers TransactionTooLargeException.
+     * The full, untruncated log is kept in [fullLogBuffer] for saving to a file.
+     */
+    fun appendDisplay(line: String) {
+        if (line.startsWith("\u001B[H\u001BJ")) { // clear command
+            displayBuffer.setLength(0)
+            displayBuffer.append(line.substring(6))
+        } else {
+            displayBuffer.append(line)
+            val len = displayBuffer.length
+            if (len > 100_000) {
+                displayBuffer.delete(0, len - 100_000)
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         if (text.isNotEmpty()) {
             return@LaunchedEffect
@@ -80,16 +103,11 @@ fun ExecuteAPMActionScreen(navigator: DestinationsNavigator, moduleId: String) {
                 moduleId,
                 onStdout = {
                     val tempText = "$it\n"
-                    if (tempText.startsWith("[H[J")) { // clear command
-                        displayBuffer.setLength(0)
-                        displayBuffer.append(tempText.substring(6))
-                    } else {
-                        displayBuffer.append(tempText)
-                    }
-                    fullLogBuffer.append(it).append("\n")
+                    appendDisplay(tempText)
+                    appendLog(it)
                 },
                 onStderr = {
-                    fullLogBuffer.append(it).append("\n")
+                    appendLog(it)
                 }
             ).let {
                 actionResult = it

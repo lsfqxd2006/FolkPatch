@@ -78,11 +78,15 @@ fun ThemeStoreScreen(
                     downloadingTheme = null
                     downloadProgress = null
                 } else if (downloadProgress?.status == DownloadStatus.FAILED) {
-                    // 下载失败
+                    // 下载失败：errorMessage 缺失时不拼接 ":null"，避免显示无意义信息
+                    val detail = downloadProgress?.errorMessage?.takeIf { it.isNotBlank() }
                     scope.launch {
                         snackbarHostState.showSnackbar(
-                            context.getString(R.string.theme_download_failed) + 
-                            ": ${downloadProgress?.errorMessage}"
+                            if (detail != null) {
+                                context.getString(R.string.theme_download_failed) + ": $detail"
+                            } else {
+                                context.getString(R.string.theme_download_failed)
+                            }
                         )
                     }
                     downloadingTheme = null

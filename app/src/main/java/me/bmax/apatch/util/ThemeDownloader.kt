@@ -186,8 +186,9 @@ class ThemeDownloader(private val context: Context) {
                 status = DownloadStatus.DOWNLOADING,
                 errorMessage = null
             ))
-            
-            val themeSuccess = downloadFileWithRetry(
+
+            // 1. 下载主题文件（致命：失败则整体失败）
+            val themeResult = downloadFileWithRetry(
                 url = theme.downloadUrl,
                 file = themeFile,
                 taskId = taskId,
@@ -197,13 +198,13 @@ class ThemeDownloader(private val context: Context) {
                 val overall = fileProgress * 0.7f
                 updateProgress(taskId, fileProgress, 0f, overall, DownloadStatus.DOWNLOADING, null)
             }
-            
-            if (!themeSuccess) {
-                updateProgress(taskId, 0f, 0f, 0f, DownloadStatus.FAILED, "Failed to download theme file")
+
+            if (!themeResult.success) {
+                updateProgress(taskId, 0f, 0f, 0f, DownloadStatus.FAILED, themeResult.error)
                 return@flow
             }
-            
-            // 2. 下载预览图
+
+            // 2. 下载预览图（非致命：失败仅记录并跳过，不阻断主题安装）
             val previewFile = getPreviewImagePath(theme.author, theme.name)
             emit(DownloadProgress(
                 themeId = taskId,
@@ -213,8 +214,8 @@ class ThemeDownloader(private val context: Context) {
                 status = DownloadStatus.DOWNLOADING,
                 errorMessage = null
             ))
-            
-            val imageSuccess = downloadFileWithRetry(
+
+            val imageResult = downloadFileWithRetry(
                 url = theme.previewUrl,
                 file = previewFile,
                 taskId = taskId,
@@ -224,13 +225,14 @@ class ThemeDownloader(private val context: Context) {
                 val overall = 0.7f + (imageProgress * 0.3f)
                 updateProgress(taskId, 1f, imageProgress, overall, DownloadStatus.DOWNLOADING, null)
             }
-            
-            if (!imageSuccess) {
-                updateProgress(taskId, 1f, 0f, 0.7f, DownloadStatus.FAILED, "Failed to download preview image")
-                return@flow
+
+            if (!imageResult.success) {
+                // 预览图下载失败：删除可能残留的不完整文件，记录警告，但主题仍算成功
+                Log.w(TAG, "Preview image download skipped for theme ${theme.id}: ${imageResult.error}")
+                if (previewFile.exists()) previewFile.delete()
             }
-            
-            // 3. 下载完成
+
+            // 3. 下载完成（预览图缺失不影响主题可用）
             updateProgress(taskId, 1f, 1f, 1f, DownloadStatus.COMPLETED, null)
             
             // 4. 保存主题元数据 JSON
@@ -244,7 +246,7 @@ class ThemeDownloader(private val context: Context) {
             
         } catch (e: Exception) {
             Log.e(TAG, "Download failed for theme ${theme.id}", e)
-            updateProgress(taskId, 0f, 0f, 0f, DownloadStatus.FAILED, e.message ?: "Unknown error")
+            updateProgress(taskId, 0f, 0f, 0f, DownloadStatus.FAILED, describeException(e))
             downloadTasks.remove(taskId)
         } finally {
             downloadSemaphore.release()
@@ -252,7 +254,28 @@ class ThemeDownloader(private val context: Context) {
     }.flowOn(Dispatchers.IO)
 
     /**
+     * 把异常转换为有意义的、非 null 的错误描述。
+     * 优先用异常自带的 message，否则回退到异常类型名。
+     */
+    private fun describeException(e: Throwable): String {
+        val msg = e.message
+        return if (!msg.isNullOrBlank()) msg else (e::class.simpleName ?: "Unknown error")
+    }
+
+    /**
+     * 单个文件下载结果。失败时 [error] 始终为非空、有意义的描述。
+     */
+    private data class DownloadFileResult(
+        val success: Boolean,
+        val error: String? = null
+    )
+
+    /**
      * 下载文件（支持断点续传）
+     *
+     * 续传正确性保证：仅当服务器真正返回 206 Partial Content 时才以 append 模式续写；
+     * 若服务器忽略 Range 头返回 200（gh-proxy / gitee raw 等代理常见行为），
+     * 则先截断已有半截文件、从头覆盖写入，避免出现「半截 + 完整」拼接的损坏文件。
      */
     private suspend fun downloadFileWithRetry(
         url: String,
@@ -260,84 +283,120 @@ class ThemeDownloader(private val context: Context) {
         taskId: String,
         isThemeFile: Boolean,
         onProgress: (Float) -> Unit
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): DownloadFileResult = withContext(Dispatchers.IO) {
+        // 空/无效 URL 早期校验，避免 OkHttp 抛出无 message 的 IllegalArgumentException
+        if (url.isBlank()) {
+            return@withContext DownloadFileResult(false, "Invalid download URL")
+        }
+
         var retryCount = 0
-        var lastError: String? = null
-        
+        var lastError: String = "Unknown error"
+
         while (retryCount < MAX_RETRIES) {
             try {
-                // 获取已下载的字节数（断点续传）
-                val downloadedBytes = if (file.exists()) file.length() else 0L
-                
-                // 构建请求
-                val request = Request.Builder()
-                    .url(url)
-                    .apply {
-                        if (downloadedBytes > 0) {
-                            addHeader("Range", "bytes=$downloadedBytes-")
-                        }
-                    }
-                    .build()
-                
-                val response = client.newCall(request).execute()
-                
-                // 处理响应
-                if (response.code !in 200..299) {
-                    throw IOException("HTTP error: ${response.code}")
-                }
-                
-                val totalBytes = if (response.body?.contentLength() ?: -1L > 0) {
-                    downloadedBytes + (response.body?.contentLength() ?: 0L)
-                } else {
-                    -1L
-                }
-                
-                // 写入文件
-                FileOutputStream(file, downloadedBytes > 0).use { output ->
-                    response.body?.byteStream()?.use { input ->
-                        val buffer = ByteArray(BUFFER_SIZE)
-                        var bytesRead: Long = 0
-                        
-                        var read: Int
-                        while (input.read(buffer).also { read = it } != -1) {
-                            output.write(buffer, 0, read)
-                            bytesRead += read
-                            
-                            // 计算进度
-                            val progress = if (totalBytes > 0) {
-                                (downloadedBytes + bytesRead).toFloat() / totalBytes
-                            } else {
-                                // 未知总大小时，使用已下载字节数估算
-                                0.9f // 暂时显示 90%
-                            }
-                            
-                            onProgress(progress.coerceIn(0f, 1f))
-                            
-                            // 检查是否被取消
-                            if (downloadTasks[taskId]?.isCancelled == true) {
-                                throw IOException("Download cancelled")
-                            }
-                        }
-                    }
-                }
-                
+                downloadOnce(url, file, taskId, onProgress)
                 Log.d(TAG, "Download completed: ${file.absolutePath}")
-                return@withContext true
-                
+                return@withContext DownloadFileResult(true)
             } catch (e: Exception) {
-                lastError = e.message ?: "Unknown error"
+                lastError = describeException(e)
                 Log.w(TAG, "Download attempt ${retryCount + 1} failed: $lastError")
                 retryCount++
-                
+
                 if (retryCount < MAX_RETRIES) {
                     // 等待后重试
                     kotlinx.coroutines.delay(RETRY_DELAY_MS)
                 }
             }
         }
-        
+
         Log.e(TAG, "Download failed after $MAX_RETRIES retries: $lastError")
-        false
+        // 彻底失败：清理可能不完整的残文件，避免下次续传从坏起点开始
+        runCatching { if (file.exists()) file.delete() }
+        DownloadFileResult(false, lastError)
+    }
+
+    /**
+     * 执行一次下载尝试。正确处理 206 续传 / 200 全量覆盖两种情形。
+     */
+    private fun downloadOnce(
+        url: String,
+        file: File,
+        taskId: String,
+        onProgress: (Float) -> Unit
+    ) {
+        // 已下载字节数（断点续传起点）
+        val downloadedBytes = if (file.exists()) file.length() else 0L
+
+        val request = Request.Builder()
+            .url(url)
+            .apply {
+                if (downloadedBytes > 0) {
+                    addHeader("Range", "bytes=$downloadedBytes-")
+                }
+            }
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            // 处理响应
+            if (response.code !in 200..299) {
+                throw IOException("HTTP error: ${response.code}")
+            }
+
+            // 关键：只有 206 才说明服务器真正按 Range 续传。
+            // 200 表示服务器忽略了 Range，返回完整内容 —— 必须从头覆盖写。
+            val resumeFromPartial = response.code == 206 && downloadedBytes > 0
+
+            // 服务器本次响应声明的剩余部分大小（206 时是剩余，200 时是整体）
+            val responseContentLength = response.body?.contentLength() ?: -1L
+
+            // 整个文件的总大小（用于进度计算）
+            val totalBytes = if (responseContentLength > 0) {
+                if (resumeFromPartial) downloadedBytes + responseContentLength else responseContentLength
+            } else {
+                -1L // 未知总大小
+            }
+
+            // 写文件：续传用 append，全量用 truncate（覆盖）
+            FileOutputStream(file, resumeFromPartial).use { output ->
+                response.body?.byteStream()?.use { input ->
+                    val buffer = ByteArray(BUFFER_SIZE)
+                    var bytesRead: Long = 0
+
+                    var read: Int
+                    while (input.read(buffer).also { read = it } != -1) {
+                        output.write(buffer, 0, read)
+                        bytesRead += read
+
+                        // 计算进度
+                        val progress = if (totalBytes > 0) {
+                            ((if (resumeFromPartial) downloadedBytes else 0L) + bytesRead).toFloat() / totalBytes
+                        } else {
+                            // 未知总大小：用已下载字节数做渐进估算，避免恒卡在某个固定值
+                            estimateUnknownProgress(bytesRead)
+                        }
+
+                        onProgress(progress.coerceIn(0f, 1f))
+
+                        // 检查是否被取消
+                        if (downloadTasks[taskId]?.isCancelled == true) {
+                            throw IOException("Download cancelled")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 未知 Content-Length 时的进度估算：基于已下载字节数做平滑递增。
+     * 主题文件通常 < 5MB，预览图 < 500KB；用渐进曲线逼近 1.0，避免恒停在一个固定值。
+     * 公式：p = 1 - 1/(1 + bytes/256KB)，对任意大小都连续单调递增、永不超过 1。
+     */
+    private fun estimateUnknownProgress(downloaded: Long): Float {
+        if (downloaded <= 0) return 0f
+        val ref = 256.0 * 1024.0 // 256KB 作为「半程」参考量
+        val p = 1.0 - 1.0 / (1.0 + downloaded.toDouble() / ref)
+        return p.toFloat().coerceIn(0f, 0.99f)
     }
 
     /**
