@@ -85,6 +85,7 @@ object UmountConfigManager {
      * 3. 如果 paths 为空，删除 UmountPATH 文件
      * 4. 根据 enabled 状态设置服务开关（控制开机是否执行）
      */
+    @Synchronized
     fun saveConfig(context: Context, config: UmountConfig): Boolean {
         Log.d(TAG, "=== saveConfig 开始 ===")
         Log.d(TAG, "enabled: ${config.enabled}, paths: '${config.paths}'")
@@ -92,28 +93,31 @@ object UmountConfigManager {
             // 1. 保存 JSON 配置到应用私有目录
             val configFile = File(context.filesDir, CONFIG_FILE_NAME)
             val jsonContent = getConfigJson(config)
-            val writer = FileWriter(configFile)
-            writer.write(jsonContent)
-            writer.close()
+            FileWriter(configFile).use { it.write(jsonContent) }
 
             // 更新内存状态
             isEnabled.value = config.enabled
             paths.value = config.paths
             Log.d(TAG, "配置保存成功: enabled=${config.enabled}")
 
-            // 2. 处理 UmountPATH 文件（只要 paths 不为空就创建）
+            // 2. 处理 UmountPATH 文件
             if (config.paths.isNotBlank()) {
                 Log.d(TAG, "paths 不为空，调用 createUmountPathFile")
-                val result = createUmountPathFile(context, config.paths)
-                Log.d(TAG, "createUmountPathFile 返回: $result")
+                if (!createUmountPathFile(context, config.paths)) {
+                    throw IOException("创建 UmountPATH 文件失败")
+                }
             } else {
                 Log.d(TAG, "paths 为空，调用 deleteUmountPathFile")
-                deleteUmountPathFile(context)
+                if (!deleteUmountPathFile(context)) {
+                    throw IOException("删除 UmountPATH 文件失败")
+                }
             }
 
-            // 3. 设置服务开关（控制开机是否执行）
+            // 3. 设置服务开关
             Log.d(TAG, "调用 setUmountServiceEnabled(${config.enabled})")
-            me.bmax.apatch.util.setUmountServiceEnabled(config.enabled)
+            if (!me.bmax.apatch.util.setUmountServiceEnabled(config.enabled)) {
+                throw IOException("设置服务开关失败")
+            }
 
             Log.d(TAG, "=== saveConfig 完成 ===")
             true
@@ -161,13 +165,14 @@ object UmountConfigManager {
      */
     private fun createUmountPathFile(context: Context, paths: String): Boolean {
         return try {
+            val cacheDir = context.cacheDir ?: return false
             val shell = getRootShell()
 
             // 确保目录存在
             shell.newJob().add("mkdir -p /data/adb/fp/bin").exec()
 
             // 写入临时文件
-            val tempFile = File(context.cacheDir, "UmountPATH_temp")
+            val tempFile = File(cacheDir, "UmountPATH_temp")
             tempFile.writeText(paths)
 
             // 使用 Root 权限复制文件并设置权限

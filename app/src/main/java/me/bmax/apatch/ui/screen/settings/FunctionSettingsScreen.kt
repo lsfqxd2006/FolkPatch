@@ -181,11 +181,6 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator, highlightKey: Strin
                 .debounce(1000L)
                 .collect { paths ->
                     val normalizedPaths = normalizePathHidePaths(paths)
-                    if (normalizedPaths != paths) {
-                        withContext(Dispatchers.Main) {
-                            pathHidePaths = normalizedPaths
-                        }
-                    }
                     writePathHidePaths(normalizedPaths)
                     Natives.pathHideClear()
                     if (normalizedPaths.isNotBlank()) {
@@ -202,7 +197,9 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator, highlightKey: Strin
                 .drop(1)
                 .debounce(1000L)
                 .collect { paths ->
-                    UmountConfigManager.saveConfig(context, UmountConfig(enabled = isUmountEnabled, paths = paths))
+                    withContext(Dispatchers.IO) {
+                        UmountConfigManager.saveConfig(context, UmountConfig(enabled = isUmountEnabled, paths = paths))
+                    }
                 }
         }
     }
