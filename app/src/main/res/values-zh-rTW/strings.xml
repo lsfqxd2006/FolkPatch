@@ -617,6 +617,21 @@
     <string name="apm_bulk_install_remove">移除</string>
     <string name="apm_first_use_title">歡迎使用系統模組</string>
     <string name="apm_first_use_text">歡迎使用系統模組。本功能支援 Magisk 模組。您可以點擊右下角的按鈕安裝模組，或使用頂部的安裝器進行模組批次安裝。此外，FolkPatch 也提供一鍵備份所有模組的功能，但請注意，此方式不一定適用於所有模組，建議自行備份關鍵模組。</string>
+
+    <!-- Welcome Guide -->
+    <string name="welcome_title_1">歡迎使用 FolkPatch</string>
+    <string name="welcome_desc_1">FolkPatch 是一個主打高度自訂和便捷操作的 Root 管理器，基於 KernelPatch 構建。讓你的裝置，由你做主。</string>
+    <string name="welcome_title_2">高度自訂</string>
+    <string name="welcome_desc_2">從主題顏色、背景、字型到音效、震動，一切都可以自由定製。前往主題商店探索更多風格！</string>
+    <string name="welcome_title_3">核心功能控制</string>
+    <string name="welcome_desc_3">在設定頁面點擊右上角的調音圖示，即可進入核心功能控制：FolkPatch Hide、Umount、Path Hide 等進階功能。</string>
+    <string name="welcome_title_4">準備好了嗎？</string>
+    <string name="welcome_desc_4">現在你已經了解了基本功能。開始享受高度自由的 Root 管理體驗吧！</string>
+    <string name="welcome_prev">上一步</string>
+    <string name="welcome_next">下一步</string>
+    <string name="welcome_skip">跳過</string>
+    <string name="welcome_got_it">開始使用</string>
+
     <!-- Module Backup/Restore Strings -->
     <string name="apm_backup_title">備份模組</string>
     <string name="apm_restore_title">還原模組</string>
@@ -980,13 +995,15 @@
     <string name="my_themes_delete_confirm">確定要刪除此主題嗎？</string>
     <string name="my_themes_deleted">主題已刪除</string>
     <string name="my_themes_applied">主題已應用</string>
-    <string name="my_themes_apply_failed">應用主題失敗</string>
+    <string name="my_themes_apply_failed">應用主題失敗，檔案可能已損毀。長按主題刪除後重新下載</string>
     <string name="my_themes_details">主題詳情</string>
 
     <!-- 下載對話框 -->
     <string name="theme_download_title">正在下載主題</string>
     <string name="theme_download_completed">下載完成</string>
     <string name="theme_download_failed">下載失敗</string>
+    <string name="theme_file_corrupt">主題檔案已損毀，請重新下載</string>
+    <string name="theme_file_incomplete">主題檔案不完整，請重新下載</string>
     <string name="theme_download_progress">進度</string>
     <string name="theme_download_file">主題檔案</string>
     <string name="theme_download_image">預覽圖片</string>
