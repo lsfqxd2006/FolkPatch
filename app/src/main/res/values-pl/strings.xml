@@ -684,6 +684,21 @@ Upewnij się, że aplikacja jest całkowicie zamknięta i ponownie otwarta, aby 
     <string name="settings_appearance_font_summary">Konfiguracja czcionki</string>
     <string name="settings_appearance_theme">Motyw</string>
     <string name="settings_appearance_theme_summary">Sklep z motywami, zapisywanie, importowanie i resetowanie</string>
+
+    <string name="settings_theme_mode">Konfiguracja trybu</string>
+    <string name="settings_theme_mode_summary">Przełączanie między wbudowanym sklepem a trybem zgodności przeglądarki</string>
+    <string name="theme_mode_builtin">Tryb wbudowany</string>
+    <string name="theme_mode_builtin_desc">Użyj wbudowanego sklepu motywów, aby przeglądać, pobierać i stosować motywy</string>
+    <string name="theme_mode_compat">Tryb zgodności</string>
+    <string name="theme_mode_compat_desc">Użyj przeglądarki do bezpośredniego pobierania motywów (dla urządzeń z problemami z importem)</string>
+    <string name="theme_mode_onboarding_title">Wybierz tryb motywu</string>
+    <string name="theme_mode_onboarding_msg">Jak chcesz przeglądać i instalować motywy? Możesz to zmienić później w ustawieniach.</string>
+    <string name="theme_mode_builtin_label">Sklep wbudowany</string>
+    <string name="theme_mode_compat_label">Tryb przeglądarki</string>
+    <string name="theme_mode_switched">Tryb motywu zmieniony na %s</string>
+    <string name="theme_mode_current">Obecnie: %s</string>
+    <string name="theme_mode_switch_title">Zmień tryb motywu</string>
+    <string name="theme_mode_switch_msg">Zmiana trybu wpłynie na sposób przeglądania i instalowania motywów. Kontynuować?</string>
     <string name="settings_appearance_banner">Baner</string>
     <string name="settings_appearance_banner_summary">Konfiguracja banera modułu</string>
     <string name="settings_appearance_layout">Układ</string>

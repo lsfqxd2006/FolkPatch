@@ -80,6 +80,8 @@ fun AppearanceSettingsContent(
     onNavigateToApiMarketplace: () -> Unit,
     flat: Boolean = false,
     highlightKey: String? = null,
+    themeStoreMode: String? = null,
+    onThemeStoreModeChanged: ((String) -> Unit)? = null,
 ) {
     val prefs = APApplication.sharedPreferences
     val context = LocalContext.current
@@ -1915,7 +1917,124 @@ fun AppearanceSettingsContent(
                     ) {
                         Icon(imageVector = Icons.Filled.Store, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                         Spacer(Modifier.width(16.dp))
-                        Text(text = stringResource(id = R.string.theme_store_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = stringResource(id = R.string.theme_store_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                            if (themeStoreMode == "compat") {
+                                Text(
+                                    text = stringResource(R.string.theme_mode_compat_desc),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            item(key = "appearance_theme_store_mode") {
+                val modeName = when (themeStoreMode) {
+                    "compat" -> stringResource(R.string.theme_mode_compat)
+                    else -> stringResource(R.string.theme_mode_builtin)
+                }
+                val showModeSwitchDialog = remember { mutableStateOf(false) }
+                ExpressiveCard(flat = flat, onClick = { showModeSwitchDialog.value = true }) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(imageVector = Icons.Filled.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.settings_theme_mode),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = stringResource(R.string.theme_mode_current, modeName),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                if (showModeSwitchDialog.value) {
+                    BasicAlertDialog(
+                        onDismissRequest = { showModeSwitchDialog.value = false },
+                        properties = DialogProperties(usePlatformDefaultWidth = false)
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(30.dp),
+                            color = AlertDialogDefaults.containerColor,
+                            tonalElevation = AlertDialogDefaults.TonalElevation,
+                            modifier = Modifier.width(320.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(24.dp)) {
+                                Text(
+                                    text = stringResource(R.string.theme_mode_switch_title),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.theme_mode_switch_msg),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(bottom = 16.dp)
+                                )
+
+                                val builtinLabel = stringResource(R.string.theme_mode_builtin_label)
+                                val compatLabel = stringResource(R.string.theme_mode_compat_label)
+                                listOf("builtin" to builtinLabel, "compat" to compatLabel).forEach { (mode, label) ->
+                                    Surface(
+                                        onClick = {
+                                            prefs.edit { putString("theme_mode", mode) }
+                                            onThemeStoreModeChanged?.invoke(mode)
+                                            showModeSwitchDialog.value = false
+                                            scope.launch {
+                                                snackBarHost.showSnackbar(
+                                                    context.getString(R.string.theme_mode_switched, label)
+                                                )
+                                            }
+                                        },
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = if (themeStoreMode == mode) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f) else Color.Transparent,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            RadioButton(
+                                                selected = themeStoreMode == mode,
+                                                onClick = null
+                                            )
+                                            Spacer(Modifier.width(12.dp))
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    label,
+                                                    style = MaterialTheme.typography.titleMedium
+                                                )
+                                                Text(
+                                                    if (mode == "compat") stringResource(R.string.theme_mode_compat_desc)
+                                                    else stringResource(R.string.theme_mode_builtin_desc),
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                }
+
+                                TextButton(
+                                    onClick = { showModeSwitchDialog.value = false },
+                                    modifier = Modifier.align(Alignment.End)
+                                ) {
+                                    Text(stringResource(android.R.string.cancel))
+                                }
+                            }
+                        }
                     }
                 }
             }
