@@ -43,6 +43,8 @@
     <string name="settings_navbar_glass_inner_glow_summary">在导航栏底部启用微光效果</string>
     <string name="settings_navbar_glass_border">玻璃边框</string>
     <string name="settings_navbar_glass_border_summary">在导航栏周围启用微妙的边框描边</string>
+    <string name="settings_compact_rounded_bar">紧凑圆角风格</string>
+    <string name="settings_compact_rounded_bar_summary">使用圆角紧凑间距的胶囊形悬浮底栏</string>
     <string name="settings_stats_top_layout">顶部布局</string>
     <string name="settings_stats_top_layout_summary">选择顶部信息卡片样式</string>
     <string name="settings_stats_top_layout_list">列表样式</string>
@@ -90,6 +92,10 @@
 
     <string name="about_source_code"><![CDATA[<p>在 %1$s 查看源代码<p/>加入我们的 %2$s 频道<p/>加入我们的 %3$s 群组]]></string>
     <string name="send_log">发送日志</string>
+    <string name="settings_clean_storage">清理应用数据</string>
+    <string name="settings_clean_storage_summary">修复残留文件导致的下载或应用失败</string>
+    <string name="settings_clean_storage_confirm">将删除已下载的主题、导入的音乐、音效和全部缓存文件，并重建相关目录。设置项会保留。是否继续？</string>
+    <string name="settings_clean_storage_done">清理完成</string>
     <string name="save_log">保存日志</string>
     <string name="log_saved">日志已保存</string>
     <string name="safe_mode">安全模式</string>
@@ -463,6 +469,8 @@
     <string name="dpi_confirm_message">将应用 DPI 从 %1$s 更改为 %2$s？</string>
     <string name="settings_magic_mount">Folk 挂载服务</string>
     <string name="settings_magic_mount_summary">启用内置的模块挂载系统</string>
+    <string name="settings_new_app_profile_enabled">新软件默认模式</string>
+    <string name="settings_new_app_profile_enabled_summary">开启后，新安装的软件会根据下方选择的模式自动配置</string>
     <string name="settings_new_app_profile_mode">新软件默认模式</string>
     <string name="settings_new_app_profile_normal">常规</string>
     <string name="settings_new_app_profile_root">超级用户</string>
@@ -641,14 +649,6 @@
     <string name="kpm_page_first_time_title">警告</string>
     <string name="kpm_page_first_time_message">内核模块是直接修改Boot的实现，它不像系统模块一样有很好的救砖机制，出问题只能进入Fastboot去修复。建议先加载模块没有问题再嵌入到Boot。如果是只能加载使用的模块，可以尝试使用自动内核补丁模块加载功能。如果你不了解内核模块，请不要使用本功能！</string>
     <!-- Module Backup/Restore Strings -->
-    <string name="apm_backup_title">备份模块</string>
-    <string name="apm_restore_title">恢复模块</string>
-    <string name="apm_backup_success">备份成功</string>
-    <string name="apm_restore_success">恢复成功</string>
-    <string name="apm_backup_failed">备份失败</string>
-    <string name="apm_restore_failed">恢复失败</string>
-    <string name="apm_backup_failed_msg">备份失败：%s</string>
-    <string name="apm_restore_failed_msg">恢复失败：%s</string>
     <string name="apm_copy_list_title">复制列表</string>
     <string name="apm_copy_list_success">模块列表已复制</string>
 
@@ -764,6 +764,35 @@
     <string name="settings_appearance_font_summary">自定义字体配置</string>
     <string name="settings_appearance_theme">主题设置</string>
     <string name="settings_appearance_theme_summary">主题商店、保存、导入和重置</string>
+
+    <string name="settings_nav_custom_icons">自定义导航图标</string>
+    <string name="settings_nav_custom_icons_summary">用自定义图片替换底部导航栏图标</string>
+    <string name="nav_icon_home">首页图标</string>
+    <string name="nav_icon_kpm">KPM图标</string>
+    <string name="nav_icon_superuser">超级用户图标</string>
+    <string name="nav_icon_apm">系统模块图标</string>
+    <string name="nav_icon_settings">设置图标</string>
+    <string name="nav_icon_select_image">选择图片</string>
+    <string name="nav_icon_clear">重置为默认</string>
+    <string name="nav_icon_custom_selected">自定义</string>
+    <string name="nav_icon_default">默认</string>
+    <string name="nav_icon_cleared">图标已重置为默认</string>
+    <string name="nav_icon_set">图标已更新</string>
+
+    <string name="settings_theme_mode">模式配置</string>
+    <string name="settings_theme_mode_summary">在内置主题商店和浏览器兼容模式之间切换</string>
+    <string name="theme_mode_builtin">内置模式</string>
+    <string name="theme_mode_builtin_desc">使用内置主题商店浏览、下载和应用主题</string>
+    <string name="theme_mode_compat">兼容模式</string>
+    <string name="theme_mode_compat_desc">使用浏览器直接下载主题（适用于导入有问题的设备）</string>
+    <string name="theme_mode_onboarding_title">选择主题模式</string>
+    <string name="theme_mode_onboarding_msg">您希望如何浏览和安装主题？您可以在设置中随时更改。</string>
+    <string name="theme_mode_builtin_label">内置商店</string>
+    <string name="theme_mode_compat_label">浏览器模式</string>
+    <string name="theme_mode_switched">主题模式已切换为%s</string>
+    <string name="theme_mode_current">当前：%s</string>
+    <string name="theme_mode_switch_title">切换主题模式</string>
+    <string name="theme_mode_switch_msg">更改模式将影响您浏览和安装主题的方式。是否继续？</string>
     <string name="settings_appearance_banner">横幅设置</string>
     <string name="settings_appearance_banner_summary">模块横幅配置</string>
     <string name="settings_appearance_layout">布局设置</string>
@@ -776,6 +805,8 @@
     <string name="settings_amoled_theme_desc">为深色模式使用纯黑背景</string>
     <string name="settings_switch_icon">启用按钮指示器</string>
     <string name="settings_switch_icon_desc">为开关按钮添加状态指示图标</string>
+    <string name="settings_discrete_slider">离散滑块</string>
+    <string name="settings_discrete_slider_desc">在滑块轨道上显示刻度标记</string>
     <string name="settings_use_legacy_su_page">单页超级用户授权</string>
     <string name="settings_use_legacy_su_page_summary">超级用户页面改用单页授权设计</string>
     <string name="settings_category_module">模块</string>
@@ -1093,4 +1124,26 @@
     <string name="settings_search_hint">搜索设置…</string>
     <string name="settings_search_empty_hint">输入以搜索所有设置项…</string>
     <string name="settings_no_results">未找到结果</string>
+
+    <!-- 色彩生成 -->
+    <string name="color_generation_classic">经典</string>
+    <string name="color_generation_custom">自定义</string>
+    <string name="color_generation_label">色彩模式</string>
+
+    <!-- 色彩标准 -->
+    <string name="color_standard_md3_2021">MD3 2021</string>
+    <string name="color_standard_m3e_2025">M3e 2025</string>
+    <string name="color_standard_label">色彩标准</string>
+
+    <!-- 色彩风格 -->
+    <string name="color_style_label">色彩风格</string>
+    <string name="color_style_tonal_spot">色调</string>
+    <string name="color_style_vibrant">活力</string>
+    <string name="color_style_content">内容</string>
+    <string name="color_style_expressive">表现</string>
+    <string name="color_style_rainbow">彩虹</string>
+    <string name="color_style_fruit_salad">果盘</string>
+    <string name="color_style_monochrome">单色</string>
+    <string name="color_style_neutral">中性</string>
+    <string name="color_style_fidelity">保真</string>
 </resources>

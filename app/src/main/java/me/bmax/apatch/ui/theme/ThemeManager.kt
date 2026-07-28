@@ -14,6 +14,7 @@ import androidx.core.os.LocaleListCompat
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.util.MusicManager
 import me.bmax.apatch.util.SafeUriResolver
+import me.bmax.apatch.util.BottomBarIconConfig
 import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -62,6 +63,9 @@ object ThemeManager {
         val nightModeEnabled: Boolean,
         val nightModeFollowSys: Boolean,
         val useSystemDynamicColor: Boolean,
+        val colorGenerationMode: String = "classic",
+        val colorStandard: String = "MD3_2021",
+        val colorStyle: String = "TONAL_SPOT",
         val appLanguage: String?,
         // Grid Working Card Background
         val isGridWorkingCardBackgroundEnabled: Boolean = false,
@@ -129,6 +133,9 @@ object ThemeManager {
                     nightModeEnabled = prefs.getBoolean("night_mode_enabled", true),
                     nightModeFollowSys = prefs.getBoolean("night_mode_follow_sys", false),
                     useSystemDynamicColor = prefs.getBoolean("use_system_color_theme", false),
+                    colorGenerationMode = prefs.getString("color_generation_mode", "classic") ?: "classic",
+                    colorStandard = prefs.getString("color_standard", "MD3_2021") ?: "MD3_2021",
+                    colorStyle = prefs.getString("color_style", "TONAL_SPOT") ?: "TONAL_SPOT",
                     appLanguage = AppCompatDelegate.getApplicationLocales().toLanguageTags(),
                     isGridWorkingCardBackgroundEnabled = BackgroundConfig.isGridWorkingCardBackgroundEnabled,
                     gridWorkingCardBackgroundOpacity = BackgroundConfig.gridWorkingCardBackgroundOpacity,
@@ -175,6 +182,9 @@ object ThemeManager {
                     put("nightModeEnabled", config.nightModeEnabled)
                     put("nightModeFollowSys", config.nightModeFollowSys)
                     put("useSystemDynamicColor", config.useSystemDynamicColor)
+                    put("colorGenerationMode", config.colorGenerationMode)
+                    put("colorStandard", config.colorStandard)
+                    put("colorStyle", config.colorStyle)
                     put("appLanguage", config.appLanguage)
                     
                     // Grid Working Card Background
@@ -221,6 +231,27 @@ object ThemeManager {
                     put("meta_version", metadata.version)
                     put("meta_author", metadata.author)
                     put("meta_description", metadata.description)
+
+                    // Nav Icons
+                    val navIconsJson = JSONObject()
+                    val navDestNames = listOf("Home", "KModule", "SuperUser", "AModule", "Settings")
+                    navDestNames.forEach { destName ->
+                        val prefKey = "nav_icon_$destName"
+                        val uri = prefs.getString(prefKey, null)
+                        if (uri != null) {
+                            try {
+                                SafeUriResolver.openInputStream(context, Uri.parse(uri))?.use { input ->
+                                    val iconFile = File(cacheDir, "nav_icon_$destName.png")
+                                    iconFile.outputStream().use { output -> input.copyTo(output) }
+                                    navIconsJson.put(destName, "nav_icon_$destName.png")
+                                }
+                            } catch (_: Throwable) { }
+                        }
+                    }
+                    if (navIconsJson.length() > 0) {
+                        put("navIcons", navIconsJson)
+                    }
+                    put("navIconCustomEnabled", prefs.getBoolean("nav_icon_custom_enabled", false))
                 }
                 File(cacheDir, THEME_CONFIG_FILENAME).writeText(json.toString())
 
@@ -420,7 +451,10 @@ object ThemeManager {
             withContext(Dispatchers.IO) {
             val cacheDir = File(context.cacheDir, "theme_import")
             if (cacheDir.exists()) cacheDir.deleteRecursively()
-            cacheDir.mkdirs()
+            if (!cacheDir.mkdirs() && !cacheDir.isDirectory) {
+                Log.e(TAG, "Cannot create import cache dir: ${cacheDir.absolutePath}")
+                return@withContext false
+            }
 
             try {
                 // 1. Decrypt and Unzip
@@ -449,6 +483,17 @@ object ThemeManager {
                                     // Prevent path traversal
                                     if (!file.canonicalPath.startsWith(cacheDir.canonicalPath)) {
                                         continue
+                                    }
+                                    // 目录型条目：只建目录，不能当文件写
+                                    if (entry!!.isDirectory) {
+                                        file.mkdirs()
+                                        continue
+                                    }
+                                    // 嵌套条目（如 assets/bg.jpg）：先确保父目录存在，否则 ENOENT
+                                    file.parentFile?.let { parent ->
+                                        if (!parent.isDirectory && !parent.mkdirs() && !parent.isDirectory) {
+                                            throw Exception("Cannot create directory for zip entry: ${entry!!.name}")
+                                        }
                                     }
                                     FileOutputStream(file).use { fos ->
                                         zis.copyTo(fos)
@@ -490,6 +535,9 @@ object ThemeManager {
                 val nightModeEnabled = json.optBoolean("nightModeEnabled", true)
                 val nightModeFollowSys = json.optBoolean("nightModeFollowSys", true)
                 val useSystemDynamicColor = json.optBoolean("useSystemDynamicColor", true)
+                val colorGenerationMode = json.optString("colorGenerationMode", "classic")
+                val colorStandard = json.optString("colorStandard", "MD3_2021")
+                val colorStyle = json.optString("colorStyle", "TONAL_SPOT")
                 val appLanguage = json.optString("appLanguage", "")
                 
                 // Grid Working Card Background
@@ -764,6 +812,32 @@ object ThemeManager {
                 }
                 SoundEffectConfig.save(context)
 
+                // Apply Nav Icons
+                val navIconsEnabled = json.optBoolean("navIconCustomEnabled", false)
+                val navIconsImportJson = if (json.has("navIcons")) json.getJSONObject("navIcons") else null
+                APApplication.sharedPreferences.edit()
+                    .putBoolean("nav_icon_custom_enabled", navIconsEnabled)
+                    .apply()
+                if (navIconsEnabled && navIconsImportJson != null) {
+                    val navDestNames = listOf("Home", "KModule", "SuperUser", "AModule", "Settings")
+                    navDestNames.forEach { destName ->
+                        val filename = navIconsImportJson.optString(destName, "")
+                        if (filename.isNotEmpty()) {
+                            val iconFile = File(cacheDir, filename)
+                            if (iconFile.exists()) {
+                                val destFile = File(context.filesDir, filename)
+                                iconFile.copyTo(destFile, overwrite = true)
+                                val fileUri = Uri.fromFile(destFile).toString()
+                                APApplication.sharedPreferences.edit()
+                                    .putString("nav_icon_$destName", fileUri)
+                                    .apply()
+                            }
+                        }
+                    }
+                }
+                // Notify observers so nav bar icons refresh live after theme import.
+                BottomBarIconConfig.notifyChanged()
+
                 // 4. Apply Font
                 if (isFontEnabled) {
                      val fontFile = File(cacheDir, FONT_FILENAME)
@@ -797,6 +871,9 @@ object ThemeManager {
                     .putBoolean("night_mode_enabled", nightModeEnabled)
                     .putBoolean("night_mode_follow_sys", nightModeFollowSys)
                     .putBoolean("use_system_color_theme", useSystemDynamicColor)
+                    .putString("color_generation_mode", colorGenerationMode)
+                    .putString("color_standard", colorStandard)
+                    .putString("color_style", colorStyle)
                     .apply()
                 
                 // 6. Refresh Theme
@@ -811,6 +888,8 @@ object ThemeManager {
             }
         }
         } catch (e: Exception) {
+            // 外层兜底：不能静默吞异常，否则导入失败无法从日志排查
+            Log.e(TAG, "Import failed (outer): ${e.message ?: e.javaClass.simpleName}", e)
             false
         }
 
@@ -839,6 +918,9 @@ object ThemeManager {
                     .putString("custom_color", "indigo")
                     .putString("home_layout_style", "circle")
                     .putString("stats_top_layout", "list")
+                    .putString("color_generation_mode", "classic")
+                    .putString("color_standard", "MD3_2021")
+                    .putString("color_style", "TONAL_SPOT")
                     .remove("appLanguage")
                     .apply()
 
@@ -903,7 +985,20 @@ object ThemeManager {
                 SoundEffectConfig.clearStartupSound(context)
                 SoundEffectConfig.save(context)
 
-        
+                // Reset Nav Icons
+                val navDestNames = listOf("Home", "KModule", "SuperUser", "AModule", "Settings")
+                prefs.edit()
+                    .putBoolean("nav_icon_custom_enabled", false)
+                    .also { edit ->
+                        navDestNames.forEach { destName ->
+                            edit.remove("nav_icon_$destName")
+                            File(filesDir, "nav_icon_$destName.png").takeIf { it.exists() }?.delete()
+                        }
+                    }
+                    .apply()
+                // Notify observers so nav bar icons refresh live after theme reset.
+                BottomBarIconConfig.notifyChanged()
+
                 withContext(Dispatchers.Main) {
                     AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
                 }

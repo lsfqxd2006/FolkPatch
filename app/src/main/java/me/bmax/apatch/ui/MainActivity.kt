@@ -33,6 +33,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -113,6 +114,7 @@ import me.bmax.apatch.ui.theme.APatchThemeWithBackground
 import me.bmax.apatch.ui.theme.BackgroundConfig
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.MaterialTheme
+import me.bmax.apatch.util.ui.FloatingBarConfig
 import me.bmax.apatch.util.PermissionRequestHandler
 import me.bmax.apatch.util.PermissionUtils
 import me.bmax.apatch.util.ui.LocalSnackbarHost
@@ -172,6 +174,9 @@ import me.bmax.apatch.util.ui.navBarLiquefiable
 import me.bmax.apatch.util.ui.rememberNavBarGlassLiquidState
 import me.bmax.apatch.util.ui.isRealTimeBlurAvailable
 import me.bmax.apatch.util.ui.showToast
+import me.bmax.apatch.util.BottomBarIconConfig
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
 
 data class ScrollState(
     val isScrollingDown: MutableState<Boolean>,
@@ -1124,16 +1129,20 @@ private fun BottomBar(
                 ) {
                     val isCustomBg = BackgroundConfig.isCustomBackgroundEnabled
                     if (isGlassEnabled) {
-                        val glassShape = CircleShape
+                        val barShape = if (FloatingBarConfig.isCompactRoundedStyle) {
+                            FloatingBarConfig.getCompactRoundedShape()
+                        } else {
+                            CircleShape
+                        }
                         Surface(
                             modifier = Modifier
                                 .wrapContentWidth()
-                                .clip(glassShape)
+                                .clip(barShape)
                                 .navBarGlassEffect(
-                                    shape = glassShape,
+                                    shape = barShape,
                                     liquidState = liquidState,
                                 ),
-                            shape = glassShape,
+                            shape = barShape,
                             color = Color.Transparent,
                             tonalElevation = 0.dp,
                             shadowElevation = 0.dp
@@ -1159,7 +1168,11 @@ private fun BottomBar(
                     } else {
                         Surface(
                             modifier = Modifier.wrapContentWidth(),
-                            shape = MaterialTheme.shapes.large,
+                            shape = if (FloatingBarConfig.isCompactRoundedStyle) {
+                                FloatingBarConfig.getCompactRoundedShape()
+                            } else {
+                                MaterialTheme.shapes.large
+                            },
                             color = containerColor,
                             tonalElevation = if (isCustomBg) 0.dp else 3.dp,
                             shadowElevation = if (isCustomBg) 0.dp else 8.dp
@@ -1239,9 +1252,9 @@ private fun BottomBar(
                                     }
                                 ) {
                                     if (isSelected) {
-                                        Icon(destination.iconSelected, stringResource(destination.label))
+                                        NavBarIcon(destination, isSelected = true)
                                     } else {
-                                        Icon(destination.iconNotSelected, stringResource(destination.label))
+                                        NavBarIcon(destination, isSelected = false)
                                     }
                                 }
                             },
@@ -1281,11 +1294,13 @@ private fun BottomBarContent(
     onUserInteraction: (() -> Unit)? = null
 ) {
     val navigator = navController.rememberDestinationsNavigator()
-    val itemSize = 56.dp
-    val itemSpacing = 4.dp
-    val containerPadding = 7.dp
-    val itemShape = if (BackgroundConfig.isNavBarGlassEnabled) CircleShape else MaterialTheme.shapes.large
+    val isCompactRounded = FloatingBarConfig.isCompactRoundedStyle
+    val itemSize = if (isCompactRounded) 52.dp else 56.dp
+    val itemSpacing = if (isCompactRounded) 6.dp else 4.dp
+    val containerPadding = if (isCompactRounded) 8.dp else 7.dp
+    val barHeight = if (isCompactRounded) 68.dp else 72.dp
     val isGlassEnabled = BackgroundConfig.isNavBarGlassEnabled
+    val itemShape = if (isCompactRounded || isGlassEnabled) CircleShape else MaterialTheme.shapes.large
     val indicatorHorizontalPadding by animateDpAsState(
         targetValue = if (isGlassEnabled) 3.dp else 0.dp,
         animationSpec = spring(
@@ -1321,7 +1336,7 @@ private fun BottomBarContent(
     Box(
         modifier = Modifier
             .width(navBarWidth)
-            .height(72.dp)
+            .height(barHeight)
     ) {
         Box(
             modifier = Modifier
@@ -1452,9 +1467,9 @@ private fun BottomBarContent(
                                 }
                             }
                         ) {
-                            Icon(
-                                if (isSelected) destination.iconSelected else destination.iconNotSelected,
-                                stringResource(destination.label),
+                            NavBarIcon(
+                                destination = destination,
+                                isSelected = isSelected,
                                 tint = if (isSelected) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
@@ -1605,9 +1620,9 @@ private fun NavigationRailBar(navController: NavHostController) {
                                 }
                             ) {
                                 if (isSelected) {
-                                    Icon(destination.iconSelected, stringResource(destination.label))
+                                    NavBarIcon(destination, isSelected = true)
                                 } else {
-                                    Icon(destination.iconNotSelected, stringResource(destination.label))
+                                    NavBarIcon(destination, isSelected = false)
                                 }
                             }
                         },
@@ -1787,5 +1802,39 @@ private fun createNavTransitions(
                 fadeOut(animationSpec = tween(340))
             }
         }
+    }
+}
+
+/**
+ * Renders a nav bar icon — uses custom image when set, otherwise falls back to the default Material icon.
+ */
+@Composable
+private fun NavBarIcon(
+    destination: BottomBarDestination,
+    isSelected: Boolean,
+    tint: Color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+    modifier: Modifier = Modifier,
+) {
+    val destinationName = destination.name
+    // Observe config revision so the icon recomposes immediately when the user
+    // picks/clears a custom icon or toggles custom icons, without needing an app restart.
+    val revision by BottomBarIconConfig.revision.collectAsState()
+    val customUri = remember(revision, destinationName) { BottomBarIconConfig.getCustomIconUri(destinationName) }
+    val isCustomEnabled = remember(revision) { BottomBarIconConfig.isEnabled }
+
+    if (isCustomEnabled && customUri != null) {
+        AsyncImage(
+            model = customUri,
+            contentDescription = stringResource(destination.label),
+            modifier = modifier.size(24.dp),
+            contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+        )
+    } else {
+        Icon(
+            imageVector = if (isSelected) destination.iconSelected else destination.iconNotSelected,
+            contentDescription = stringResource(destination.label),
+            tint = tint,
+            modifier = modifier,
+        )
     }
 }

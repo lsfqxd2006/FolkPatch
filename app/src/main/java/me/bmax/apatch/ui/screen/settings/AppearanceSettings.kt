@@ -7,6 +7,14 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import me.bmax.apatch.ui.component.ColorGenerationModeSelector
+import me.bmax.apatch.ui.component.SliderSettingCard
+import me.bmax.apatch.ui.component.SliderStyleConfig
+import me.bmax.apatch.ui.component.ColorStandardSelector
+import me.bmax.apatch.ui.component.ColorStylePicker
+import me.bmax.apatch.ui.theme.ColorGenerationMode
+import me.bmax.apatch.ui.theme.ColorStandard
+import me.bmax.apatch.ui.theme.ColorStyle
 import me.bmax.apatch.util.ui.showToast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
@@ -41,7 +49,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
@@ -67,9 +74,15 @@ import me.bmax.apatch.ui.theme.FontConfig
 import me.bmax.apatch.ui.theme.ThemeManager
 import me.bmax.apatch.ui.theme.refreshTheme
 import me.bmax.apatch.util.PermissionUtils
+import me.bmax.apatch.util.BottomBarIconConfig
+import me.bmax.apatch.util.ui.FloatingBarConfig
 import me.bmax.apatch.util.ui.APDialogBlurBehindUtils
 import me.bmax.apatch.util.ui.NavigationBarsSpacer
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,6 +93,8 @@ fun AppearanceSettingsContent(
     onNavigateToApiMarketplace: () -> Unit,
     flat: Boolean = false,
     highlightKey: String? = null,
+    themeStoreMode: String? = null,
+    onThemeStoreModeChanged: ((String) -> Unit)? = null,
 ) {
     val prefs = APApplication.sharedPreferences
     val context = LocalContext.current
@@ -354,6 +369,9 @@ fun AppearanceSettingsContent(
 
     var customColorScheme by remember { mutableStateOf(prefs.getString("custom_color", "indigo")) }
     var amoledTheme by remember { mutableStateOf(prefs.getBoolean("amoled_theme", false)) }
+    var colorGenerationMode by remember { mutableStateOf(ColorGenerationMode.fromKey(prefs.getString("color_generation_mode", "classic"))) }
+    var colorStandard by remember { mutableStateOf(ColorStandard.fromName(prefs.getString("color_standard", "MD3_2021"))) }
+    var colorStyle by remember { mutableStateOf(ColorStyle.fromName(prefs.getString("color_style", "TONAL_SPOT"))) }
 
     var currentStyle by remember { mutableStateOf(prefs.getString("home_layout_style", "circle")) }
 
@@ -364,6 +382,9 @@ fun AppearanceSettingsContent(
         customFontEnabled = FontConfig.isCustomFontEnabled
         customColorScheme = prefs.getString("custom_color", "indigo")
         amoledTheme = prefs.getBoolean("amoled_theme", false)
+        colorGenerationMode = ColorGenerationMode.fromKey(prefs.getString("color_generation_mode", "classic"))
+        colorStandard = ColorStandard.fromName(prefs.getString("color_standard", "MD3_2021"))
+        colorStyle = ColorStyle.fromName(prefs.getString("color_style", "TONAL_SPOT"))
         currentStyle = prefs.getString("home_layout_style", "circle")
     }
 
@@ -465,6 +486,48 @@ fun AppearanceSettingsContent(
                 )
             }
 
+            // Color generation mode & style pickers
+            item(key = "appearance_color_generation_mode") {
+                ColorGenerationModeSelector(
+                    selectedMode = colorGenerationMode,
+                    onModeSelected = { mode ->
+                        colorGenerationMode = mode
+                        prefs.edit().putString("color_generation_mode", mode.key).apply()
+                        refreshTheme.value = true
+                    },
+                    flat = flat,
+                    bare = true,
+                )
+            }
+
+            if (colorGenerationMode == ColorGenerationMode.CUSTOM) {
+                item(key = "appearance_color_standard") {
+                    ColorStandardSelector(
+                        selectedStandard = colorStandard,
+                        onStandardSelected = { standard ->
+                            colorStandard = standard
+                            prefs.edit().putString("color_standard", standard.name).apply()
+                            refreshTheme.value = true
+                        },
+                        flat = flat,
+                        bare = true,
+                    )
+                }
+
+                item(key = "appearance_color_style") {
+                    ColorStylePicker(
+                        selectedStyle = colorStyle,
+                        onStyleSelected = { style ->
+                            colorStyle = style
+                            prefs.edit().putString("color_style", style.name).apply()
+                            refreshTheme.value = true
+                        },
+                        flat = flat,
+                        bare = true,
+                    )
+                }
+            }
+
             if (isDarkTheme) {
                 item(key = "appearance_amoled_theme") {
                     val isWallpaperEnabled = BackgroundConfig.isCustomBackgroundEnabled
@@ -494,15 +557,14 @@ fun AppearanceSettingsContent(
                         Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                             Text(
                                 text = stringResource(R.string.settings_amoled_theme),
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.bodyLarge,
                                 color = if (!isWallpaperEnabled) MaterialTheme.colorScheme.onSurface
                                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                                fontWeight = FontWeight.SemiBold,
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 text = stringResource(R.string.settings_amoled_theme_desc),
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = if (!isWallpaperEnabled) MaterialTheme.colorScheme.onSurfaceVariant
                                 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
                             )
@@ -531,6 +593,22 @@ fun AppearanceSettingsContent(
                     },
                 )
             }
+
+            item(key = "appearance_discrete_slider") {
+                var isDiscreteSlider by remember { mutableStateOf(SliderStyleConfig.isDiscrete) }
+                ToggleSettingCard(
+                    icon = Icons.Filled.Segment,
+                    flat = flat,
+                    title = stringResource(R.string.settings_discrete_slider),
+                    description = stringResource(R.string.settings_discrete_slider_desc),
+                    checked = isDiscreteSlider,
+                    onCheckedChange = {
+                        isDiscreteSlider = it
+                        SliderStyleConfig.isDiscrete = it
+                        prefs.edit().putBoolean("discrete_slider", it).apply()
+                    },
+                )
+            }
         }
 
         SplicedColumnGroup(title = stringResource(R.string.settings_appearance_layout), flat = flat, highlightKey = highlightKey) {
@@ -546,12 +624,12 @@ fun AppearanceSettingsContent(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = stringResource(id = R.string.settings_home_layout_style),
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
                                 text = stringResource(homeLayoutStyleToString(currentStyle.toString())),
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.outline,
                             )
                         }
@@ -571,12 +649,12 @@ fun AppearanceSettingsContent(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = stringResource(id = R.string.settings_stats_top_layout),
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
                                 text = statsTopLayoutValue,
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.outline,
                             )
                         }
@@ -602,12 +680,12 @@ fun AppearanceSettingsContent(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = stringResource(id = R.string.settings_nav_layout_title),
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Text(
                                     text = stringResource(id = R.string.settings_nav_layout_summary),
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.outline,
                                 )
                             }
@@ -668,12 +746,12 @@ fun AppearanceSettingsContent(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = stringResource(id = R.string.settings_nav_scheme),
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
                                 text = navSchemeLabel,
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.outline,
                             )
                         }
@@ -698,69 +776,33 @@ fun AppearanceSettingsContent(
 
                 if (BackgroundConfig.isNavBarGlassEnabled) {
                     item(key = "appearance_navbar_glass_blur") {
-                        ExpressiveCard(flat = flat) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(
-                                    text = stringResource(id = R.string.settings_navbar_glass_blur_strength),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                Slider(
-                                    value = BackgroundConfig.navBarGlassBlurStrength,
-                                    onValueChange = { BackgroundConfig.setNavBarGlassBlurStrengthValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    ),
-                                )
-                            }
-                        }
+                        SliderSettingCard(
+                            flat = flat,
+                            title = stringResource(id = R.string.settings_navbar_glass_blur_strength),
+                            value = BackgroundConfig.navBarGlassBlurStrength,
+                            onValueChange = { BackgroundConfig.setNavBarGlassBlurStrengthValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                        )
                     }
 
                     item(key = "appearance_navbar_glass_transparency") {
-                        ExpressiveCard(flat = flat) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(
-                                    text = stringResource(id = R.string.settings_navbar_glass_transparency),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                Slider(
-                                    value = BackgroundConfig.navBarGlassTransparency,
-                                    onValueChange = { BackgroundConfig.setNavBarGlassTransparencyValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    ),
-                                )
-                            }
-                        }
+                        SliderSettingCard(
+                            flat = flat,
+                            title = stringResource(id = R.string.settings_navbar_glass_transparency),
+                            value = BackgroundConfig.navBarGlassTransparency,
+                            onValueChange = { BackgroundConfig.setNavBarGlassTransparencyValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                        )
                     }
 
                     item(key = "appearance_navbar_glass_highlight") {
-                        ExpressiveCard(flat = flat) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(
-                                    text = stringResource(id = R.string.settings_navbar_glass_highlight_strength),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                Slider(
-                                    value = BackgroundConfig.navBarGlassHighlightStrength,
-                                    onValueChange = { BackgroundConfig.setNavBarGlassHighlightStrengthValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    ),
-                                )
-                            }
-                        }
+                        SliderSettingCard(
+                            flat = flat,
+                            title = stringResource(id = R.string.settings_navbar_glass_highlight_strength),
+                            value = BackgroundConfig.navBarGlassHighlightStrength,
+                            onValueChange = { BackgroundConfig.setNavBarGlassHighlightStrengthValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                        )
                     }
 
                     item(key = "appearance_navbar_glass_specular") {
@@ -806,6 +848,24 @@ fun AppearanceSettingsContent(
                     }
                 }
 
+                // ---- 紧凑圆角风格 ----
+                // 仅非毛玻璃模式显示（毛玻璃已有独立的外观控制）
+                if (!BackgroundConfig.isNavBarGlassEnabled) {
+                    item(key = "appearance_compact_rounded_bar") {
+                        ToggleSettingCard(
+                            flat = flat,
+                            icon = Icons.Filled.RoundedCorner,
+                            title = stringResource(id = R.string.settings_compact_rounded_bar),
+                            description = stringResource(id = R.string.settings_compact_rounded_bar_summary),
+                            checked = FloatingBarConfig.isCompactRoundedStyle,
+                            onCheckedChange = { enabled ->
+                                FloatingBarConfig.isCompactRoundedStyle = enabled
+                                FloatingBarConfig.save(context)
+                            },
+                        )
+                    }
+                }
+
                 item(key = "appearance_floating_auto_hide") {
                     ToggleSettingCard(
                         flat = flat,
@@ -835,6 +895,109 @@ fun AppearanceSettingsContent(
                 }
             }
 
+            item(key = "appearance_nav_custom_icons") {
+                val customNavIconsEnabled = remember { mutableStateOf(prefs.getBoolean("nav_icon_custom_enabled", false)) }
+                var editingDestName by remember { mutableStateOf<String?>(null) }
+                // Observe config revision so the previews below refresh immediately after pick/clear.
+                val iconRevision by BottomBarIconConfig.revision.collectAsState()
+                val iconPickerLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.GetContent()
+                ) { uri ->
+                    val dest = editingDestName ?: return@rememberLauncherForActivityResult
+                    if (uri != null) {
+                        BottomBarIconConfig.setCustomIconUri(dest, uri.toString())
+                        scope.launch {
+                            snackBarHost.showSnackbar(context.getString(R.string.nav_icon_set))
+                        }
+                    }
+                    editingDestName = null
+                }
+
+                ToggleSettingCard(
+                    flat = flat,
+                    icon = Icons.Filled.Image,
+                    title = stringResource(R.string.settings_nav_custom_icons),
+                    description = stringResource(R.string.settings_nav_custom_icons_summary),
+                    checked = customNavIconsEnabled.value,
+                    onCheckedChange = {
+                        customNavIconsEnabled.value = it
+                        BottomBarIconConfig.isEnabled = it
+                    }
+                )
+
+                if (customNavIconsEnabled.value) {
+                    Spacer(Modifier.height(8.dp))
+                    val navDestinations = listOf(
+                        Triple("Home", R.string.nav_icon_home, Icons.Filled.Home),
+                        Triple("KModule", R.string.nav_icon_kpm, Icons.Filled.Archive),
+                        Triple("SuperUser", R.string.nav_icon_superuser, Icons.Filled.AdminPanelSettings),
+                        Triple("AModule", R.string.nav_icon_apm, Icons.Filled.Extension),
+                        Triple("Settings", R.string.nav_icon_settings, Icons.Filled.Settings),
+                    )
+
+                    Column {
+                        navDestinations.forEach { (destName, labelRes, defaultIcon) ->
+                            val customUri = remember(iconRevision, destName) { prefs.getString("nav_icon_$destName", null) }
+                            ExpressiveCard(
+                                flat = flat,
+                                onClick = {
+                                    editingDestName = destName
+                                    try { iconPickerLauncher.launch("image/*") } catch (_: Throwable) {}
+                                }
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    if (customUri != null) {
+                                        AsyncImage(
+                                            model = customUri,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(6.dp)),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = defaultIcon,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(36.dp)
+                                        )
+                                    }
+                                    Spacer(Modifier.width(16.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            stringResource(labelRes),
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            if (customUri != null) stringResource(R.string.nav_icon_custom_selected)
+                                            else stringResource(R.string.nav_icon_default),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    if (customUri != null) {
+                                        IconButton(
+                                            onClick = {
+                                                BottomBarIconConfig.setCustomIconUri(destName, null)
+                                                scope.launch {
+                                                    snackBarHost.showSnackbar(context.getString(R.string.nav_icon_cleared))
+                                                }
+                                            }
+                                        ) {
+                                            Icon(Icons.Filled.Close, stringResource(R.string.nav_icon_clear), tint = MaterialTheme.colorScheme.error)
+                                        }
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(4.dp))
+                        }
+                    }
+                }
+            }
+
             item(key = "appearance_list_card_badge", visible = isListStyle) {
                 ToggleSettingCard(
                     flat = flat,
@@ -861,12 +1024,12 @@ fun AppearanceSettingsContent(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = stringResource(id = R.string.settings_custom_badge_text),
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
                                 text = currentBadgeTextMode,
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.outline,
                             )
                         }
@@ -891,75 +1054,44 @@ fun AppearanceSettingsContent(
 
             if (BackgroundConfig.isAdvancedTitleStyleEnabled) {
                 item(key = "appearance_title_day_opacity") {
-                    ExpressiveCard(flat = flat) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_title_image_day_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                            Slider(
-                                value = BackgroundConfig.titleImageDayOpacity,
-                                onValueChange = { BackgroundConfig.setTitleImageDayOpacityValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                ),
-                            )
-                        }
-                    }
+                    SliderSettingCard(
+                        flat = flat,
+                        title = stringResource(id = R.string.settings_title_image_day_opacity),
+                        value = BackgroundConfig.titleImageDayOpacity,
+                        onValueChange = { BackgroundConfig.setTitleImageDayOpacityValue(it) },
+                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                    )
                 }
 
                 item(key = "appearance_title_night_opacity") {
-                    ExpressiveCard(flat = flat) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_title_image_night_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                            Slider(
-                                value = BackgroundConfig.titleImageNightOpacity,
-                                onValueChange = { BackgroundConfig.setTitleImageNightOpacityValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                ),
-                            )
-                        }
-                    }
+                    SliderSettingCard(
+                        flat = flat,
+                        title = stringResource(id = R.string.settings_title_image_night_opacity),
+                        value = BackgroundConfig.titleImageNightOpacity,
+                        onValueChange = { BackgroundConfig.setTitleImageNightOpacityValue(it) },
+                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                    )
                 }
 
                 item(key = "appearance_title_image_dim") {
-                    ExpressiveCard(flat = flat) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_title_image_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                            Slider(
-                                value = BackgroundConfig.titleImageDim,
-                                onValueChange = { BackgroundConfig.setTitleImageDimValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = 0f..1f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                ),
-                            )
-                        }
-                    }
+                    SliderSettingCard(
+                        flat = flat,
+                        title = stringResource(id = R.string.settings_title_image_dim),
+                        value = BackgroundConfig.titleImageDim,
+                        onValueChange = { BackgroundConfig.setTitleImageDimValue(it) },
+                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                    )
                 }
 
                 item(key = "appearance_title_image_offset_x") {
-                    ExpressiveCard(flat = flat) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            Text(text = stringResource(id = R.string.settings_title_image_offset_x), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                            Slider(
-                                value = BackgroundConfig.titleImageOffsetX,
-                                onValueChange = { BackgroundConfig.setTitleImageOffsetXValue(it) },
-                                onValueChangeFinished = { BackgroundConfig.save(context) },
-                                valueRange = -1f..1f,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                ),
-                            )
-                        }
-                    }
+                    SliderSettingCard(
+                        flat = flat,
+                        title = stringResource(id = R.string.settings_title_image_offset_x),
+                        value = BackgroundConfig.titleImageOffsetX,
+                        valueRange = -1f..1f,
+                        onValueChange = { BackgroundConfig.setTitleImageOffsetXValue(it) },
+                        onValueChangeFinished = { BackgroundConfig.save(context) },
+                    )
                 }
 
                 item(key = "appearance_select_title_image") {
@@ -985,9 +1117,9 @@ fun AppearanceSettingsContent(
                             Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                             Spacer(Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(text = stringResource(id = R.string.settings_select_title_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                Text(text = stringResource(id = R.string.settings_select_title_image), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                                 if (!BackgroundConfig.titleImageUri.isNullOrEmpty()) {
-                                    Text(text = stringResource(id = R.string.settings_title_image_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                    Text(text = stringResource(id = R.string.settings_title_image_selected), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                                 }
                             }
                         }
@@ -1023,7 +1155,7 @@ fun AppearanceSettingsContent(
                             ) {
                                 Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                                 Spacer(Modifier.width(16.dp))
-                                Text(text = stringResource(id = R.string.settings_clear_title_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                Text(text = stringResource(id = R.string.settings_clear_title_image), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }
@@ -1065,94 +1197,56 @@ fun AppearanceSettingsContent(
                     }
 
                     item(key = "appearance_bg_opacity") {
-                        ExpressiveCard(flat = flat) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                Slider(
-                                    value = BackgroundConfig.customBackgroundOpacity,
-                                    onValueChange = { BackgroundConfig.setCustomBackgroundOpacityValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    ),
-                                )
-                            }
-                        }
+                        SliderSettingCard(
+                            flat = flat,
+                            title = stringResource(id = R.string.settings_custom_background_opacity),
+                            value = BackgroundConfig.customBackgroundOpacity,
+                            onValueChange = { BackgroundConfig.setCustomBackgroundOpacityValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                        )
                     }
 
                     item(key = "appearance_bg_blur") {
-                        ExpressiveCard(flat = flat) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(text = stringResource(id = R.string.settings_custom_background_blur), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                Slider(
-                                    value = BackgroundConfig.customBackgroundBlur,
-                                    onValueChange = { BackgroundConfig.setCustomBackgroundBlurValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..50f,
-                                    colors = SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    ),
-                                )
-                            }
-                        }
+                        SliderSettingCard(
+                            flat = flat,
+                            title = stringResource(id = R.string.settings_custom_background_blur),
+                            value = BackgroundConfig.customBackgroundBlur,
+                            valueRange = 0f..50f,
+                            valueFormat = { "${it.toInt()}" },
+                            onValueChange = { BackgroundConfig.setCustomBackgroundBlurValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                        )
                     }
 
                     if (!BackgroundConfig.isDualBackgroundDimEnabled) {
                         item(key = "appearance_bg_dim") {
-                            ExpressiveCard(flat = flat) {
-                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                    Slider(
-                                        value = BackgroundConfig.customBackgroundDim,
-                                        onValueChange = { BackgroundConfig.setCustomBackgroundDimValue(it) },
-                                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                                        valueRange = 0f..1f,
-                                        colors = SliderDefaults.colors(
-                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        ),
-                                    )
-                                }
-                            }
+                            SliderSettingCard(
+                                flat = flat,
+                                title = stringResource(id = R.string.settings_custom_background_dim),
+                                value = BackgroundConfig.customBackgroundDim,
+                                onValueChange = { BackgroundConfig.setCustomBackgroundDimValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                            )
                         }
                     } else {
                         item(key = "appearance_bg_day_dim") {
-                            ExpressiveCard(flat = flat) {
-                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_custom_background_day_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                    Slider(
-                                        value = BackgroundConfig.customBackgroundDayDim,
-                                        onValueChange = { BackgroundConfig.setCustomBackgroundDayDimValue(it) },
-                                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                                        valueRange = 0f..1f,
-                                        colors = SliderDefaults.colors(
-                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        ),
-                                    )
-                                }
-                            }
+                            SliderSettingCard(
+                                flat = flat,
+                                title = stringResource(id = R.string.settings_custom_background_day_dim),
+                                value = BackgroundConfig.customBackgroundDayDim,
+                                onValueChange = { BackgroundConfig.setCustomBackgroundDayDimValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                            )
                         }
 
                         item(key = "appearance_bg_night_dim") {
-                            ExpressiveCard(flat = flat) {
-                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_custom_background_night_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                    Slider(
-                                        value = BackgroundConfig.customBackgroundNightDim,
-                                        onValueChange = { BackgroundConfig.setCustomBackgroundNightDimValue(it) },
-                                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                                        valueRange = 0f..1f,
-                                        colors = SliderDefaults.colors(
-                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        ),
-                                    )
-                                }
-                            }
+                            SliderSettingCard(
+                                flat = flat,
+                                title = stringResource(id = R.string.settings_custom_background_night_dim),
+                                value = BackgroundConfig.customBackgroundNightDim,
+                                onValueChange = { BackgroundConfig.setCustomBackgroundNightDimValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                            )
                         }
                     }
                 }
@@ -1192,9 +1286,9 @@ fun AppearanceSettingsContent(
                                 Icon(imageVector = Icons.Filled.VideoFile, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                                 Spacer(Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = stringResource(id = R.string.settings_select_video), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    Text(text = stringResource(id = R.string.settings_select_video), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                                     if (!BackgroundConfig.videoBackgroundUri.isNullOrEmpty()) {
-                                        Text(text = stringResource(id = R.string.settings_video_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                        Text(text = stringResource(id = R.string.settings_video_selected), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                                     }
                                 }
                             }
@@ -1232,28 +1326,20 @@ fun AppearanceSettingsContent(
                                 ) {
                                     Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                                     Spacer(Modifier.width(16.dp))
-                                    Text(text = clearVideoTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    Text(text = clearVideoTitle, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                                 }
                             }
                         }
                     }
 
                     item(key = "appearance_video_volume") {
-                        ExpressiveCard(flat = flat) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(text = stringResource(id = R.string.settings_video_volume), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                Slider(
-                                    value = BackgroundConfig.videoVolume,
-                                    onValueChange = { BackgroundConfig.setVideoVolumeValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    ),
-                                )
-                            }
-                        }
+                        SliderSettingCard(
+                            flat = flat,
+                            title = stringResource(id = R.string.settings_video_volume),
+                            value = BackgroundConfig.videoVolume,
+                            onValueChange = { BackgroundConfig.setVideoVolumeValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                        )
                     }
                 } else {
                     item(key = "appearance_multi_background") {
@@ -1306,9 +1392,9 @@ fun AppearanceSettingsContent(
                                             Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                                             Spacer(Modifier.width(16.dp))
                                             Column(modifier = Modifier.weight(1f)) {
-                                                Text(text = stringResource(id = titleRes), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                                Text(text = stringResource(id = titleRes), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                                                 if (!uri.isNullOrEmpty()) {
-                                                    Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                                    Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                                                 }
                                             }
                                         }
@@ -1342,9 +1428,9 @@ fun AppearanceSettingsContent(
                                     Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                                     Spacer(Modifier.width(16.dp))
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                        Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                                         if (!BackgroundConfig.customBackgroundUri.isNullOrEmpty()) {
-                                            Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                            Text(text = stringResource(id = R.string.settings_background_selected), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                                         }
                                     }
                                 }
@@ -1382,7 +1468,7 @@ fun AppearanceSettingsContent(
                                     ) {
                                         Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                                         Spacer(Modifier.width(16.dp))
-                                        Text(text = clearBgTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                        Text(text = clearBgTitle, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                                     }
                                 }
                             }
@@ -1423,76 +1509,44 @@ fun AppearanceSettingsContent(
 
                     if (!BackgroundConfig.isGridDualOpacityEnabled) {
                         item(key = "appearance_grid_opacity") {
-                            ExpressiveCard(flat = flat) {
-                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_custom_background_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                    Slider(
-                                        value = BackgroundConfig.gridWorkingCardBackgroundOpacity,
-                                        onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundOpacityValue(it) },
-                                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                                        valueRange = 0f..1f,
-                                        colors = SliderDefaults.colors(
-                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        ),
-                                    )
-                                }
-                            }
+                            SliderSettingCard(
+                                flat = flat,
+                                title = stringResource(id = R.string.settings_custom_background_opacity),
+                                value = BackgroundConfig.gridWorkingCardBackgroundOpacity,
+                                onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundOpacityValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                            )
                         }
                     } else {
                         item(key = "appearance_grid_day_opacity") {
-                            ExpressiveCard(flat = flat) {
-                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_grid_working_card_day_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                    Slider(
-                                        value = BackgroundConfig.gridWorkingCardBackgroundDayOpacity,
-                                        onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDayOpacityValue(it) },
-                                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                                        valueRange = 0f..1f,
-                                        colors = SliderDefaults.colors(
-                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        ),
-                                    )
-                                }
-                            }
+                            SliderSettingCard(
+                                flat = flat,
+                                title = stringResource(id = R.string.settings_grid_working_card_day_opacity),
+                                value = BackgroundConfig.gridWorkingCardBackgroundDayOpacity,
+                                onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDayOpacityValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                            )
                         }
 
                         item(key = "appearance_grid_night_opacity") {
-                            ExpressiveCard(flat = flat) {
-                                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                    Text(text = stringResource(id = R.string.settings_grid_working_card_night_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                    Slider(
-                                        value = BackgroundConfig.gridWorkingCardBackgroundNightOpacity,
-                                        onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundNightOpacityValue(it) },
-                                        onValueChangeFinished = { BackgroundConfig.save(context) },
-                                        valueRange = 0f..1f,
-                                        colors = SliderDefaults.colors(
-                                            thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                            activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        ),
-                                    )
-                                }
-                            }
+                            SliderSettingCard(
+                                flat = flat,
+                                title = stringResource(id = R.string.settings_grid_working_card_night_opacity),
+                                value = BackgroundConfig.gridWorkingCardBackgroundNightOpacity,
+                                onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundNightOpacityValue(it) },
+                                onValueChangeFinished = { BackgroundConfig.save(context) },
+                            )
                         }
                     }
 
                     item(key = "appearance_grid_dim") {
-                        ExpressiveCard(flat = flat) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(text = stringResource(id = R.string.settings_custom_background_dim), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                Slider(
-                                    value = BackgroundConfig.gridWorkingCardBackgroundDim,
-                                    onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDimValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    ),
-                                )
-                            }
-                        }
+                        SliderSettingCard(
+                            flat = flat,
+                            title = stringResource(id = R.string.settings_custom_background_dim),
+                            value = BackgroundConfig.gridWorkingCardBackgroundDim,
+                            onValueChange = { BackgroundConfig.setGridWorkingCardBackgroundDimValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                        )
                     }
 
                     item(key = "appearance_grid_select_image") {
@@ -1518,9 +1572,9 @@ fun AppearanceSettingsContent(
                                 Icon(imageVector = Icons.Filled.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                                 Spacer(Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    Text(text = stringResource(id = R.string.settings_select_background_image), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                                     if (!BackgroundConfig.gridWorkingCardBackgroundUri.isNullOrEmpty()) {
-                                        Text(text = stringResource(id = R.string.settings_grid_working_card_background_selected), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                        Text(text = stringResource(id = R.string.settings_grid_working_card_background_selected), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                                     }
                                 }
                             }
@@ -1554,7 +1608,7 @@ fun AppearanceSettingsContent(
                             ) {
                                 Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                                 Spacer(Modifier.width(16.dp))
-                                Text(text = stringResource(id = R.string.settings_clear_grid_working_card_background), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                Text(text = stringResource(id = R.string.settings_clear_grid_working_card_background), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }
@@ -1614,12 +1668,12 @@ fun AppearanceSettingsContent(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = stringResource(id = R.string.settings_custom_badge_text),
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Text(
                                     text = currentBadgeTextMode,
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.outline,
                                 )
                             }
@@ -1637,7 +1691,7 @@ fun AppearanceSettingsContent(
                     Column {
                         Text(
                             stringResource(id = R.string.settings_custom_badge_text_summary),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(bottom = 16.dp),
                         )
                         badgeTextModes.forEachIndexed { index, mode ->
@@ -1740,12 +1794,12 @@ fun AppearanceSettingsContent(
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 text = stringResource(id = R.string.apm_banner_api_source),
-                                                style = MaterialTheme.typography.titleMedium,
+                                                style = MaterialTheme.typography.bodyLarge,
                                                 color = MaterialTheme.colorScheme.onSurface,
                                             )
                                             Text(
                                                 text = apiSourceSummary,
-                                                style = MaterialTheme.typography.bodyMedium,
+                                                style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.outline,
                                             )
                                         }
@@ -1780,7 +1834,7 @@ fun AppearanceSettingsContent(
                                         Spacer(Modifier.width(16.dp))
                                         Text(
                                             text = stringResource(id = R.string.apm_api_marketplace_title),
-                                            style = MaterialTheme.typography.titleMedium,
+                                            style = MaterialTheme.typography.bodyLarge,
                                             color = MaterialTheme.colorScheme.onSurface,
                                         )
                                     }
@@ -1806,21 +1860,13 @@ fun AppearanceSettingsContent(
 
                 if (BackgroundConfig.isBannerCustomOpacityEnabled) {
                     item(key = "appearance_banner_opacity_slider") {
-                        ExpressiveCard(flat = flat) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                                Text(text = stringResource(id = R.string.settings_banner_opacity), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                                Slider(
-                                    value = BackgroundConfig.bannerCustomOpacity,
-                                    onValueChange = { BackgroundConfig.setBannerCustomOpacityValue(it) },
-                                    onValueChangeFinished = { BackgroundConfig.save(context) },
-                                    valueRange = 0f..1f,
-                                    colors = SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                        activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 1f),
-                                    ),
-                                )
-                            }
-                        }
+                        SliderSettingCard(
+                            flat = flat,
+                            title = stringResource(id = R.string.settings_banner_opacity),
+                            value = BackgroundConfig.bannerCustomOpacity,
+                            onValueChange = { BackgroundConfig.setBannerCustomOpacityValue(it) },
+                            onValueChangeFinished = { BackgroundConfig.save(context) },
+                        )
                     }
                 }
             }
@@ -1865,7 +1911,7 @@ fun AppearanceSettingsContent(
                         ) {
                             Icon(imageVector = Icons.Filled.FontDownload, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                             Spacer(Modifier.width(16.dp))
-                            Text(text = stringResource(id = R.string.settings_select_font_file), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                            Text(text = stringResource(id = R.string.settings_select_font_file), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }
@@ -1898,7 +1944,7 @@ fun AppearanceSettingsContent(
                             ) {
                                 Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                                 Spacer(Modifier.width(16.dp))
-                                Text(text = clearFontTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                                Text(text = clearFontTitle, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }
@@ -1915,7 +1961,124 @@ fun AppearanceSettingsContent(
                     ) {
                         Icon(imageVector = Icons.Filled.Store, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                         Spacer(Modifier.width(16.dp))
-                        Text(text = stringResource(id = R.string.theme_store_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = stringResource(id = R.string.theme_store_title), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                            if (themeStoreMode == "compat") {
+                                Text(
+                                    text = stringResource(R.string.theme_mode_compat_desc),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            item(key = "appearance_theme_store_mode") {
+                val modeName = when (themeStoreMode) {
+                    "compat" -> stringResource(R.string.theme_mode_compat)
+                    else -> stringResource(R.string.theme_mode_builtin)
+                }
+                val showModeSwitchDialog = remember { mutableStateOf(false) }
+                ExpressiveCard(flat = flat, onClick = { showModeSwitchDialog.value = true }) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(imageVector = Icons.Filled.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.settings_theme_mode),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = stringResource(R.string.theme_mode_current, modeName),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                if (showModeSwitchDialog.value) {
+                    BasicAlertDialog(
+                        onDismissRequest = { showModeSwitchDialog.value = false },
+                        properties = DialogProperties(usePlatformDefaultWidth = false)
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(30.dp),
+                            color = AlertDialogDefaults.containerColor,
+                            tonalElevation = AlertDialogDefaults.TonalElevation,
+                            modifier = Modifier.width(320.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(24.dp)) {
+                                Text(
+                                    text = stringResource(R.string.theme_mode_switch_title),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.theme_mode_switch_msg),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(bottom = 16.dp)
+                                )
+
+                                val builtinLabel = stringResource(R.string.theme_mode_builtin_label)
+                                val compatLabel = stringResource(R.string.theme_mode_compat_label)
+                                listOf("builtin" to builtinLabel, "compat" to compatLabel).forEach { (mode, label) ->
+                                    Surface(
+                                        onClick = {
+                                            prefs.edit { putString("theme_mode", mode) }
+                                            onThemeStoreModeChanged?.invoke(mode)
+                                            showModeSwitchDialog.value = false
+                                            scope.launch {
+                                                snackBarHost.showSnackbar(
+                                                    context.getString(R.string.theme_mode_switched, label)
+                                                )
+                                            }
+                                        },
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = if (themeStoreMode == mode) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f) else Color.Transparent,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            RadioButton(
+                                                selected = themeStoreMode == mode,
+                                                onClick = null
+                                            )
+                                            Spacer(Modifier.width(12.dp))
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    label,
+                                                    style = MaterialTheme.typography.titleMedium
+                                                )
+                                                Text(
+                                                    if (mode == "compat") stringResource(R.string.theme_mode_compat_desc)
+                                                    else stringResource(R.string.theme_mode_builtin_desc),
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                }
+
+                                TextButton(
+                                    onClick = { showModeSwitchDialog.value = false },
+                                    modifier = Modifier.align(Alignment.End)
+                                ) {
+                                    Text(stringResource(android.R.string.cancel))
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1928,7 +2091,7 @@ fun AppearanceSettingsContent(
                     ) {
                         Icon(imageVector = Icons.Filled.FileDownload, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                         Spacer(Modifier.width(16.dp))
-                        Text(text = stringResource(id = R.string.settings_save_theme), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text(text = stringResource(id = R.string.settings_save_theme), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
@@ -1941,7 +2104,7 @@ fun AppearanceSettingsContent(
                     ) {
                         Icon(imageVector = Icons.Filled.FileUpload, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                         Spacer(Modifier.width(16.dp))
-                        Text(text = stringResource(id = R.string.settings_import_theme), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text(text = stringResource(id = R.string.settings_import_theme), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
@@ -1976,7 +2139,7 @@ fun AppearanceSettingsContent(
                     ) {
                         Icon(imageVector = Icons.Filled.RestartAlt, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
                         Spacer(Modifier.width(16.dp))
-                        Text(text = resetThemeTitle, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text(text = resetThemeTitle, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
@@ -2383,7 +2546,7 @@ fun ThemeExportDialog(
 
                 Text(
                     text = stringResource(R.string.theme_type),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(bottom = 4.dp, top = 4.dp)
                 )
                 Row(modifier = Modifier.fillMaxWidth()) {
@@ -2397,7 +2560,7 @@ fun ThemeExportDialog(
                         )
                         Text(
                             text = stringResource(R.string.theme_type_phone),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }
@@ -2413,7 +2576,7 @@ fun ThemeExportDialog(
                         )
                         Text(
                             text = stringResource(R.string.theme_type_tablet),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }
@@ -2522,7 +2685,7 @@ fun ThemeImportDialog(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = stringResource(R.string.theme_info),
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
@@ -2772,7 +2935,7 @@ fun BannerApiConfigDialog(
 
                 Text(
                     text = stringResource(R.string.apm_banner_api_config_desc),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )

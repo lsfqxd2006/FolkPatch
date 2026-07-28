@@ -43,6 +43,8 @@
     <string name="settings_navbar_glass_inner_glow_summary">Enable subtle glow effect at the bottom of the navigation bar</string>
     <string name="settings_navbar_glass_border">Glass Border</string>
     <string name="settings_navbar_glass_border_summary">Enable subtle border outline around the navigation bar</string>
+    <string name="settings_compact_rounded_bar">Compact Rounded Style</string>
+    <string name="settings_compact_rounded_bar_summary">Use compact pill-shaped floating bar with rounded corners and tighter spacing</string>
     <string name="settings_stats_top_layout">Top Layout</string>
     <string name="settings_stats_top_layout_summary">Choose the top info card style</string>
     <string name="settings_stats_top_layout_list">ListUI</string>
@@ -98,6 +100,10 @@
 
     <string name="about_source_code"><![CDATA[<p>View source code at %1$s<p/>Join our %2$s channel<p/>Join our %3$s group]]></string>
     <string name="send_log">Send logs</string>
+    <string name="settings_clean_storage">Clean app data</string>
+    <string name="settings_clean_storage_summary">Fix download or apply failures caused by residual files</string>
+    <string name="settings_clean_storage_confirm">This will delete downloaded themes, imported music, sound effects and all cache files, then rebuild the directories. Your settings will be kept. Continue?</string>
+    <string name="settings_clean_storage_done">Cleanup complete</string>
     <string name="save_log">Save logs</string>
     <string name="log_saved">Logs saved</string>
     <string name="safe_mode">Safe mode</string>
@@ -483,6 +489,8 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="dpi_confirm_message">Change app DPI from %1$s to %2$s?</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Enable the built-in module mounting system</string>
+    <string name="settings_new_app_profile_enabled">New App Default Mode</string>
+    <string name="settings_new_app_profile_enabled_summary">Auto-configure default profile for newly installed apps</string>
     <string name="settings_new_app_profile_mode">Default mode for new apps</string>
     <string name="settings_new_app_profile_normal">NO ROOT</string>
     <string name="settings_new_app_profile_root">ROOT</string>
@@ -653,14 +661,6 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="kpm_autoload_edit_dialog_title">Editar KPM</string>    <string name="kpm_autoload_event_label">Evento:</string>    <string name="kpm_autoload_args_label">Argumentos:</string>    <string name="kpm_autoload_event_service">service</string>    <string name="kpm_autoload_event_post_fs_data">post-fs-data</string>
     
     <!-- Module Backup/Restore Strings -->
-    <string name="apm_backup_title">Backup Modules</string>
-    <string name="apm_restore_title">Restore Modules</string>
-    <string name="apm_backup_success">Backup successful</string>
-    <string name="apm_restore_success">Restore successful</string>
-    <string name="apm_backup_failed">Backup failed</string>
-    <string name="apm_restore_failed">Restore failed</string>
-    <string name="apm_backup_failed_msg">Backup failed: %s</string>
-    <string name="apm_restore_failed_msg">Restore failed: %s</string>
     <string name="apm_copy_list_title">Copy List</string>
     <string name="apm_copy_list_success">Module list copied</string>
 
@@ -839,6 +839,33 @@ Please ensure the app is completely closed and reopened for the commands to exec
     <string name="settings_appearance_font_summary">Custom font configuration</string>
     <string name="settings_appearance_theme">Theme Settings</string>
     <string name="settings_appearance_theme_summary">Theme store, save, import and reset</string>
+    <string name="settings_theme_mode">Mode Configuration</string>
+    <string name="settings_theme_mode_summary">Switch between built-in theme store and browser compatibility mode</string>
+    <string name="theme_mode_builtin">Built-in Mode</string>
+    <string name="theme_mode_builtin_desc">Use the built-in theme store to browse, download and apply themes</string>
+    <string name="theme_mode_compat">Compatibility Mode</string>
+    <string name="theme_mode_compat_desc">Use browser to download themes directly (for devices with import issues)</string>
+    <string name="theme_mode_onboarding_title">Choose Theme Mode</string>
+    <string name="theme_mode_onboarding_msg">How would you like to browse and install themes? You can change this later in settings.</string>
+    <string name="theme_mode_builtin_label">Built-in Store</string>
+    <string name="theme_mode_compat_label">Browser Mode</string>
+    <string name="theme_mode_switched">Theme mode switched to %s</string>
+    <string name="theme_mode_current">Current: %s</string>
+    <string name="theme_mode_switch_title">Switch Theme Mode</string>
+    <string name="theme_mode_switch_msg">Changing the mode will affect how you browse and install themes. Continue?</string>
+    <string name="settings_nav_custom_icons">Custom Nav Icons</string>
+    <string name="settings_nav_custom_icons_summary">Replace bottom bar icons with custom images</string>
+    <string name="nav_icon_home">Home Icon</string>
+    <string name="nav_icon_kpm">KPM Icon</string>
+    <string name="nav_icon_superuser">SuperUser Icon</string>
+    <string name="nav_icon_apm">System Module Icon</string>
+    <string name="nav_icon_settings">Settings Icon</string>
+    <string name="nav_icon_select_image">Select Image</string>
+    <string name="nav_icon_clear">Reset to Default</string>
+    <string name="nav_icon_custom_selected">Custom</string>
+    <string name="nav_icon_default">Default</string>
+    <string name="nav_icon_cleared">Icon reset to default</string>
+    <string name="nav_icon_set">Icon updated</string>
     <string name="settings_appearance_banner">Banner Settings</string>
     <string name="settings_appearance_banner_summary">Module banner configuration</string>
     <string name="settings_appearance_layout">Layout Settings</string>
@@ -851,6 +878,8 @@ Please ensure the app is completely closed and reopened for the commands to exec
     <string name="settings_amoled_theme_desc">Pure black background for dark mode</string>
     <string name="settings_switch_icon">Enable Button Indicator</string>
     <string name="settings_switch_icon_desc">Show status icons on toggle switches</string>
+    <string name="settings_discrete_slider">Discrete Slider</string>
+    <string name="settings_discrete_slider_desc">Show tick marks on slider tracks</string>
     <string name="settings_category_module">Modules</string>
     <string name="settings_category_security">Security</string>
     <string name="settings_category_function">Function</string>
@@ -1146,4 +1175,26 @@ Please ensure the app is completely closed and reopened for the commands to exec
     <string name="settings_search_hint">Search settings…</string>
     <string name="settings_search_empty_hint">Type to search all settings…</string>
     <string name="settings_no_results">No results found</string>
+
+    <!-- Color Generation -->
+    <string name="color_generation_classic">Classic</string>
+    <string name="color_generation_custom">Custom</string>
+    <string name="color_generation_label">Color Mode</string>
+
+    <!-- Color Standard -->
+    <string name="color_standard_md3_2021">MD3 2021</string>
+    <string name="color_standard_m3e_2025">M3e 2025</string>
+    <string name="color_standard_label">Color Standard</string>
+
+    <!-- Color Style -->
+    <string name="color_style_label">Color Style</string>
+    <string name="color_style_tonal_spot">Tonal Spot</string>
+    <string name="color_style_vibrant">Vibrant</string>
+    <string name="color_style_content">Content</string>
+    <string name="color_style_expressive">Expressive</string>
+    <string name="color_style_rainbow">Rainbow</string>
+    <string name="color_style_fruit_salad">Fruit Salad</string>
+    <string name="color_style_monochrome">Monochrome</string>
+    <string name="color_style_neutral">Neutral</string>
+    <string name="color_style_fidelity">Fidelity</string>
 </resources>

@@ -51,6 +51,7 @@ import me.bmax.apatch.ui.component.UpdateDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.util.*
 import me.bmax.apatch.util.ui.APDialogBlurBehindUtils
+import java.io.File
 import java.util.Locale
 
 @Composable
@@ -129,6 +130,9 @@ fun GeneralSettingsContent(
 
     val logTitle = stringResource(id = R.string.send_log)
 
+    val cleanStorageTitle = stringResource(id = R.string.settings_clean_storage)
+    val cleanStorageSummary = stringResource(id = R.string.settings_clean_storage_summary)
+
     val folkXEngineTitle = stringResource(id = R.string.settings_folkx_engine_title)
     val folkXEngineSummary = stringResource(id = R.string.settings_folkx_engine_summary)
 
@@ -148,6 +152,7 @@ fun GeneralSettingsContent(
 
     val showUpdateDialog = remember { mutableStateOf(false) }
     val showResetSuPathDialog = remember { mutableStateOf(false) }
+    val showCleanStorageDialog = remember { mutableStateOf(false) }
     val showAppTitleDialog = remember { mutableStateOf(false) }
     val showCustomAppTitleDialog = remember { mutableStateOf(false) }
     val showDesktopAppNameDialog = remember { mutableStateOf(false) }
@@ -165,6 +170,12 @@ fun GeneralSettingsContent(
     val currentType = remember { prefs.getString("folkx_animation_type", "linear") }
     val currentSpeed = remember { prefs.getFloat("folkx_animation_speed", 1.0f) }
     var predictiveBackEnabled by remember { mutableStateOf(prefs.getBoolean("predictive_back_enabled", true)) }
+
+    val newAppProfileEnabledTitle = stringResource(id = R.string.settings_new_app_profile_enabled)
+    val newAppProfileEnabledSummary = stringResource(id = R.string.settings_new_app_profile_enabled_summary)
+    var newAppProfileEnabled by remember {
+        mutableStateOf(prefs.getBoolean(APApplication.PREF_NEW_APP_PROFILE_ENABLED, false))
+    }
     var newAppProfileMode by remember {
         mutableIntStateOf(prefs.getInt(APApplication.PREF_AUTO_EXCLUDE_NEW_APPS, 0))
     }
@@ -190,14 +201,13 @@ fun GeneralSettingsContent(
                     Column {
                         Text(
                             text = languageTitle,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = languageValue,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -226,8 +236,7 @@ fun GeneralSettingsContent(
                     Spacer(Modifier.width(16.dp))
                     Text(
                         text = updateTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -310,14 +319,13 @@ fun GeneralSettingsContent(
                     Column {
                         Text(
                             text = stringResource(R.string.settings_folkx_animation_type),
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = stringResource(animationTypeLabel),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -336,14 +344,13 @@ fun GeneralSettingsContent(
                     Column {
                         Text(
                             text = stringResource(R.string.settings_folkx_animation_speed),
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = "${currentSpeed}x",
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -366,7 +373,30 @@ fun GeneralSettingsContent(
             )
         }
 
-        item(key = "general_new_app_profile", visible = kPatchReady) {
+        item(key = "general_new_app_profile_enabled", visible = kPatchReady) {
+            ToggleSettingCard(
+                flat = flat,
+                icon = Icons.Filled.Block,
+                title = newAppProfileEnabledTitle,
+                description = newAppProfileEnabledSummary,
+                checked = newAppProfileEnabled,
+                onCheckedChange = {
+                    newAppProfileEnabled = it
+                    if (it) {
+                        prefs.edit { putBoolean(APApplication.PREF_NEW_APP_PROFILE_ENABLED, true) }
+                    } else {
+                        runCatching { Natives.setNewAppProfileMode(0) }
+                        newAppProfileMode = 0
+                        prefs.edit {
+                            putBoolean(APApplication.PREF_NEW_APP_PROFILE_ENABLED, false)
+                            putInt(APApplication.PREF_AUTO_EXCLUDE_NEW_APPS, 0)
+                        }
+                    }
+                }
+            )
+        }
+
+        item(key = "general_new_app_profile", visible = kPatchReady && newAppProfileEnabled) {
             ExpressiveCard(flat = flat, onClick = { showNewAppProfileModeDialog.value = true }) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -377,14 +407,13 @@ fun GeneralSettingsContent(
                     Column {
                         Text(
                             text = newAppProfileTitle,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = currentNewAppProfileLabel,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -403,14 +432,13 @@ fun GeneralSettingsContent(
                     Column {
                         Text(
                             text = appListLoadingSchemeTitle,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = currentSchemeLabel,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -429,14 +457,13 @@ fun GeneralSettingsContent(
                     Column {
                         Text(
                             text = selinuxModeTitle,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = stringResource(R.string.settings_selinux_current_mode, selinuxModeValue),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -482,8 +509,7 @@ fun GeneralSettingsContent(
                     Spacer(Modifier.width(16.dp))
                     Text(
                         text = resetSuPathTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -501,14 +527,13 @@ fun GeneralSettingsContent(
                     Column {
                         Text(
                             text = appTitleTitle,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = appTitleLabel,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -527,14 +552,13 @@ fun GeneralSettingsContent(
                     Column {
                         Text(
                             text = customAppTitleTitle,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = currentCustomAppTitle ?: "",
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -553,14 +577,13 @@ fun GeneralSettingsContent(
                     Column {
                         Text(
                             text = desktopAppNameTitle,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = currentDesktopAppName.toString(),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -579,14 +602,13 @@ fun GeneralSettingsContent(
                     Column {
                         Text(
                             text = dpiTitle,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = dpiValue,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -632,10 +654,34 @@ fun GeneralSettingsContent(
                     Spacer(Modifier.width(16.dp))
                     Text(
                         text = logTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                }
+            }
+        }
+
+        item(key = "general_clean_storage") {
+            ExpressiveCard(flat = flat, onClick = { showCleanStorageDialog.value = true }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Filled.CleaningServices, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = cleanStorageTitle,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = cleanStorageSummary,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
@@ -653,6 +699,10 @@ fun GeneralSettingsContent(
 
     if (showResetSuPathDialog.value) {
         ResetSUPathDialog(showResetSuPathDialog)
+    }
+
+    if (showCleanStorageDialog.value) {
+        CleanStorageDialog(showCleanStorageDialog)
     }
 
     if (showSELinuxModeDialog.value) {
@@ -1027,7 +1077,7 @@ fun SELinuxModeDialog(
                             supportingContent = {
                                 Text(
                                     text = stringResource(R.string.settings_selinux_mode_enforcing_summary),
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.outline
                                 )
                             },
@@ -1045,7 +1095,7 @@ fun SELinuxModeDialog(
                             supportingContent = {
                                 Text(
                                     text = stringResource(R.string.settings_selinux_mode_permissive_summary),
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.outline
                                 )
                             },
@@ -1518,6 +1568,72 @@ fun ResetSUPathDialog(showDialog: MutableState<Boolean>) {
 
 private fun String.shellSingleQuoted(): String {
     return "'" + replace("'", "'\\''") + "'"
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CleanStorageDialog(showDialog: MutableState<Boolean>) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    BasicAlertDialog(
+        onDismissRequest = { showDialog.value = false }, properties = DialogProperties(
+            decorFitsSystemWindows = true,
+            usePlatformDefaultWidth = false,
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .width(310.dp)
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(30.dp),
+            tonalElevation = AlertDialogDefaults.TonalElevation,
+            color = AlertDialogDefaults.containerColor,
+        ) {
+            Column(modifier = Modifier.padding(PaddingValues(all = 24.dp))) {
+                Text(
+                    text = stringResource(id = R.string.settings_clean_storage),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = stringResource(id = R.string.settings_clean_storage_confirm),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { showDialog.value = false }) {
+                        Text(stringResource(id = android.R.string.cancel))
+                    }
+
+                    Button(onClick = {
+                        showDialog.value = false
+                        scope.launch {
+                            val success = withContext(Dispatchers.IO) {
+                                runCatching {
+                                    // 删除容易因残留/占位文件导致下载或应用失败的目录，随后重建空目录
+                                    listOf("themes", "music", "sound_effects").forEach { name ->
+                                        val dir = File(context.filesDir, name)
+                                        if (dir.exists()) dir.deleteRecursively()
+                                        dir.mkdirs()
+                                    }
+                                    context.cacheDir?.listFiles()?.forEach { it.deleteRecursively() }
+                                }.isSuccess
+                            }
+                            showToast(context, if (success) R.string.settings_clean_storage_done else R.string.failure)
+                        }
+                    }) {
+                        Text(stringResource(id = android.R.string.ok))
+                    }
+                }
+            }
+            val dialogWindowProvider = LocalView.current.parent as DialogWindowProvider
+            APDialogBlurBehindUtils.setupWindowBlurListener(dialogWindowProvider.window)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

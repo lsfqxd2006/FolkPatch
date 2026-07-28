@@ -58,10 +58,12 @@ object SettingsRegistry {
             add(SettingEntry("general_desktop_app_name", R.string.desktop_app_name, category = SettingCategory.GENERAL))
             add(SettingEntry("general_dpi", R.string.settings_app_dpi, category = SettingCategory.GENERAL))
             add(SettingEntry("general_send_log", R.string.send_log, category = SettingCategory.GENERAL))
+            add(SettingEntry("general_clean_storage", R.string.settings_clean_storage, R.string.settings_clean_storage_summary, SettingCategory.GENERAL))
 
             // === Appearance ===
             add(SettingEntry("appearance_amoled_theme", R.string.settings_amoled_theme, R.string.settings_amoled_theme_desc, SettingCategory.APPEARANCE))
             add(SettingEntry("appearance_switch_icon", R.string.settings_switch_icon, R.string.settings_switch_icon_desc, SettingCategory.APPEARANCE))
+            add(SettingEntry("appearance_discrete_slider", R.string.settings_discrete_slider, R.string.settings_discrete_slider_desc, SettingCategory.APPEARANCE))
             add(SettingEntry("appearance_home_layout", R.string.settings_home_layout_style, category = SettingCategory.APPEARANCE))
             add(SettingEntry("appearance_stats_top_layout", R.string.settings_stats_top_layout, category = SettingCategory.APPEARANCE))
             add(SettingEntry("appearance_nav_layout", R.string.settings_nav_layout_title, R.string.settings_nav_layout_summary, SettingCategory.APPEARANCE))
@@ -91,6 +93,7 @@ object SettingsRegistry {
             add(SettingEntry("appearance_banner_opacity", R.string.settings_banner_custom_opacity, R.string.settings_banner_custom_opacity_summary, SettingCategory.APPEARANCE))
             add(SettingEntry("appearance_custom_font", R.string.settings_custom_font, R.string.settings_custom_font_summary, SettingCategory.APPEARANCE))
             add(SettingEntry("appearance_theme_store", R.string.theme_store_title, category = SettingCategory.APPEARANCE))
+            add(SettingEntry("appearance_theme_mode", R.string.settings_theme_mode, R.string.settings_theme_mode_summary, SettingCategory.APPEARANCE))
             add(SettingEntry("appearance_save_theme", R.string.settings_save_theme, category = SettingCategory.APPEARANCE))
             add(SettingEntry("appearance_import_theme", R.string.settings_import_theme, category = SettingCategory.APPEARANCE))
             add(SettingEntry("appearance_reset_theme", R.string.settings_reset_theme, category = SettingCategory.APPEARANCE))
