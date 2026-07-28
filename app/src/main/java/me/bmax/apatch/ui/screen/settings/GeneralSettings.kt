@@ -1043,6 +1043,7 @@ fun SELinuxModeDialog(
 ) {
     val context = LocalContext.current
     var selectedMode by remember { mutableStateOf(currentMode) }
+    var showConfirmationDialog by remember { mutableStateOf(false) }
 
     BasicAlertDialog(
         onDismissRequest = { showDialog.value = false },
@@ -1122,11 +1123,7 @@ fun SELinuxModeDialog(
 
                     Button(
                         onClick = {
-                            val success = setSELinuxMode(selectedMode == "Enforcing")
-                            if (success) {
-                                onModeChanged(selectedMode)
-                            }
-                            showDialog.value = false
+                            showConfirmationDialog = true
                         },
                         enabled = selectedMode != currentMode
                     ) {
@@ -1137,6 +1134,42 @@ fun SELinuxModeDialog(
             val dialogWindowProvider = LocalView.current.parent as DialogWindowProvider
             APDialogBlurBehindUtils.setupWindowBlurListener(dialogWindowProvider.window)
         }
+    }
+
+    if (showConfirmationDialog) {
+        val isPermissive = selectedMode == "Permissive"
+        AlertDialog(
+            onDismissRequest = { showConfirmationDialog = false },
+            title = { Text(stringResource(id = R.string.settings_selinux_mode)) },
+            text = {
+                if (isPermissive) {
+                    Text(stringResource(id = R.string.msg_selinux_permissive_warning))
+                } else {
+                    Text(stringResource(id = R.string.msg_selinux_enforcing_confirm))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val success = setSELinuxMode(selectedMode == "Enforcing")
+                        if (success) {
+                            onModeChanged(selectedMode)
+                        }
+                        showDialog.value = false
+                        showConfirmationDialog = false
+                    }
+                ) {
+                    Text(stringResource(id = android.R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showConfirmationDialog = false }
+                ) {
+                    Text(stringResource(id = android.R.string.cancel))
+                }
+            }
+        )
     }
 }
 
@@ -1176,7 +1209,7 @@ fun AppTitleChooseDialog(showDialog: MutableState<Boolean>, onTitleChanged: (Str
             color = AlertDialogDefaults.containerColor,
         ) {
             LazyColumn {
-                items(titles.size) { index ->
+                items(titles.size, key = { it }) { index ->
                     val (key, displayName) = titles[index]
                     ListItem(
                         headlineContent = { Text(text = displayName) },

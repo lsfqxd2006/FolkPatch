@@ -53,6 +53,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import me.bmax.apatch.util.BiometricUtils
+import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -103,11 +104,14 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { navigator.navigate(SettingsSearchScreenDestination) }) {
-                        Icon(Icons.Filled.Search, contentDescription = null)
+                    IconButton(onClick = dropUnlessResumed { navigator.navigate(SettingsSearchScreenDestination) }) {
+                        Icon(Icons.Filled.Search, contentDescription = "Search")
                     }
-                    IconButton(onClick = { navigator.navigate(FunctionSettingsScreenDestination(null)) }) {
-                        Icon(Icons.Filled.Tune, contentDescription = null)
+                    IconButton(onClick = { showDevDialog = true }) {
+                        Icon(Icons.Outlined.Info, contentDescription = stringResource(R.string.about))
+                    }
+                    IconButton(onClick = dropUnlessResumed { navigator.navigate(FunctionSettingsScreenDestination(null)) }) {
+                        Icon(Icons.Filled.Tune, contentDescription = stringResource(R.string.settings_category_function))
                     }
                 },
                 scrollBehavior = scrollBehavior,

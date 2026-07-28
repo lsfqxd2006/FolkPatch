@@ -193,6 +193,8 @@
     <string name="settings_selinux_current_mode">Current: %s</string>
     <string name="settings_selinux_mode_enforcing_summary">SELinux fully enforces access rules</string>
     <string name="settings_selinux_mode_permissive_summary">SELinux only logs violations, does not deny</string>
+    <string name="msg_selinux_permissive_warning">Switching to Permissive mode will disable SELinux enforcement. This reduces security as access violations will only be logged, not denied. Continue?</string>
+    <string name="msg_selinux_enforcing_confirm">Switch to Enforcing mode? SELinux will fully enforce all access rules and deny unauthorized access attempts.</string>
 
     <string name="home_device_info">Device</string>
     <string name="home_system_version">System version</string>
@@ -212,6 +214,7 @@
     <string name="kpm_unload">Unload</string>
     <string name="kpm_control">Control</string>
     <string name="kpm_apm_empty">No module loaded</string>
+        <string name="kpm_load_failed">Failed to load kernel modules</string>
     <string name="kpm_version">Version</string>
     <string name="kpm_license">License</string>
     <string name="kpm_author">Author</string>
@@ -237,6 +240,7 @@
     <string name="apm_failed_to_enable">Failed to enable module: %s</string>
     <string name="apm_failed_to_disable">Failed to disable module: %s</string>
     <string name="apm_empty">No module installed</string>
+    <string name="apm_load_failed">Failed to load modules</string>
     <string name="apm_remove">Remove</string>
     <string name="apm_undo">Undo</string>
     <string name="apm_install">Install</string>
@@ -794,6 +798,7 @@ Please ensure the app is completely closed and reopened for the commands to exec
     <!-- Biometric Strings -->
     <string name="action_biometric">Biometric Authentication</string>
     <string name="msg_biometric">Please verify your biometric identity</string>
+    <string name="msg_enable_biometric">Enable biometric authentication to require verification when opening the app?</string>
     <string name="settings_biometric_login">Biometric Authentication</string>
     <string name="settings_biometric_login_summary">Require biometric authentication when opening the app</string>
     <string name="settings_strong_biometric">Strong Biometric Authentication</string>

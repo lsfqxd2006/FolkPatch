@@ -42,6 +42,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Search
@@ -63,6 +64,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -250,7 +253,7 @@ fun KPModuleScreen(navigator: DestinationsNavigator) {
 
     val kpModuleListState = rememberLazyListState()
 
-    var searchQuery by remember { mutableStateOf("") }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
     val filteredModuleList = remember(viewModel.moduleList, searchQuery) {
         if (searchQuery.isEmpty()) {
             viewModel.moduleList
@@ -347,12 +350,12 @@ fun KPModuleScreen(navigator: DestinationsNavigator) {
                                 if (isExpanded) {
                                     Icon(
                                         Icons.Filled.Close,
-                                        contentDescription = null,
+                                        contentDescription = "Close",
                                     )
                                 } else {
                                     Icon(
                                         painter = painterResource(id = R.drawable.package_import),
-                                        contentDescription = null,
+                                        contentDescription = "Install module",
                                     )
                                 }
                             }
@@ -361,7 +364,7 @@ fun KPModuleScreen(navigator: DestinationsNavigator) {
                 ) {
                     // 自动配置 (Auto Config) — top
                     FloatingActionButtonMenuItem(
-                        onClick = {
+                        onClick = dropUnlessResumed {
                             expanded = false
                             navigator.navigate(KpmAutoLoadConfigScreenDestination)
                         },
@@ -738,9 +741,35 @@ private fun KPModuleList(
                                 .defaultMinSize(minHeight = 300.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                stringResource(R.string.kpm_apm_empty), textAlign = TextAlign.Center
-                            )
+                            if (viewModel.errorMessage != null && !viewModel.isRefreshing) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.ErrorOutline,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                    Spacer(Modifier.height(12.dp))
+                                    Text(
+                                        text = viewModel.errorMessage ?: stringResource(R.string.kpm_load_failed),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(horizontal = 16.dp)
+                                    )
+                                    Spacer(Modifier.height(12.dp))
+                                    Button(onClick = { viewModel.fetchModuleList() }) {
+                                        Text(stringResource(R.string.retry))
+                                    }
+                                }
+                            } else {
+                                Text(
+                                    stringResource(R.string.kpm_apm_empty), textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
                 },
@@ -786,6 +815,41 @@ private fun KPModuleList(
                 },
             ) {
                 when {
+                    viewModel.errorMessage != null && !viewModel.isRefreshing -> {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillParentMaxHeight(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.ErrorOutline,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                    Spacer(Modifier.height(12.dp))
+                                    Text(
+                                        text = viewModel.errorMessage ?: stringResource(R.string.kpm_load_failed),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(horizontal = 16.dp)
+                                    )
+                                    Spacer(Modifier.height(12.dp))
+                                    Button(onClick = { viewModel.fetchModuleList() }) {
+                                        Text(stringResource(R.string.retry))
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     moduleList.isEmpty() -> {
                         item {
                             Box(
@@ -930,7 +994,7 @@ private fun TopBar(
                                     keyboardController?.hide()
                                     onSearchQueryChange("")
                                 },
-                                content = { Icon(Icons.Filled.Close, null) }
+                                content = { Icon(Icons.Filled.Close, "Close") }
                             )
                         },
                         maxLines = 1,
@@ -959,9 +1023,7 @@ private fun TopBar(
                         )
                     }
                     // 下载按钮
-                    IconButton(onClick = {
-                        navigator.navigate(OnlineKPMScreenDestination)
-                    }) {
+                    IconButton(onClick = dropUnlessResumed { navigator.navigate(OnlineKPMScreenDestination) }) {
                         Icon(
                             imageVector = Icons.Filled.Download,
                             contentDescription = "Online KPM"
