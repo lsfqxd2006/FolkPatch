@@ -41,9 +41,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,13 +89,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
     val canAuthenticate = remember { BiometricUtils.isBiometricAvailable(context) }
 
-    var showDevDialog by rememberSaveable { mutableStateOf(false) }
-
-    DeveloperInfo(
-        showDialog = showDevDialog
-    ) {
-        showDevDialog = false
-    }
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
