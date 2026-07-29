@@ -65,6 +65,7 @@ fun BackgroundOptionsDialog(
     selectLabel: String,
     clearLabel: String,
     hasExisting: Boolean = true,
+    showBannerSection: Boolean = true,
     onSelectImage: () -> Unit,
     onClearImage: () -> Unit,
     // 模块信息相关（可选，不提供时不显示模块信息区域）
@@ -115,36 +116,15 @@ fun BackgroundOptionsDialog(
                             .verticalScroll(rememberScrollState())
                     ) {
                         // Banner 区域
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            // 选择图片按钮 — FilledTonal 风格
-                            FilledTonalButton(
-                                onClick = {
-                                    onDismiss()
-                                    onSelectImage()
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(52.dp),
-                                shape = RoundedCornerShape(14.dp),
+                        if (showBannerSection) {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                Icon(
-                                    Icons.Default.Image,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Text(
-                                    text = selectLabel,
-                                    modifier = Modifier.padding(start = 8.dp)
-                                )
-                            }
-                            // 清除按钮 — Outlined 风格，仅有已存在图片时显示
-                            if (hasExisting) {
-                                OutlinedButton(
+                                // 选择图片按钮 — FilledTonal 风格
+                                FilledTonalButton(
                                     onClick = {
                                         onDismiss()
-                                        onClearImage()
+                                        onSelectImage()
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -152,25 +132,48 @@ fun BackgroundOptionsDialog(
                                     shape = RoundedCornerShape(14.dp),
                                 ) {
                                     Icon(
-                                        Icons.Default.Delete,
+                                        Icons.Default.Image,
                                         contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.error
+                                        modifier = Modifier.size(20.dp)
                                     )
                                     Text(
-                                        text = clearLabel,
-                                        modifier = Modifier.padding(start = 8.dp),
-                                        color = MaterialTheme.colorScheme.error
+                                        text = selectLabel,
+                                        modifier = Modifier.padding(start = 8.dp)
                                     )
                                 }
+                                // 清除按钮 — Outlined 风格，仅有已存在图片时显示
+                                if (hasExisting) {
+                                    OutlinedButton(
+                                        onClick = {
+                                            onDismiss()
+                                            onClearImage()
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(52.dp),
+                                        shape = RoundedCornerShape(14.dp),
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                        Text(
+                                            text = clearLabel,
+                                            modifier = Modifier.padding(start = 8.dp),
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
                             }
-                        }
 
-                        // Banner 与模块信息区域的分隔线
-                        HorizontalDivider(
-                            modifier = Modifier.padding(top = 20.dp, bottom = 4.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                        )
+                            // Banner 与模块信息区域的分隔线
+                            HorizontalDivider(
+                                modifier = Modifier.padding(top = 20.dp, bottom = 4.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                            )
+                        }
 
                         if (onSaveModuleInfo != null && onResetModuleInfo != null) {
                             // 分隔标题 — 模块信息

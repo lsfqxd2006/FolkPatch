@@ -1784,9 +1784,7 @@ private fun ModuleItem(
                 }
             },
             onLongClick = {
-                if (BackgroundConfig.isBannerEnabled && BackgroundConfig.isFolkBannerEnabled) {
-                    showFolkBannerDialog = true
-                }
+                showFolkBannerDialog = true
             }
         )
 
@@ -2181,6 +2179,7 @@ private fun ModuleItem(
         showDialog = showFolkBannerDialog,
         onDismiss = { showFolkBannerDialog = false },
         title = folkBannerTitle,
+        showBannerSection = BackgroundConfig.isFolkBannerEnabled,
         selectLabel = folkBannerSelect,
         clearLabel = folkBannerClear,
         hasExisting = hasFolkBanner,

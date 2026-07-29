@@ -333,7 +333,7 @@
     <string name="apm_enable_module_banner_summary">為支援的模組顯示橫幅圖片</string>
     <string name="apm_enable_folk_banner">自訂模組橫幅</string>
     <string name="apm_enable_folk_banner_summary">長按模組卡片自選橫幅圖片</string>
-    <string name="apm_folk_banner_title">FolkBanner</string>
+    <string name="apm_folk_banner_title">模組編輯</string>
     <string name="apm_folk_banner_select">選取圖片</string>
     <string name="apm_folk_banner_clear">清除 FolkBanner</string>
     <string name="apm_folk_banner_saved">已為 %s 注入 FolkBanner。</string>

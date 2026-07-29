@@ -325,7 +325,7 @@
     <string name="apm_enable_module_banner_summary">为支持的模块显示横幅图片</string>
     <string name="apm_enable_folk_banner">自定义模块横幅</string>
     <string name="apm_enable_folk_banner_summary">长按模块卡片自选横幅图片</string>
-    <string name="apm_folk_banner_title">FolkBanner</string>
+    <string name="apm_folk_banner_title">模块编辑</string>
     <string name="apm_folk_banner_select">选择图片</string>
     <string name="apm_folk_banner_clear">清除 FolkBanner</string>
     <string name="apm_folk_banner_saved">已为 %s 注入 FolkBanner。</string>
