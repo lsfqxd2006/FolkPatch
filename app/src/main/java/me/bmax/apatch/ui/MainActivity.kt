@@ -234,7 +234,7 @@ fun rememberScrollConnection(
 
 class MainActivity : AppCompatActivity() {
     companion object {
-        var pendingBarReset = false
+        val pendingBarReset = mutableStateOf(false)
     }
     private var isLoading = true
     private var installUri: Uri? = null
@@ -385,7 +385,7 @@ class MainActivity : AppCompatActivity() {
         val navMode = prefs.getString("nav_mode", "floating") ?: "floating"
         val floatingAutoHide = prefs.getBoolean("floating_auto_hide", true)
         if (navMode == "floating" && floatingAutoHide) {
-            MainActivity.pendingBarReset = true
+            MainActivity.pendingBarReset.value = true
         }
     }
 
@@ -761,9 +761,9 @@ class MainActivity : AppCompatActivity() {
                 val isFloatingMode = navMode == "floating"
 
                 LaunchedEffect(isFloatingMode, autoHideKey, floatingAutoHide) {
-                    if (MainActivity.pendingBarReset && isFloatingMode && floatingAutoHide) {
+                    if (MainActivity.pendingBarReset.value && isFloatingMode && floatingAutoHide) {
                         resetBottomBarAutoHide()
-                        MainActivity.pendingBarReset = false
+                        MainActivity.pendingBarReset.value = false
                     }
                     if (isFloatingMode && floatingAutoHide && isBottomBarVisible) {
                         delay(3000L)
