@@ -233,7 +233,9 @@ fun rememberScrollConnection(
 }
 
 class MainActivity : AppCompatActivity() {
-
+    companion object {
+        var pendingBarReset = false
+    }
     private var isLoading = true
     private var installUri: Uri? = null
     private var installUris: ArrayList<Uri>? = null
@@ -379,6 +381,12 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         showBiometricPromptIfNeeded()
+        val prefs = APApplication.sharedPreferences
+        val navMode = prefs.getString("nav_mode", "floating") ?: "floating"
+        val floatingAutoHide = prefs.getBoolean("floating_auto_hide", true)
+        if (navMode == "floating" && floatingAutoHide) {
+            MainActivity.pendingBarReset = true
+        }
     }
 
     private fun showBiometricPromptIfNeeded() {
@@ -753,6 +761,10 @@ class MainActivity : AppCompatActivity() {
                 val isFloatingMode = navMode == "floating"
 
                 LaunchedEffect(isFloatingMode, autoHideKey, floatingAutoHide) {
+                    if (MainActivity.pendingBarReset && isFloatingMode && floatingAutoHide) {
+                        resetBottomBarAutoHide()
+                        MainActivity.pendingBarReset = false
+                    }
                     if (isFloatingMode && floatingAutoHide && isBottomBarVisible) {
                         delay(3000L)
                         isBottomBarVisible = false
