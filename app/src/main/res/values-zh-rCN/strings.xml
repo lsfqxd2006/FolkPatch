@@ -331,6 +331,15 @@
     <string name="apm_folk_banner_saved">已为 %s 注入 FolkBanner。</string>
     <string name="apm_folk_banner_cleared">已为 %s 清除 FolkBanner。</string>
     <string name="apm_folk_banner_failed">为 %s 更新 FolkBanner 失败。</string>
+    <string name="folk_banner_custom_info_title">模块信息</string>
+    <string name="folk_banner_custom_info_name">名称</string>
+    <string name="folk_banner_custom_info_version">版本</string>
+    <string name="folk_banner_custom_info_author">作者</string>
+    <string name="folk_banner_custom_info_description">简介</string>
+    <string name="folk_banner_custom_info_save">保存</string>
+    <string name="folk_banner_custom_info_reset">重置</string>
+    <string name="folk_banner_custom_info_saved">已保存 %s 的模块自定义信息</string>
+    <string name="folk_banner_custom_info_reset_done">已重置 %s 的模块自定义信息</string>
     <string name="apm_banner_api_mode">API模式</string>
     <string name="apm_banner_api_mode_summary">使用随机图API或本地目录为模块提供横幅</string>
     <string name="apm_banner_api_source">配置API源</string>
