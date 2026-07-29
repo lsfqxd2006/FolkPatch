@@ -746,6 +746,7 @@
     <!-- Biometric Strings -->
     <string name="action_biometric">Биометрическая аутентификация</string>
     <string name="msg_biometric">Пожалуйста, подтвердите свою биометрическую личность</string>
+    <string name="msg_enable_biometric">Включить биометрическую аутентификацию для подтверждения при открытии приложения?</string>
     <string name="settings_biometric_login">Биометрическая аутентификация</string>
     <string name="settings_biometric_login_summary">Требовать биометрическую аутентификацию при открытии приложения</string>
     <string name="settings_strong_biometric">Сильная биометрическая аутентификация</string>

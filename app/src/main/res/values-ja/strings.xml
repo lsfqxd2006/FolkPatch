@@ -689,6 +689,7 @@
     <!-- Biometric Strings -->
     <string name="action_biometric">生体認証</string>
     <string name="msg_biometric">生体認証で確認してください</string>
+    <string name="msg_enable_biometric">アプリを開くときに確認を求めるため、生体認証を有効にしますか？</string>
     <string name="settings_biometric_login">生体認証</string>
     <string name="settings_biometric_login_summary">アプリを開くときに生体認証を要求します。</string>
     <string name="settings_strong_biometric">強力な生体認証</string>

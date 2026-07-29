@@ -759,6 +759,7 @@
     <!-- Biometric Strings -->
     <string name="action_biometric">생체 인식 인증</string>
     <string name="msg_biometric">생체 인식으로 본인 확인을 하세요.</string>
+    <string name="msg_enable_biometric">앱을 열 때 확인을 요구하도록 생체 인증을 활성화하시겠습니까?</string>
     <string name="settings_biometric_login">생체 인식 인증</string>
     <string name="settings_biometric_login_summary">앱을 열 때 생체 인식 인증을 요구합니다.</string>
     <string name="settings_strong_biometric">강력한 생체 인식</string>

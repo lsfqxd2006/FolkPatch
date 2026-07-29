@@ -741,6 +741,7 @@
     <!-- Biometric Strings-->
     <string name="action_biometric">仙纹核验</string>
     <string name="msg_biometric">请核验本命仙纹</string>
+    <string name="msg_enable_biometric">开启仙纹核验以在入仙门时验明正身？</string>
     <string name="settings_biometric_login">仙纹核验</string>
     <string name="settings_biometric_login_summary">启府需验本命仙纹</string>
     <string name="settings_strong_biometric">强力本命仙纹</string>

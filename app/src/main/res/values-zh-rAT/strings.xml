@@ -740,6 +740,7 @@
     <!-- Biometric Strings -->
     <string name="action_biometric">天使印鉴认证</string>
     <string name="msg_biometric">请验证您的天使印鉴</string>
+    <string name="msg_enable_biometric">开启天使印鉴认证以在打开应用时要求验证？</string>
     <string name="settings_biometric_login">天使印鉴认证</string>
     <string name="settings_biometric_login_summary">开启天使工坊时需要进行天使印鉴认证</string>
     <string name="settings_strong_biometric">强力天使印鉴</string>

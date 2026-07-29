@@ -768,6 +768,7 @@
     <!-- 生物识别 -->
     <string name="action_biometric">生物验证（就像村民交易确认）</string>
     <string name="msg_biometric">请验证你的身份</string>
+    <string name="msg_enable_biometric">开启生物验证？打开管理器时要验证身份</string>
     <string name="settings_biometric_login">生物验证</string>
     <string name="settings_biometric_login_summary">打开管理器时要求生物验证</string>
     <string name="settings_strong_biometric">高强度生物验证</string>

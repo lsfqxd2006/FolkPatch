@@ -729,6 +729,7 @@ Pastikan aplikasi ditutup sepenuhnya dan dimulai ulang untuk menjalankan perinta
 
     <string name="action_biometric">Auntentikasi Biometrik</string>
     <string name="msg_biometric">Harap konfirmasi identitas biometrik Anda</string>
+    <string name="msg_enable_biometric">Aktifkan autentikasi biometrik untuk meminta verifikasi saat membuka aplikasi?</string>
     <string name="settings_biometric_login">Auntentikasi Biometrik</string>
     <string name="settings_biometric_login_summary">Wajibkan Autentikasi biometrik saat membuka aplikasi</string>
     <string name="settings_strong_biometric">Autentikasi Biometrik Kuat</string>

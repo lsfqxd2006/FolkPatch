@@ -748,6 +748,7 @@
     <!-- Biometric Strings -->
     <string name="action_biometric">魔法印鉴认证</string>
     <string name="msg_biometric">请验证您的魔法印鉴</string>
+    <string name="msg_enable_biometric">开启魔法印鉴认证以在打开应用时要求验证？</string>
     <string name="settings_biometric_login">魔法印鉴认证</string>
     <string name="settings_biometric_login_summary">开启魔法工坊时需要进行魔法印鉴认证</string>
     <string name="settings_strong_biometric">强力魔法印鉴</string>

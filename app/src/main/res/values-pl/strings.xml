@@ -673,6 +673,7 @@ Upewnij się, że aplikacja jest całkowicie zamknięta i ponownie otwarta, aby 
     <!-- Biometric Strings -->
     <string name="action_biometric">Uwierzytelnianie biometryczne</string>
     <string name="msg_biometric">Proszę zweryfikować swoją tożsamość biometryczną</string>
+    <string name="msg_enable_biometric">Włączyć uwierzytelnianie biometryczne, aby wymagać weryfikacji przy otwieraniu aplikacji?</string>
     <string name="settings_biometric_login">Uwierzytelnianie biometryczne</string>
     <string name="settings_biometric_login_summary">Wymagaj uwierzytelniania biometrycznego przy otwieraniu aplikacji</string>
     <string name="settings_strong_biometric">Silne uwierzytelnianie biometryczne</string>

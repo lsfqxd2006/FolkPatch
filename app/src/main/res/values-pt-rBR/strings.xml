@@ -745,6 +745,7 @@ Por favor, certifique-se de fechar completamente o app e reabri-lo para que os c
     <!-- Biometric Strings -->
     <string name="action_biometric">Autenticação Biométrica</string>
     <string name="msg_biometric">Por favor, verifique sua identidade biométrica</string>
+    <string name="msg_enable_biometric">Ativar autenticação biométrica para exigir verificação ao abrir o aplicativo?</string>
     <string name="settings_biometric_login">Login Biométrico</string>
     <string name="settings_biometric_login_summary">Exigir autenticação biométrica ao abrir o app</string>
     <string name="settings_strong_biometric">Autenticação Biométrica Forte</string>

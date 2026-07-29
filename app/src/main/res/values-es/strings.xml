@@ -747,6 +747,7 @@ Por ejemplo, los KPM que previenen la modificación de particiones solo pueden u
     <!-- Biometric Strings -->
     <string name="action_biometric">Autenticación Biométrica</string>
     <string name="msg_biometric">Por favor verifica tu identidad biométrica</string>
+    <string name="msg_enable_biometric">¿Activar autenticación biométrica para solicitar verificación al abrir la aplicación?</string>
     <string name="settings_biometric_login">Autenticación Biométrica</string>
     <string name="settings_biometric_login_summary">Requerir autenticación biométrica al abrir la app</string>
     <string name="settings_strong_biometric">Autenticación biométrica fuerte</string>

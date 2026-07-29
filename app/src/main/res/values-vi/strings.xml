@@ -743,6 +743,7 @@ Cần đảm bảo phần mềm thoát hoàn toàn vào mới sẽ thực thi l�
     <!-- Biometric Strings -->
     <string name="action_biometric">Xác thực sinh trắc học</string>
     <string name="msg_biometric">Vui lòng xác minh danh tính sinh trắc học của bạn</string>
+    <string name="msg_enable_biometric">Bật xác thực sinh trắc học để yêu cầu xác minh khi mở ứng dụng?</string>
     <string name="settings_biometric_login">Xác thực sinh trắc học</string>
     <string name="settings_biometric_login_summary">Yêu cầu xác thực sinh trắc học khi mở ứng dụng</string>
     <string name="settings_strong_biometric">Xác thực sinh trắc học mạnh</string>

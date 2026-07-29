@@ -777,6 +777,7 @@
     <!-- Biometric Strings -->
     <string name="action_biometric">生物识别认证</string>
     <string name="msg_biometric">请验证您的生物识别身份</string>
+    <string name="msg_enable_biometric">启用生物识别认证以在打开应用时要求验证？</string>
     <string name="settings_biometric_login">生物识别认证</string>
     <string name="settings_biometric_login_summary">打开应用时要求生物识别认证</string>
     <string name="settings_strong_biometric">强力生物识别</string>

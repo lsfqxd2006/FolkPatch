@@ -750,6 +750,7 @@
     <!-- Biometric Strings -->
     <string name="action_biometric">المصادقة البيومترية</string>
     <string name="msg_biometric">يرجى التحقق من هويتك البيومترية</string>
+    <string name="msg_enable_biometric">تمكين المصادقة البيومترية لطلب التحقق عند فتح التطبيق؟</string>
     <string name="settings_biometric_login">المصادقة البيومترية</string>
     <string name="settings_biometric_login_summary">تتطلب مصادقة بيومترية عند فتح التطبيق</string>
     <string name="settings_strong_biometric">المصادقة البيومترية القوية</string>
