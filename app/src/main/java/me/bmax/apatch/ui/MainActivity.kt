@@ -748,7 +748,15 @@ class MainActivity : AppCompatActivity() {
                     isBottomBarVisible = true
                     autoHideKey++
                 }
-
+                
+                // 新增：重置导航栏 + 滚动状态的组合方法 
+                fun resetBottomBarFully() {
+                    resetBottomBarAutoHide()
+                    isScrollingDown.value = false
+                    scrollOffset.value = 0f
+                    previousScrollOffset.value = 0f
+                }
+                
                 // Remember the last valid navbar selection (persists across navbar hide/show)
                 val lastValidNavbarSelection = remember { mutableStateOf(0) }
 
@@ -762,10 +770,7 @@ class MainActivity : AppCompatActivity() {
 
                 LaunchedEffect(isFloatingMode, autoHideKey, floatingAutoHide, MainActivity.pendingBarReset.value) {
                     if (MainActivity.pendingBarReset.value && isFloatingMode && floatingAutoHide) {
-                        resetBottomBarAutoHide()
-                        isScrollingDown.value = false
-                        scrollOffset.value = 0f
-                        previousScrollOffset.value = 0f
+                        resetBottomBarFully()
                         MainActivity.pendingBarReset.value = false
                     }
                     if (isFloatingMode && floatingAutoHide && isBottomBarVisible) {
@@ -794,10 +799,7 @@ class MainActivity : AppCompatActivity() {
                         val isCurrentTab = currentRoute in bottomBarRoutes
                         val wasPreviousTab = previousRoute.value in bottomBarRoutes
                         if (isCurrentTab && !wasPreviousTab && previousRoute.value != null) {
-                            resetBottomBarAutoHide()
-                            isScrollingDown.value = false
-                            scrollOffset.value = 0f
-                            previousScrollOffset.value = 0f
+                            resetBottomBarFully()
                         }
                         previousRoute.value = currentRoute
                     }
@@ -901,11 +903,8 @@ class MainActivity : AppCompatActivity() {
                         
                                 BackHandler(enabled = currentRouteForBack in bottomBarRoutes) {
                                     if (currentRouteForBack != null && currentRouteForBack != homeRoute) {
-                                        resetBottomBarAutoHide()
                                         // 完整重置滚动相关状态，确保导航栏立即显示
-                                        isScrollingDown.value = false
-                                        scrollOffset.value = 0f
-                                        previousScrollOffset.value = 0f
+                                        resetBottomBarFully()
                                         // 原子操作：清空返回栈并跳转主页
                                         navController.navigate(homeRoute) {
                                             popUpTo(NavGraphs.root.route) { inclusive = true }
