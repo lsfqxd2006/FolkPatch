@@ -75,6 +75,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -94,6 +95,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.compose.ui.window.PopupProperties
@@ -293,10 +295,15 @@ fun KPModuleScreen(navigator: DestinationsNavigator) {
     var orderedModules by remember { mutableStateOf(viewModel.moduleList) }
 
     Scaffold(topBar = {
-        TopBar(navigator, searchQuery, onCustomOrderClick = {
-            orderedModules = viewModel.moduleList
-            showOrderDialog = true
-        }) { searchQuery = it }
+        TopBar(
+            navigator,
+            searchQuery,
+            showCustomOrder = viewModel.moduleList.isNotEmpty(),
+            onCustomOrderClick = {
+                orderedModules = viewModel.moduleList
+                showOrderDialog = true
+            }
+        ) { searchQuery = it }
     }, floatingActionButton = run {
         {
             val scope = rememberCoroutineScope()
@@ -520,21 +527,31 @@ fun KPModuleScreen(navigator: DestinationsNavigator) {
     if (showOrderDialog) {
         val reorderThreshold = with(LocalDensity.current) { 40.dp.toPx() }
         val dragToReorderDescription = stringResource(R.string.apm_drag_to_reorder)
+        var draggedModuleName by remember { mutableStateOf<String?>(null) }
+        var draggedDistance by remember { mutableStateOf(0f) }
         AlertDialog(
             onDismissRequest = { showOrderDialog = false },
             title = { Text(stringResource(R.string.apm_custom_order)) },
             text = {
                 LazyColumn(modifier = Modifier.heightIn(max = 480.dp)) {
                     itemsIndexed(orderedModules, key = { _, module -> module.name }) { _, module ->
-                        var draggedDistance by remember(module.name) { mutableStateOf(0f) }
+                        val isDragging = draggedModuleName == module.name
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .animateItem(
-                                    placementSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessMediumLow
-                                    )
+                                .then(
+                                    if (isDragging) {
+                                        Modifier
+                                            .zIndex(1f)
+                                            .graphicsLayer { translationY = draggedDistance }
+                                    } else {
+                                        Modifier.animateItem(
+                                            placementSpec = spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessMediumLow
+                                            )
+                                        )
+                                    }
                                 ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -550,8 +567,18 @@ fun KPModuleScreen(navigator: DestinationsNavigator) {
                                     .semantics { contentDescription = dragToReorderDescription }
                                     .pointerInput(module.name) {
                                         detectDragGestures(
-                                            onDragEnd = { draggedDistance = 0f },
-                                            onDragCancel = { draggedDistance = 0f }
+                                            onDragStart = {
+                                                draggedModuleName = module.name
+                                                draggedDistance = 0f
+                                            },
+                                            onDragEnd = {
+                                                draggedModuleName = null
+                                                draggedDistance = 0f
+                                            },
+                                            onDragCancel = {
+                                                draggedModuleName = null
+                                                draggedDistance = 0f
+                                            }
                                         ) { change, dragAmount ->
                                             change.consume()
                                             draggedDistance += dragAmount.y
@@ -566,7 +593,11 @@ fun KPModuleScreen(navigator: DestinationsNavigator) {
                                                     add(targetIndex, removeAt(currentIndex))
                                                 }
                                                 viewModel.setCustomModuleOrder(orderedModules.map { it.name })
-                                                draggedDistance = 0f
+                                                draggedDistance -= if (targetIndex > currentIndex) {
+                                                    reorderThreshold
+                                                } else {
+                                                    -reorderThreshold
+                                                }
                                             }
                                         }
                                     }
@@ -1039,6 +1070,7 @@ private fun KPModuleList(
 private fun TopBar(
     navigator: DestinationsNavigator,
     searchQuery: String,
+    showCustomOrder: Boolean,
     onCustomOrderClick: () -> Unit,
     onSearchQueryChange: (String) -> Unit
 ) {
@@ -1130,12 +1162,14 @@ private fun TopBar(
                             contentDescription = "Search"
                         )
                     }
-                    // 自定义排序按钮
-                    IconButton(onClick = onCustomOrderClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Sort,
-                            contentDescription = stringResource(R.string.kpm_custom_order)
-                        )
+                    // 自定义排序按钮（无模块时隐藏）
+                    if (showCustomOrder) {
+                        IconButton(onClick = onCustomOrderClick) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Sort,
+                                contentDescription = stringResource(R.string.kpm_custom_order)
+                            )
+                        }
                     }
                 }
             }
