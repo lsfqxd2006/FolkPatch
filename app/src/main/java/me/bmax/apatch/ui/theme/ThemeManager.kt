@@ -98,7 +98,32 @@ object ThemeManager {
         val titleImageDayOpacity: Float = 1.0f,
         val titleImageNightOpacity: Float = 1.0f,
         val titleImageDim: Float = 0.0f,
-        val titleImageOffsetX: Float = 0f
+        val titleImageOffsetX: Float = 0f,
+         // FocusUI Card Wallpapers
+         val isFocusCardBackgroundEnabled: Boolean = false,
+         val focusCardBgDim: Float = 0.3f,
+         val isFocusCardDualDimEnabled: Boolean = false,
+         val focusCardBgDayDim: Float = 0.3f,
+         val focusCardBgNightDim: Float = 0.3f,
+         val isFocusCardDualOpacityEnabled: Boolean = false,
+         val focusCardBgOpacity: Float = 1.0f,
+         val focusCardBgDayOpacity: Float = 1.0f,
+         val focusCardBgNightOpacity: Float = 1.0f,
+        val hasFocusCardKernelBg: Boolean = false,
+        val hasFocusCardAppBg: Boolean = false,
+        val hasFocusCardDeviceBg: Boolean = false,
+        val hasFocusCardStorageBg: Boolean = false,
+        // DashboardUI Hero Card Wallpaper
+        val isDashboardCardBackgroundEnabled: Boolean = false,
+        val dashboardCardBgDim: Float = 0.3f,
+        val isDashboardCardDualDimEnabled: Boolean = false,
+        val dashboardCardBgDayDim: Float = 0.3f,
+        val dashboardCardBgNightDim: Float = 0.3f,
+        val dashboardCardBgOpacity: Float = 1.0f,
+        val isDashboardCardDualOpacityEnabled: Boolean = false,
+        val dashboardCardBgDayOpacity: Float = 1.0f,
+        val dashboardCardBgNightOpacity: Float = 1.0f,
+        val hasDashboardCardBg: Boolean = false,
     )
 
     data class ThemeMetadata(
@@ -163,7 +188,31 @@ object ThemeManager {
                     titleImageDayOpacity = BackgroundConfig.titleImageDayOpacity,
                     titleImageNightOpacity = BackgroundConfig.titleImageNightOpacity,
                     titleImageDim = BackgroundConfig.titleImageDim,
-                    titleImageOffsetX = BackgroundConfig.titleImageOffsetX
+                    titleImageOffsetX = BackgroundConfig.titleImageOffsetX,
+                     // FocusUI Card Wallpapers
+                     isFocusCardBackgroundEnabled = BackgroundConfig.isFocusCardBackgroundEnabled,
+                     focusCardBgDim = BackgroundConfig.focusCardBgDim,
+                     isFocusCardDualDimEnabled = BackgroundConfig.isFocusCardDualDimEnabled,
+                     focusCardBgDayDim = BackgroundConfig.focusCardBgDayDim,
+                     focusCardBgNightDim = BackgroundConfig.focusCardBgNightDim,
+                     isFocusCardDualOpacityEnabled = BackgroundConfig.isFocusCardDualOpacityEnabled,
+                     focusCardBgOpacity = BackgroundConfig.focusCardBgOpacity,
+                     focusCardBgDayOpacity = BackgroundConfig.focusCardBgDayOpacity,
+                     focusCardBgNightOpacity = BackgroundConfig.focusCardBgNightOpacity,
+                    hasFocusCardKernelBg = BackgroundConfig.focusCardKernelBgUri != null,
+                    hasFocusCardAppBg = BackgroundConfig.focusCardAppBgUri != null,
+                    hasFocusCardDeviceBg = BackgroundConfig.focusCardDeviceBgUri != null,
+                    hasFocusCardStorageBg = BackgroundConfig.focusCardStorageBgUri != null,
+                    isDashboardCardBackgroundEnabled = BackgroundConfig.isDashboardCardBackgroundEnabled,
+                    dashboardCardBgDim = BackgroundConfig.dashboardCardBgDim,
+                    isDashboardCardDualDimEnabled = BackgroundConfig.isDashboardCardDualDimEnabled,
+                    dashboardCardBgDayDim = BackgroundConfig.dashboardCardBgDayDim,
+                    dashboardCardBgNightDim = BackgroundConfig.dashboardCardBgNightDim,
+                    dashboardCardBgOpacity = BackgroundConfig.dashboardCardBgOpacity,
+                    isDashboardCardDualOpacityEnabled = BackgroundConfig.isDashboardCardDualOpacityEnabled,
+                    dashboardCardBgDayOpacity = BackgroundConfig.dashboardCardBgDayOpacity,
+                    dashboardCardBgNightOpacity = BackgroundConfig.dashboardCardBgNightOpacity,
+                    hasDashboardCardBg = BackgroundConfig.dashboardCardBgUri != null,
                 )
 
                 // 2. Write Config JSON
@@ -224,6 +273,31 @@ object ThemeManager {
                     put("titleImageNightOpacity", config.titleImageNightOpacity.toDouble())
                     put("titleImageDim", config.titleImageDim.toDouble())
                     put("titleImageOffsetX", config.titleImageOffsetX.toDouble())
+
+                     // FocusUI Card Wallpapers
+                     put("isFocusCardBackgroundEnabled", config.isFocusCardBackgroundEnabled)
+                     put("focusCardBgDim", config.focusCardBgDim.toDouble())
+                     put("isFocusCardDualDimEnabled", config.isFocusCardDualDimEnabled)
+                     put("focusCardBgDayDim", config.focusCardBgDayDim.toDouble())
+                     put("focusCardBgNightDim", config.focusCardBgNightDim.toDouble())
+                     put("isFocusCardDualOpacityEnabled", config.isFocusCardDualOpacityEnabled)
+                     put("focusCardBgOpacity", config.focusCardBgOpacity.toDouble())
+                     put("focusCardBgDayOpacity", config.focusCardBgDayOpacity.toDouble())
+                     put("focusCardBgNightOpacity", config.focusCardBgNightOpacity.toDouble())
+                    put("hasFocusCardKernelBg", config.hasFocusCardKernelBg)
+                    put("hasFocusCardAppBg", config.hasFocusCardAppBg)
+                    put("hasFocusCardDeviceBg", config.hasFocusCardDeviceBg)
+                    put("hasFocusCardStorageBg", config.hasFocusCardStorageBg)
+                    put("isDashboardCardBackgroundEnabled", config.isDashboardCardBackgroundEnabled)
+                    put("dashboardCardBgDim", config.dashboardCardBgDim.toDouble())
+                    put("isDashboardCardDualDimEnabled", config.isDashboardCardDualDimEnabled)
+                    put("dashboardCardBgDayDim", config.dashboardCardBgDayDim.toDouble())
+                    put("dashboardCardBgNightDim", config.dashboardCardBgNightDim.toDouble())
+                    put("dashboardCardBgOpacity", config.dashboardCardBgOpacity.toDouble())
+                    put("isDashboardCardDualOpacityEnabled", config.isDashboardCardDualOpacityEnabled)
+                    put("dashboardCardBgDayOpacity", config.dashboardCardBgDayOpacity.toDouble())
+                    put("dashboardCardBgNightOpacity", config.dashboardCardBgNightOpacity.toDouble())
+                    put("hasDashboardCardBg", config.hasDashboardCardBg)
 
                     // Add metadata
                     put("meta_name", metadata.name)
@@ -359,7 +433,37 @@ object ThemeManager {
                     }
                 }
 
-                // 9. Encrypt and Zip to Uri
+                // 9. Copy FocusUI Card Wallpapers
+                val focusCardBgNames = listOf(
+                    "focus_card_kernel_bg" to config.hasFocusCardKernelBg,
+                    "focus_card_app_bg" to config.hasFocusCardAppBg,
+                    "focus_card_device_bg" to config.hasFocusCardDeviceBg,
+                    "focus_card_storage_bg" to config.hasFocusCardStorageBg
+                )
+                val focusExtensions = listOf(".jpg", ".png", ".gif", ".webp")
+                for ((bgName, hasBg) in focusCardBgNames) {
+                    if (hasBg) {
+                        for (ext in focusExtensions) {
+                            val bgFile = File(context.filesDir, "$bgName$ext")
+                            if (bgFile.exists()) {
+                                bgFile.copyTo(File(cacheDir, "$bgName$ext"))
+                                break
+                            }
+                        }
+                    }
+                }
+
+                if (config.hasDashboardCardBg) {
+                    for (ext in focusExtensions) {
+                        val bgFile = File(context.filesDir, "dashboard_card_bg$ext")
+                        if (bgFile.exists()) {
+                            bgFile.copyTo(File(cacheDir, "dashboard_card_bg$ext"))
+                            break
+                        }
+                    }
+                }
+
+                // 10. Encrypt and Zip to Uri
                 context.contentResolver.openOutputStream(uri)?.use { os ->
                     // Init Cipher
                     val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
@@ -562,6 +666,34 @@ object ThemeManager {
                 val titleImageNightOpacity = json.optDouble("titleImageNightOpacity", 1.0).toFloat()
                 val titleImageDim = json.optDouble("titleImageDim", 0.0).toFloat()
                 val titleImageOffsetX = json.optDouble("titleImageOffsetX", 0.0).toFloat()
+
+                 // FocusUI Card Wallpapers
+                 val hasFocusCardKernelBg = json.optBoolean("hasFocusCardKernelBg", false)
+                 val hasFocusCardAppBg = json.optBoolean("hasFocusCardAppBg", false)
+                 val hasFocusCardDeviceBg = json.optBoolean("hasFocusCardDeviceBg", false)
+                 val hasFocusCardStorageBg = json.optBoolean("hasFocusCardStorageBg", false)
+                 val hasAnyFocusCardBackground = hasFocusCardKernelBg || hasFocusCardAppBg ||
+                     hasFocusCardDeviceBg || hasFocusCardStorageBg
+                 val isFocusCardBackgroundEnabled = json.optBoolean("isFocusCardBackgroundEnabled", hasAnyFocusCardBackground)
+                 val focusCardBgDim = json.optDouble("focusCardBgDim", 0.3).toFloat()
+                 val isFocusCardDualDimEnabled = json.optBoolean("isFocusCardDualDimEnabled", false)
+                 val focusCardBgDayDim = json.optDouble("focusCardBgDayDim", focusCardBgDim.toDouble()).toFloat()
+                 val focusCardBgNightDim = json.optDouble("focusCardBgNightDim", focusCardBgDim.toDouble()).toFloat()
+                 val isFocusCardDualOpacityEnabled = json.optBoolean("isFocusCardDualOpacityEnabled", false)
+                 val focusCardBgOpacity = json.optDouble("focusCardBgOpacity", 1.0).toFloat()
+                 val focusCardBgDayOpacity = json.optDouble("focusCardBgDayOpacity", focusCardBgOpacity.toDouble()).toFloat()
+                 val focusCardBgNightOpacity = json.optDouble("focusCardBgNightOpacity", focusCardBgOpacity.toDouble()).toFloat()
+
+                 val hasDashboardCardBg = json.optBoolean("hasDashboardCardBg", false)
+                 val isDashboardCardBackgroundEnabled = json.optBoolean("isDashboardCardBackgroundEnabled", false)
+                 val dashboardCardBgDim = json.optDouble("dashboardCardBgDim", 0.3).toFloat()
+                 val isDashboardCardDualDimEnabled = json.optBoolean("isDashboardCardDualDimEnabled", false)
+                 val dashboardCardBgDayDim = json.optDouble("dashboardCardBgDayDim", dashboardCardBgDim.toDouble()).toFloat()
+                 val dashboardCardBgNightDim = json.optDouble("dashboardCardBgNightDim", dashboardCardBgDim.toDouble()).toFloat()
+                 val dashboardCardBgOpacity = json.optDouble("dashboardCardBgOpacity", 1.0).toFloat()
+                 val isDashboardCardDualOpacityEnabled = json.optBoolean("isDashboardCardDualOpacityEnabled", false)
+                 val dashboardCardBgDayOpacity = json.optDouble("dashboardCardBgDayOpacity", dashboardCardBgOpacity.toDouble()).toFloat()
+                 val dashboardCardBgNightOpacity = json.optDouble("dashboardCardBgNightOpacity", dashboardCardBgOpacity.toDouble()).toFloat()
 
                 // Multi-Background Mode
                 val isMultiBackgroundEnabled = json.optBoolean("isMultiBackgroundEnabled", false)
@@ -768,6 +900,98 @@ object ThemeManager {
                     BackgroundConfig.updateTitleImageUri(null)
                 }
 
+                 // Apply FocusUI Card Wallpapers
+                 BackgroundConfig.setFocusCardBackgroundEnabledState(isFocusCardBackgroundEnabled)
+                 BackgroundConfig.setFocusCardBgDimValue(focusCardBgDim)
+                 BackgroundConfig.setFocusCardDualDimEnabledState(isFocusCardDualDimEnabled)
+                 BackgroundConfig.setFocusCardBgDayDimValue(focusCardBgDayDim)
+                 BackgroundConfig.setFocusCardBgNightDimValue(focusCardBgNightDim)
+                 BackgroundConfig.setFocusCardDualOpacityEnabledState(isFocusCardDualOpacityEnabled)
+                 BackgroundConfig.setFocusCardBgOpacityValue(focusCardBgOpacity)
+                 BackgroundConfig.setFocusCardBgDayOpacityValue(focusCardBgDayOpacity)
+                 BackgroundConfig.setFocusCardBgNightOpacityValue(focusCardBgNightOpacity)
+
+                 BackgroundConfig.setDashboardCardBackgroundEnabledState(isDashboardCardBackgroundEnabled)
+                 BackgroundConfig.setDashboardCardBgDimValue(dashboardCardBgDim)
+                 BackgroundConfig.setDashboardCardDualDimEnabledState(isDashboardCardDualDimEnabled)
+                 BackgroundConfig.setDashboardCardBgDayDimValue(dashboardCardBgDayDim)
+                 BackgroundConfig.setDashboardCardBgNightDimValue(dashboardCardBgNightDim)
+                 BackgroundConfig.setDashboardCardBgOpacityValue(dashboardCardBgOpacity)
+                 BackgroundConfig.setDashboardCardDualOpacityEnabledState(isDashboardCardDualOpacityEnabled)
+                 BackgroundConfig.setDashboardCardBgDayOpacityValue(dashboardCardBgDayOpacity)
+                 BackgroundConfig.setDashboardCardBgNightOpacityValue(dashboardCardBgNightOpacity)
+
+                 val dashboardExtensions = listOf(".jpg", ".png", ".gif", ".webp")
+                 if (hasDashboardCardBg) {
+                     var dashboardBgFound = false
+                     for (ext in dashboardExtensions) {
+                         val source = File(cacheDir, "dashboard_card_bg$ext")
+                         if (source.exists()) {
+                             dashboardExtensions.forEach { File(context.filesDir, "dashboard_card_bg$it").delete() }
+                             val destination = File(context.filesDir, "dashboard_card_bg$ext")
+                             source.copyTo(destination, overwrite = true)
+                             BackgroundConfig.updateDashboardCardBgUri(Uri.fromFile(destination).buildUpon()
+                                 .appendQueryParameter("t", System.currentTimeMillis().toString()).build().toString())
+                             dashboardBgFound = true
+                             break
+                         }
+                     }
+                     if (!dashboardBgFound) BackgroundConfig.updateDashboardCardBgUri(null)
+                 } else {
+                     dashboardExtensions.forEach { File(context.filesDir, "dashboard_card_bg$it").delete() }
+                     BackgroundConfig.updateDashboardCardBgUri(null)
+                 }
+
+                val focusCardImports = listOf(
+                    "focus_card_kernel_bg" to (BackgroundConfig.FOCUS_CARD_KERNEL to hasFocusCardKernelBg),
+                    "focus_card_app_bg" to (BackgroundConfig.FOCUS_CARD_APP to hasFocusCardAppBg),
+                    "focus_card_device_bg" to (BackgroundConfig.FOCUS_CARD_DEVICE to hasFocusCardDeviceBg),
+                    "focus_card_storage_bg" to (BackgroundConfig.FOCUS_CARD_STORAGE to hasFocusCardStorageBg)
+                )
+                val focusImportExtensions = listOf(".jpg", ".png", ".gif", ".webp")
+
+                for ((bgName, cardInfo) in focusCardImports) {
+                    val (cardId, hasBg) = cardInfo
+                    if (hasBg) {
+                        var bgFound = false
+                        for (ext in focusImportExtensions) {
+                            val bgFile = File(cacheDir, "$bgName$ext")
+                            if (bgFile.exists()) {
+                                // Clear old files
+                                for (oldExt in focusImportExtensions) {
+                                    val oldFile = File(context.filesDir, "$bgName$oldExt")
+                                    if (oldFile.exists()) oldFile.delete()
+                                }
+
+                                val destFile = File(context.filesDir, "$bgName$ext")
+                                bgFile.copyTo(destFile, overwrite = true)
+
+                                val fileUri = Uri.fromFile(destFile).buildUpon()
+                                    .appendQueryParameter("t", System.currentTimeMillis().toString())
+                                    .build()
+                                BackgroundConfig.updateFocusCardBgUri(cardId, fileUri.toString())
+                                bgFound = true
+                                break
+                            }
+                        }
+                        if (!bgFound) {
+                            // Theme declares wallpaper but file missing: clear stale state
+                            for (oldExt in focusImportExtensions) {
+                                val oldFile = File(context.filesDir, "$bgName$oldExt")
+                                if (oldFile.exists()) oldFile.delete()
+                            }
+                            BackgroundConfig.updateFocusCardBgUri(cardId, null)
+                        }
+                    } else {
+                        // Theme has no wallpaper for this card: clear existing
+                        for (oldExt in focusImportExtensions) {
+                            val oldFile = File(context.filesDir, "$bgName$oldExt")
+                            if (oldFile.exists()) oldFile.delete()
+                        }
+                        BackgroundConfig.updateFocusCardBgUri(cardId, null)
+                    }
+                }
+
                 BackgroundConfig.save(context)
 
                 // Apply Music Config
@@ -965,7 +1189,23 @@ object ThemeManager {
                     "title_image.jpg",
                     "title_image.png",
                     "title_image.gif",
-                    "title_image.webp"
+                    "title_image.webp",
+                    "focus_card_kernel_bg.jpg",
+                    "focus_card_kernel_bg.png",
+                    "focus_card_kernel_bg.gif",
+                    "focus_card_kernel_bg.webp",
+                    "focus_card_app_bg.jpg",
+                    "focus_card_app_bg.png",
+                    "focus_card_app_bg.gif",
+                    "focus_card_app_bg.webp",
+                    "focus_card_device_bg.jpg",
+                    "focus_card_device_bg.png",
+                    "focus_card_device_bg.gif",
+                    "focus_card_device_bg.webp",
+                    "focus_card_storage_bg.jpg",
+                    "focus_card_storage_bg.png",
+                    "focus_card_storage_bg.gif",
+                    "focus_card_storage_bg.webp"
                 )
 
                 for (filename in backgroundFiles) {

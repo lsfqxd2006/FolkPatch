@@ -214,7 +214,8 @@
     <string name="kpm_unload">Unload</string>
     <string name="kpm_control">Control</string>
     <string name="kpm_apm_empty">No module loaded</string>
-        <string name="kpm_load_failed">Failed to load kernel modules</string>
+    <string name="kpm_custom_order">Toggle custom module order</string>
+    <string name="kpm_load_failed">Failed to load kernel modules</string>
     <string name="kpm_version">Version</string>
     <string name="kpm_license">License</string>
     <string name="kpm_author">Author</string>
@@ -297,6 +298,9 @@
     <string name="settings_disable_module_update_check_summary">Disable automatic update checks for system modules</string>
     <string name="settings_module_sort_optimization">Module Sorting Optimization</string>
     <string name="settings_module_sort_optimization_summary">Make system modules with WebUI and Action appear at the top</string>
+    <string name="apm_custom_order">Custom module order</string>
+    <string name="apm_drag_to_reorder">Drag to reorder</string>
+    <string name="apm_reset_order">Use automatic order</string>
     <string name="settings_fold_system_module">Fold System Modules</string>
     <string name="settings_fold_system_module_summary">Click module card to expand/collapse actions</string>
     <string name="settings_simple_list_bottom_bar">Simple List Bottom Bar</string>
@@ -795,6 +799,51 @@ Please ensure the app is completely closed and reopened for the commands to exec
     <string name="settings_grid_working_card_background_error">Failed to save card background</string>
     <string name="settings_grid_working_card_background_cleared">Card background cleared</string>
 
+    <!-- FocusUI Card Wallpaper Strings -->
+    <string name="focus_card_background_title">Card Wallpaper</string>
+    <string name="settings_focus_card_background">FocusUI Card Wallpaper</string>
+    <string name="settings_focus_card_background_enabled">FocusUI card wallpapers enabled; long press a card to manage its wallpaper</string>
+    <string name="settings_focus_card_background_summary">Enable FocusUI card wallpapers and long-press wallpaper management</string>
+    <string name="focus_card_background_clear">Clear Card Wallpaper</string>
+    <string name="focus_card_background_clear_confirm">Are you sure you want to clear this card\'s wallpaper?</string>
+    <string name="focus_card_background_saved">Card wallpaper saved successfully</string>
+    <string name="focus_card_background_error">Failed to save card wallpaper</string>
+    <string name="focus_card_background_cleared">Card wallpaper cleared</string>
+    <string name="focus_card_permission_required">Please grant storage permission to select a wallpaper</string>
+    <string name="settings_focus_card_dim">Card Wallpaper Dim</string>
+    <string name="settings_focus_card_dual_dim">Enable dual day/night dim</string>
+    <string name="settings_focus_card_dual_dim_desc">Automatically adjust card wallpaper dim for light and dark themes</string>
+    <string name="settings_focus_card_day_dim">Day mode card wallpaper dim</string>
+    <string name="settings_focus_card_night_dim">Night mode card wallpaper dim</string>
+    <string name="settings_focus_card_opacity">Card wallpaper opacity</string>
+    <string name="settings_focus_card_dual_opacity">Enable dual day/night opacity</string>
+    <string name="settings_focus_card_dual_opacity_desc">Automatically adjust card wallpaper opacity for light and dark themes</string>
+    <string name="settings_focus_card_day_opacity">Day mode card wallpaper opacity</string>
+    <string name="settings_focus_card_night_opacity">Night mode card wallpaper opacity</string>
+    <string name="settings_focus_card_kernel">Kernel Card</string>
+    <string name="settings_focus_card_app">App Card</string>
+    <string name="settings_focus_card_device">Device Status Card</string>
+    <string name="settings_focus_card_storage">Storage Card</string>
+    <string name="settings_focus_card_wallpaper_selected">Wallpaper set</string>
+    <string name="dashboard_card_background_title">Dashboard Card Wallpaper</string>
+    <string name="settings_dashboard_card_background">Dashboard Card Wallpaper</string>
+    <string name="settings_dashboard_card_background_enabled">Dashboard wallpaper enabled; long press the dashboard card to manage it</string>
+    <string name="settings_dashboard_card_background_summary">Enable a wallpaper for the DashboardUI dashboard card</string>
+    <string name="dashboard_card_background_clear">Clear Dashboard Wallpaper</string>
+    <string name="dashboard_card_background_clear_confirm">Are you sure you want to clear the dashboard card wallpaper?</string>
+    <string name="dashboard_card_background_saved">Dashboard wallpaper saved successfully</string>
+    <string name="dashboard_card_background_error">Failed to save dashboard wallpaper</string>
+    <string name="dashboard_card_background_cleared">Dashboard wallpaper cleared</string>
+    <string name="settings_dashboard_card_dual_dim">Enable dual day/night dim</string>
+    <string name="settings_dashboard_card_dual_dim_desc">Automatically adjust dashboard wallpaper dim for light and dark themes</string>
+    <string name="settings_dashboard_card_day_dim">Day mode dashboard wallpaper dim</string>
+    <string name="settings_dashboard_card_night_dim">Night mode dashboard wallpaper dim</string>
+    <string name="settings_dashboard_card_opacity">Dashboard wallpaper opacity</string>
+    <string name="settings_dashboard_card_dual_opacity">Enable dual day/night opacity</string>
+    <string name="settings_dashboard_card_dual_opacity_desc">Automatically adjust dashboard wallpaper opacity for light and dark themes</string>
+    <string name="settings_dashboard_card_day_opacity">Day mode dashboard wallpaper opacity</string>
+    <string name="settings_dashboard_card_night_opacity">Night mode dashboard wallpaper opacity</string>
+
     <!-- Biometric Strings -->
     <string name="action_biometric">Biometric Authentication</string>
     <string name="msg_biometric">Please verify your biometric identity</string>
@@ -1001,6 +1050,8 @@ Please ensure the app is completely closed and reopened for the commands to exec
 
     <string name="settings_list_card_hide_status_badge">Use Classic Emoji</string>
     <string name="settings_list_card_hide_status_badge_summary">Turn the home status badge into classic emoji</string>
+    <string name="settings_list_info_show_icons">Info Item Icons</string>
+    <string name="settings_list_info_show_icons_summary">Show an icon next to each item in the info card</string>
     <string name="settings_custom_badge_text">Custom Badge Text</string>
     <string name="settings_custom_badge_text_summary">Modify the text display of the badge, just for fun</string>
     <string name="settings_custom_badge_text_full_half">Full/Half (Default)</string>

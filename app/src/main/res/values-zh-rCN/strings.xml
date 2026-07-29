@@ -207,6 +207,7 @@
     <string name="kpm_unload">卸载</string>
     <string name="kpm_control">控制</string>
     <string name="kpm_apm_empty">未加载模块</string>
+    <string name="kpm_custom_order">切换自定义模块顺序</string>
     <string name="kpm_version">版本</string>
     <string name="kpm_license">许可</string>
     <string name="kpm_author">作者</string>
@@ -290,6 +291,9 @@
     <string name="settings_disable_module_update_check">禁用模块更新检查</string>
     <string name="settings_disable_module_update_check_summary">禁用系统模块的自动更新检查</string>
     <string name="settings_module_sort_optimization">模块排序优化</string>
+    <string name="apm_custom_order">自定义模块顺序</string>
+    <string name="apm_drag_to_reorder">拖动调整顺序</string>
+    <string name="apm_reset_order">恢复自动排序</string>
     <string name="module_shortcut_name">快捷方式名称</string>
     <string name="module_shortcut_icon">快捷方式图标</string>
     <string name="module_shortcut_type">快捷方式类型</string>
@@ -716,6 +720,51 @@
     <string name="settings_grid_working_card_background_error">卡片背景保存失败</string>
     <string name="settings_grid_working_card_background_cleared">卡片背景已清除</string>
 
+    <!-- FocusUI卡片壁纸 -->
+    <string name="focus_card_background_title">卡片壁纸</string>
+    <string name="focus_card_background_clear">清除卡片壁纸</string>
+    <string name="focus_card_background_clear_confirm">确定要清除该卡片的壁纸吗？</string>
+    <string name="focus_card_background_saved">卡片壁纸保存成功</string>
+    <string name="focus_card_background_error">卡片壁纸保存失败</string>
+    <string name="focus_card_background_cleared">卡片壁纸已清除</string>
+    <string name="focus_card_permission_required">请先授予存储权限才能选择壁纸</string>
+    <string name="settings_focus_card_background">FocusUI 卡片壁纸</string>
+    <string name="settings_focus_card_background_enabled">FocusUI 卡片壁纸已开启，长按卡片管理壁纸</string>
+    <string name="settings_focus_card_background_summary">启用 FocusUI 卡片壁纸及长按壁纸管理</string>
+    <string name="settings_focus_card_dim">卡片壁纸暗度</string>
+    <string name="settings_focus_card_dual_dim">启用昼夜双暗度</string>
+    <string name="settings_focus_card_dual_dim_desc">自动根据明暗主题调整卡片壁纸暗度</string>
+    <string name="settings_focus_card_day_dim">日间模式卡片壁纸暗度</string>
+    <string name="settings_focus_card_night_dim">夜间模式卡片壁纸暗度</string>
+    <string name="settings_focus_card_opacity">卡片壁纸透明度</string>
+    <string name="settings_focus_card_dual_opacity">启用昼夜双透明度</string>
+    <string name="settings_focus_card_dual_opacity_desc">自动根据明暗主题调整卡片壁纸透明度</string>
+    <string name="settings_focus_card_day_opacity">日间模式卡片壁纸透明度</string>
+    <string name="settings_focus_card_night_opacity">夜间模式卡片壁纸透明度</string>
+    <string name="settings_focus_card_kernel">内核卡片</string>
+    <string name="settings_focus_card_app">应用卡片</string>
+    <string name="settings_focus_card_device">设备状态卡片</string>
+    <string name="settings_focus_card_storage">存储卡片</string>
+    <string name="settings_focus_card_wallpaper_selected">已设置壁纸</string>
+    <string name="dashboard_card_background_title">仪表盘卡片壁纸</string>
+    <string name="settings_dashboard_card_background">仪表盘卡片壁纸</string>
+    <string name="settings_dashboard_card_background_enabled">仪表盘壁纸已开启，长按仪表盘卡片管理壁纸</string>
+    <string name="settings_dashboard_card_background_summary">为 DashboardUI 仪表盘卡片启用壁纸</string>
+    <string name="dashboard_card_background_clear">清除仪表盘壁纸</string>
+    <string name="dashboard_card_background_clear_confirm">确定要清除仪表盘卡片壁纸吗？</string>
+    <string name="dashboard_card_background_saved">仪表盘壁纸保存成功</string>
+    <string name="dashboard_card_background_error">仪表盘壁纸保存失败</string>
+    <string name="dashboard_card_background_cleared">仪表盘壁纸已清除</string>
+    <string name="settings_dashboard_card_dual_dim">启用昼夜双暗度</string>
+    <string name="settings_dashboard_card_dual_dim_desc">自动根据明暗主题调整仪表盘壁纸暗度</string>
+    <string name="settings_dashboard_card_day_dim">白天模式仪表盘壁纸暗度</string>
+    <string name="settings_dashboard_card_night_dim">夜间模式仪表盘壁纸暗度</string>
+    <string name="settings_dashboard_card_opacity">仪表盘壁纸透明度</string>
+    <string name="settings_dashboard_card_dual_opacity">启用昼夜双透明度</string>
+    <string name="settings_dashboard_card_dual_opacity_desc">自动根据明暗主题调整仪表盘壁纸透明度</string>
+    <string name="settings_dashboard_card_day_opacity">白天模式仪表盘壁纸透明度</string>
+    <string name="settings_dashboard_card_night_opacity">夜间模式仪表盘壁纸透明度</string>
+
     <!-- Biometric Strings -->
     <string name="action_biometric">生物识别认证</string>
     <string name="msg_biometric">请验证您的生物识别身份</string>
@@ -917,6 +966,8 @@
 
     <string name="settings_list_card_hide_status_badge">使用经典表情</string>
     <string name="settings_list_card_hide_status_badge_summary">首页的状态徽章即刻变身经典表情</string>
+    <string name="settings_list_info_show_icons">信息区图标</string>
+    <string name="settings_list_info_show_icons_summary">在信息卡片中为每个信息项显示前置图标</string>
     <string name="settings_custom_badge_text">自选角标文字</string>
     <string name="settings_custom_badge_text_summary">修改角标的文本显示，仅供娱乐</string>
 

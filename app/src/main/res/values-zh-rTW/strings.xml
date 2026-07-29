@@ -191,6 +191,7 @@
     <string name="kpm_unload">解除安裝</string>
     <string name="kpm_control">控制</string>
     <string name="kpm_apm_empty">尚未安裝模組</string>
+    <string name="kpm_custom_order">切換自訂模組順序</string>
     <string name="kpm_version">版本</string>
     <string name="kpm_license">授權</string>
     <string name="kpm_author">作者</string>
@@ -306,6 +307,9 @@
     <string name="settings_enable_module_shortcut_add_summary">在系統模組頁面顯示 WebUI 捷徑新增按鈕</string>
     <string name="settings_module_sort_optimization">模組卡片排序優化</string>
     <string name="settings_module_sort_optimization_summary">前置系統模組中帶有「WebUI」和「操作」的模組</string>
+    <string name="apm_custom_order">自訂模組順序</string>
+    <string name="apm_drag_to_reorder">拖動調整順序</string>
+    <string name="apm_reset_order">恢復自動排序</string>
     <string name="settings_fold_system_module">折疊系統模組</string>
     <string name="settings_fold_system_module_summary">點擊模組卡片展開/折疊操作按鈕</string>
     <string name="settings_simple_list_bottom_bar">簡約列表底欄</string>
@@ -566,6 +570,8 @@
     <string name="settings_grid_working_card_hide_mode_summary">隱藏工作卡片上的「Full」或「Half」文字</string>
     <string name="settings_list_card_hide_status_badge">使用經典表情</string>
     <string name="settings_list_card_hide_status_badge_summary">首頁的狀態徽章替換為經典表情</string>
+    <string name="settings_list_info_show_icons">資訊區圖標</string>
+    <string name="settings_list_info_show_icons_summary">在資訊卡片中為每個資訊項顯示前置圖標</string>
     <string name="settings_custom_badge_text">自選角標文字</string>
     <string name="settings_custom_badge_text_summary">修改角標的文字顯示，僅供娛樂</string>
     <string name="settings_custom_background_dual_dim">啟用日夜雙切模式</string>
@@ -729,6 +735,51 @@
     <string name="settings_grid_working_card_background_saved">卡片背景圖片儲存成功</string>
     <string name="settings_grid_working_card_background_error">卡片背景圖片儲存失敗</string>
     <string name="settings_grid_working_card_background_cleared">卡片背景圖片已清除</string>
+
+    <!-- FocusUI卡片桌布 -->
+    <string name="focus_card_background_title">卡片桌布</string>
+    <string name="focus_card_background_clear">清除卡片桌布</string>
+    <string name="focus_card_background_clear_confirm">確定要清除該卡片的桌布嗎？</string>
+    <string name="focus_card_background_saved">卡片桌布儲存成功</string>
+    <string name="focus_card_background_error">卡片桌布儲存失敗</string>
+    <string name="focus_card_background_cleared">卡片桌布已清除</string>
+    <string name="focus_card_permission_required">請先授予儲存權限才能選擇桌布</string>
+    <string name="settings_focus_card_background">FocusUI 卡片桌布</string>
+    <string name="settings_focus_card_background_enabled">FocusUI 卡片桌布已開啟，長按卡片管理桌布</string>
+    <string name="settings_focus_card_background_summary">啟用 FocusUI 卡片桌布及長按桌布管理</string>
+    <string name="settings_focus_card_dim">卡片桌布暗度</string>
+    <string name="settings_focus_card_dual_dim">啟用晝夜雙暗度</string>
+    <string name="settings_focus_card_dual_dim_desc">自動根據明暗主題調整卡片桌布暗度</string>
+    <string name="settings_focus_card_day_dim">日間模式卡片桌布暗度</string>
+    <string name="settings_focus_card_night_dim">夜間模式卡片桌布暗度</string>
+    <string name="settings_focus_card_opacity">卡片桌布透明度</string>
+    <string name="settings_focus_card_dual_opacity">啟用晝夜雙透明度</string>
+    <string name="settings_focus_card_dual_opacity_desc">自動根據明暗主題調整卡片桌布透明度</string>
+    <string name="settings_focus_card_day_opacity">日間模式卡片桌布透明度</string>
+    <string name="settings_focus_card_night_opacity">夜間模式卡片桌布透明度</string>
+    <string name="settings_focus_card_kernel">核心卡片</string>
+    <string name="settings_focus_card_app">應用卡片</string>
+    <string name="settings_focus_card_device">裝置狀態卡片</string>
+    <string name="settings_focus_card_storage">儲存卡片</string>
+    <string name="settings_focus_card_wallpaper_selected">已設定桌布</string>
+    <string name="dashboard_card_background_title">儀表板卡片桌布</string>
+    <string name="settings_dashboard_card_background">儀表板卡片桌布</string>
+    <string name="settings_dashboard_card_background_enabled">儀表板桌布已開啟，長按儀表板卡片管理桌布</string>
+    <string name="settings_dashboard_card_background_summary">為 DashboardUI 儀表板卡片啟用桌布</string>
+    <string name="dashboard_card_background_clear">清除儀表板桌布</string>
+    <string name="dashboard_card_background_clear_confirm">確定要清除儀表板卡片桌布嗎？</string>
+    <string name="dashboard_card_background_saved">儀表板桌布儲存成功</string>
+    <string name="dashboard_card_background_error">儀表板桌布儲存失敗</string>
+    <string name="dashboard_card_background_cleared">儀表板桌布已清除</string>
+    <string name="settings_dashboard_card_dual_dim">啟用晝夜雙暗度</string>
+    <string name="settings_dashboard_card_dual_dim_desc">自動根據明暗主題調整儀表板桌布暗度</string>
+    <string name="settings_dashboard_card_day_dim">白天模式儀表板桌布暗度</string>
+    <string name="settings_dashboard_card_night_dim">夜間模式儀表板桌布暗度</string>
+    <string name="settings_dashboard_card_opacity">儀表板桌布透明度</string>
+    <string name="settings_dashboard_card_dual_opacity">啟用晝夜雙透明度</string>
+    <string name="settings_dashboard_card_dual_opacity_desc">自動根據明暗主題調整儀表板桌布透明度</string>
+    <string name="settings_dashboard_card_day_opacity">白天模式儀表板桌布透明度</string>
+    <string name="settings_dashboard_card_night_opacity">夜間模式儀表板桌布透明度</string>
 
     <!-- Biometric Strings -->
     <string name="action_biometric">生物識別認證</string>

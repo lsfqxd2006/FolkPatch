@@ -114,6 +114,56 @@ object BackgroundConfig {
     var titleImageOffsetX: Float by mutableStateOf(0f)
         private set
 
+    // FocusUI Card Wallpapers (4 cards: KernelPatch, App, DeviceStatus, Storage)
+    var focusCardKernelBgUri: String? by mutableStateOf(null)
+        private set
+    var focusCardAppBgUri: String? by mutableStateOf(null)
+        private set
+    var focusCardDeviceBgUri: String? by mutableStateOf(null)
+        private set
+    var focusCardStorageBgUri: String? by mutableStateOf(null)
+        private set
+    var isFocusCardBackgroundEnabled: Boolean by mutableStateOf(false)
+        private set
+    var focusCardBgDim: Float by mutableStateOf(0.3f)
+        private set
+    var isFocusCardDualDimEnabled: Boolean by mutableStateOf(false)
+        private set
+    var focusCardBgDayDim: Float by mutableStateOf(0.3f)
+        private set
+    var focusCardBgNightDim: Float by mutableStateOf(0.3f)
+        private set
+    var isFocusCardDualOpacityEnabled: Boolean by mutableStateOf(false)
+        private set
+    var focusCardBgOpacity: Float by mutableStateOf(1f)
+        private set
+    var focusCardBgDayOpacity: Float by mutableStateOf(1f)
+        private set
+    var focusCardBgNightOpacity: Float by mutableStateOf(1f)
+        private set
+
+    // DashboardUI Hero Card Wallpaper
+    var dashboardCardBgUri: String? by mutableStateOf(null)
+        private set
+    var isDashboardCardBackgroundEnabled: Boolean by mutableStateOf(false)
+        private set
+    var dashboardCardBgDim: Float by mutableStateOf(0.3f)
+        private set
+    var isDashboardCardDualDimEnabled: Boolean by mutableStateOf(false)
+        private set
+    var dashboardCardBgDayDim: Float by mutableStateOf(0.3f)
+        private set
+    var dashboardCardBgNightDim: Float by mutableStateOf(0.3f)
+        private set
+    var dashboardCardBgOpacity: Float by mutableStateOf(1f)
+        private set
+    var isDashboardCardDualOpacityEnabled: Boolean by mutableStateOf(false)
+        private set
+    var dashboardCardBgDayOpacity: Float by mutableStateOf(1f)
+        private set
+    var dashboardCardBgNightOpacity: Float by mutableStateOf(1f)
+        private set
+
     // NavBar Glass Effect (Floating mode only)
     var isNavBarGlassEnabled: Boolean by mutableStateOf(true)
         private set
@@ -181,6 +231,31 @@ object BackgroundConfig {
     private const val KEY_TITLE_IMAGE_NIGHT_OPACITY = "title_image_night_opacity"
     private const val KEY_TITLE_IMAGE_DIM = "title_image_dim"
     private const val KEY_TITLE_IMAGE_OFFSET_X = "title_image_offset_x"
+
+    private const val KEY_FOCUS_CARD_KERNEL_BG_URI = "focus_card_kernel_bg_uri"
+    private const val KEY_FOCUS_CARD_APP_BG_URI = "focus_card_app_bg_uri"
+    private const val KEY_FOCUS_CARD_DEVICE_BG_URI = "focus_card_device_bg_uri"
+    private const val KEY_FOCUS_CARD_STORAGE_BG_URI = "focus_card_storage_bg_uri"
+    private const val KEY_FOCUS_CARD_BACKGROUND_ENABLED = "focus_card_background_enabled"
+    private const val KEY_FOCUS_CARD_BG_DIM = "focus_card_bg_dim"
+    private const val KEY_FOCUS_CARD_DUAL_DIM_ENABLED = "focus_card_dual_dim_enabled"
+    private const val KEY_FOCUS_CARD_DAY_DIM = "focus_card_day_dim"
+    private const val KEY_FOCUS_CARD_NIGHT_DIM = "focus_card_night_dim"
+    private const val KEY_FOCUS_CARD_DUAL_OPACITY_ENABLED = "focus_card_dual_opacity_enabled"
+    private const val KEY_FOCUS_CARD_OPACITY = "focus_card_opacity"
+    private const val KEY_FOCUS_CARD_DAY_OPACITY = "focus_card_day_opacity"
+    private const val KEY_FOCUS_CARD_NIGHT_OPACITY = "focus_card_night_opacity"
+
+    private const val KEY_DASHBOARD_CARD_BG_URI = "dashboard_card_bg_uri"
+    private const val KEY_DASHBOARD_CARD_BACKGROUND_ENABLED = "dashboard_card_background_enabled"
+    private const val KEY_DASHBOARD_CARD_BG_DIM = "dashboard_card_bg_dim"
+    private const val KEY_DASHBOARD_CARD_DUAL_DIM_ENABLED = "dashboard_card_dual_dim_enabled"
+    private const val KEY_DASHBOARD_CARD_DAY_DIM = "dashboard_card_day_dim"
+    private const val KEY_DASHBOARD_CARD_NIGHT_DIM = "dashboard_card_night_dim"
+    private const val KEY_DASHBOARD_CARD_OPACITY = "dashboard_card_opacity"
+    private const val KEY_DASHBOARD_CARD_DUAL_OPACITY_ENABLED = "dashboard_card_dual_opacity_enabled"
+    private const val KEY_DASHBOARD_CARD_DAY_OPACITY = "dashboard_card_day_opacity"
+    private const val KEY_DASHBOARD_CARD_NIGHT_OPACITY = "dashboard_card_night_opacity"
 
     private const val KEY_NAVBAR_GLASS_ENABLED = "navbar_glass_enabled"
     private const val KEY_NAVBAR_GLASS_BLUR_STRENGTH = "navbar_glass_blur_strength"
@@ -469,6 +544,86 @@ object BackgroundConfig {
         titleImageOffsetX = offset
     }
 
+    // ==================== FocusUI Card Wallpaper ====================
+
+    /**
+     * 更新FocusUI卡片壁纸URI
+     * @param cardId 卡片标识: kernel / app / device / storage
+     */
+    fun updateFocusCardBgUri(cardId: String, uri: String?) {
+        when (cardId) {
+            FOCUS_CARD_KERNEL -> focusCardKernelBgUri = uri
+            FOCUS_CARD_APP -> focusCardAppBgUri = uri
+            FOCUS_CARD_DEVICE -> focusCardDeviceBgUri = uri
+            FOCUS_CARD_STORAGE -> focusCardStorageBgUri = uri
+        }
+    }
+
+    fun setFocusCardBackgroundEnabledState(enabled: Boolean) {
+        isFocusCardBackgroundEnabled = enabled
+    }
+
+    /**
+     * 获取指定FocusUI卡片的壁纸URI
+     */
+    fun getFocusCardBgUri(cardId: String): String? {
+        return when (cardId) {
+            FOCUS_CARD_KERNEL -> focusCardKernelBgUri
+            FOCUS_CARD_APP -> focusCardAppBgUri
+            FOCUS_CARD_DEVICE -> focusCardDeviceBgUri
+            FOCUS_CARD_STORAGE -> focusCardStorageBgUri
+            else -> null
+        }
+    }
+
+    /**
+     * 设置FocusUI卡片壁纸暗度
+     */
+    fun setFocusCardBgDimValue(dim: Float) {
+        focusCardBgDim = dim
+    }
+
+    fun setFocusCardDualDimEnabledState(enabled: Boolean) { isFocusCardDualDimEnabled = enabled }
+    fun setFocusCardBgDayDimValue(dim: Float) { focusCardBgDayDim = dim }
+    fun setFocusCardBgNightDimValue(dim: Float) { focusCardBgNightDim = dim }
+    fun setFocusCardDualOpacityEnabledState(enabled: Boolean) { isFocusCardDualOpacityEnabled = enabled }
+    fun setFocusCardBgOpacityValue(opacity: Float) { focusCardBgOpacity = opacity }
+    fun setFocusCardBgDayOpacityValue(opacity: Float) { focusCardBgDayOpacity = opacity }
+    fun setFocusCardBgNightOpacityValue(opacity: Float) { focusCardBgNightOpacity = opacity }
+    fun getEffectiveFocusCardBgDim(isDarkTheme: Boolean): Float =
+        if (isFocusCardDualDimEnabled) if (isDarkTheme) focusCardBgNightDim else focusCardBgDayDim else focusCardBgDim
+    fun getEffectiveFocusCardBgOpacity(isDarkTheme: Boolean): Float =
+        if (isFocusCardDualOpacityEnabled) if (isDarkTheme) focusCardBgNightOpacity else focusCardBgDayOpacity else focusCardBgOpacity
+
+    fun updateDashboardCardBgUri(uri: String?) { dashboardCardBgUri = uri }
+    fun setDashboardCardBackgroundEnabledState(enabled: Boolean) { isDashboardCardBackgroundEnabled = enabled }
+    fun setDashboardCardBgDimValue(dim: Float) { dashboardCardBgDim = dim }
+    fun setDashboardCardDualDimEnabledState(enabled: Boolean) { isDashboardCardDualDimEnabled = enabled }
+    fun setDashboardCardBgDayDimValue(dim: Float) { dashboardCardBgDayDim = dim }
+    fun setDashboardCardBgNightDimValue(dim: Float) { dashboardCardBgNightDim = dim }
+    fun setDashboardCardBgOpacityValue(opacity: Float) { dashboardCardBgOpacity = opacity }
+    fun setDashboardCardDualOpacityEnabledState(enabled: Boolean) { isDashboardCardDualOpacityEnabled = enabled }
+    fun setDashboardCardBgDayOpacityValue(opacity: Float) { dashboardCardBgDayOpacity = opacity }
+    fun setDashboardCardBgNightOpacityValue(opacity: Float) { dashboardCardBgNightOpacity = opacity }
+    fun getEffectiveDashboardCardBgDim(isDarkTheme: Boolean): Float =
+        if (isDashboardCardDualDimEnabled) if (isDarkTheme) dashboardCardBgNightDim else dashboardCardBgDayDim else dashboardCardBgDim
+    fun getEffectiveDashboardCardBgOpacity(isDarkTheme: Boolean): Float =
+        if (isDashboardCardDualOpacityEnabled) if (isDarkTheme) dashboardCardBgNightOpacity else dashboardCardBgDayOpacity else dashboardCardBgOpacity
+
+    /**
+     * 判断任意FocusUI卡片是否设置了壁纸
+     */
+    fun hasAnyFocusCardBg(): Boolean {
+        return focusCardKernelBgUri != null || focusCardAppBgUri != null ||
+            focusCardDeviceBgUri != null || focusCardStorageBgUri != null
+    }
+
+    // FocusUI卡片ID常量
+    const val FOCUS_CARD_KERNEL = "kernel"
+    const val FOCUS_CARD_APP = "app"
+    const val FOCUS_CARD_DEVICE = "device"
+    const val FOCUS_CARD_STORAGE = "storage"
+
     fun setNavBarGlassEnabledState(enabled: Boolean) {
         isNavBarGlassEnabled = enabled
     }
@@ -554,6 +709,31 @@ object BackgroundConfig {
             putFloat(KEY_TITLE_IMAGE_DIM, titleImageDim)
             putFloat(KEY_TITLE_IMAGE_OFFSET_X, titleImageOffsetX)
 
+            putString(KEY_FOCUS_CARD_KERNEL_BG_URI, focusCardKernelBgUri)
+            putString(KEY_FOCUS_CARD_APP_BG_URI, focusCardAppBgUri)
+            putString(KEY_FOCUS_CARD_DEVICE_BG_URI, focusCardDeviceBgUri)
+            putString(KEY_FOCUS_CARD_STORAGE_BG_URI, focusCardStorageBgUri)
+            putBoolean(KEY_FOCUS_CARD_BACKGROUND_ENABLED, isFocusCardBackgroundEnabled)
+            putFloat(KEY_FOCUS_CARD_BG_DIM, focusCardBgDim)
+            putBoolean(KEY_FOCUS_CARD_DUAL_DIM_ENABLED, isFocusCardDualDimEnabled)
+            putFloat(KEY_FOCUS_CARD_DAY_DIM, focusCardBgDayDim)
+            putFloat(KEY_FOCUS_CARD_NIGHT_DIM, focusCardBgNightDim)
+            putBoolean(KEY_FOCUS_CARD_DUAL_OPACITY_ENABLED, isFocusCardDualOpacityEnabled)
+            putFloat(KEY_FOCUS_CARD_OPACITY, focusCardBgOpacity)
+            putFloat(KEY_FOCUS_CARD_DAY_OPACITY, focusCardBgDayOpacity)
+            putFloat(KEY_FOCUS_CARD_NIGHT_OPACITY, focusCardBgNightOpacity)
+
+            putString(KEY_DASHBOARD_CARD_BG_URI, dashboardCardBgUri)
+            putBoolean(KEY_DASHBOARD_CARD_BACKGROUND_ENABLED, isDashboardCardBackgroundEnabled)
+            putFloat(KEY_DASHBOARD_CARD_BG_DIM, dashboardCardBgDim)
+            putBoolean(KEY_DASHBOARD_CARD_DUAL_DIM_ENABLED, isDashboardCardDualDimEnabled)
+            putFloat(KEY_DASHBOARD_CARD_DAY_DIM, dashboardCardBgDayDim)
+            putFloat(KEY_DASHBOARD_CARD_NIGHT_DIM, dashboardCardBgNightDim)
+            putFloat(KEY_DASHBOARD_CARD_OPACITY, dashboardCardBgOpacity)
+            putBoolean(KEY_DASHBOARD_CARD_DUAL_OPACITY_ENABLED, isDashboardCardDualOpacityEnabled)
+            putFloat(KEY_DASHBOARD_CARD_DAY_OPACITY, dashboardCardBgDayOpacity)
+            putFloat(KEY_DASHBOARD_CARD_NIGHT_OPACITY, dashboardCardBgNightOpacity)
+
             putBoolean(KEY_NAVBAR_GLASS_ENABLED, isNavBarGlassEnabled)
             putFloat(KEY_NAVBAR_GLASS_BLUR_STRENGTH, navBarGlassBlurStrength)
             putFloat(KEY_NAVBAR_GLASS_TRANSPARENCY, navBarGlassTransparency)
@@ -623,6 +803,33 @@ object BackgroundConfig {
         val titleDim = prefs.getFloat(KEY_TITLE_IMAGE_DIM, 0.0f)
         val titleOffsetX = prefs.getFloat(KEY_TITLE_IMAGE_OFFSET_X, 0f)
 
+        val focusCardKernelBg = prefs.getString(KEY_FOCUS_CARD_KERNEL_BG_URI, null)
+        val focusCardAppBg = prefs.getString(KEY_FOCUS_CARD_APP_BG_URI, null)
+        val focusCardDeviceBg = prefs.getString(KEY_FOCUS_CARD_DEVICE_BG_URI, null)
+        val focusCardStorageBg = prefs.getString(KEY_FOCUS_CARD_STORAGE_BG_URI, null)
+        val hasFocusCardWallpaper = focusCardKernelBg != null || focusCardAppBg != null ||
+            focusCardDeviceBg != null || focusCardStorageBg != null
+        val focusCardBackgroundEnabled = prefs.getBoolean(KEY_FOCUS_CARD_BACKGROUND_ENABLED, hasFocusCardWallpaper)
+        val focusCardDim = prefs.getFloat(KEY_FOCUS_CARD_BG_DIM, 0.3f)
+        val focusCardDualDim = prefs.getBoolean(KEY_FOCUS_CARD_DUAL_DIM_ENABLED, false)
+        val focusCardDayDim = prefs.getFloat(KEY_FOCUS_CARD_DAY_DIM, focusCardDim)
+        val focusCardNightDim = prefs.getFloat(KEY_FOCUS_CARD_NIGHT_DIM, focusCardDim)
+        val focusCardDualOpacity = prefs.getBoolean(KEY_FOCUS_CARD_DUAL_OPACITY_ENABLED, false)
+        val focusCardOpacity = prefs.getFloat(KEY_FOCUS_CARD_OPACITY, 1f)
+        val focusCardDayOpacity = prefs.getFloat(KEY_FOCUS_CARD_DAY_OPACITY, focusCardOpacity)
+        val focusCardNightOpacity = prefs.getFloat(KEY_FOCUS_CARD_NIGHT_OPACITY, focusCardOpacity)
+
+        val dashboardCardBg = prefs.getString(KEY_DASHBOARD_CARD_BG_URI, null)
+        val dashboardCardEnabled = prefs.getBoolean(KEY_DASHBOARD_CARD_BACKGROUND_ENABLED, false)
+        val dashboardCardDim = prefs.getFloat(KEY_DASHBOARD_CARD_BG_DIM, 0.3f)
+        val dashboardCardDualDim = prefs.getBoolean(KEY_DASHBOARD_CARD_DUAL_DIM_ENABLED, false)
+        val dashboardCardDayDim = prefs.getFloat(KEY_DASHBOARD_CARD_DAY_DIM, dashboardCardDim)
+        val dashboardCardNightDim = prefs.getFloat(KEY_DASHBOARD_CARD_NIGHT_DIM, dashboardCardDim)
+        val dashboardCardOpacity = prefs.getFloat(KEY_DASHBOARD_CARD_OPACITY, 1f)
+        val dashboardCardDualOpacity = prefs.getBoolean(KEY_DASHBOARD_CARD_DUAL_OPACITY_ENABLED, false)
+        val dashboardCardDayOpacity = prefs.getFloat(KEY_DASHBOARD_CARD_DAY_OPACITY, dashboardCardOpacity)
+        val dashboardCardNightOpacity = prefs.getFloat(KEY_DASHBOARD_CARD_NIGHT_OPACITY, dashboardCardOpacity)
+
         val navBarGlassEnabled = prefs.getBoolean(KEY_NAVBAR_GLASS_ENABLED, false)
         val prefsNavBarGlassBlurStrength = prefs.getFloat(KEY_NAVBAR_GLASS_BLUR_STRENGTH, 0.7f)
         val prefsNavBarGlassTransparency = prefs.getFloat(KEY_NAVBAR_GLASS_TRANSPARENCY, 0.3f)
@@ -681,6 +888,31 @@ object BackgroundConfig {
         titleImageNightOpacity = titleNightOpacity
         titleImageDim = titleDim
         titleImageOffsetX = titleOffsetX
+
+        focusCardKernelBgUri = focusCardKernelBg
+        focusCardAppBgUri = focusCardAppBg
+        focusCardDeviceBgUri = focusCardDeviceBg
+        focusCardStorageBgUri = focusCardStorageBg
+        isFocusCardBackgroundEnabled = focusCardBackgroundEnabled
+        focusCardBgDim = focusCardDim
+        isFocusCardDualDimEnabled = focusCardDualDim
+        focusCardBgDayDim = focusCardDayDim
+        focusCardBgNightDim = focusCardNightDim
+        isFocusCardDualOpacityEnabled = focusCardDualOpacity
+        focusCardBgOpacity = focusCardOpacity
+        focusCardBgDayOpacity = focusCardDayOpacity
+        focusCardBgNightOpacity = focusCardNightOpacity
+
+        dashboardCardBgUri = dashboardCardBg
+        isDashboardCardBackgroundEnabled = dashboardCardEnabled
+        dashboardCardBgDim = dashboardCardDim
+        isDashboardCardDualDimEnabled = dashboardCardDualDim
+        dashboardCardBgDayDim = dashboardCardDayDim
+        dashboardCardBgNightDim = dashboardCardNightDim
+        dashboardCardBgOpacity = dashboardCardOpacity
+        isDashboardCardDualOpacityEnabled = dashboardCardDualOpacity
+        dashboardCardBgDayOpacity = dashboardCardDayOpacity
+        dashboardCardBgNightOpacity = dashboardCardNightOpacity
 
         isNavBarGlassEnabled = navBarGlassEnabled
         navBarGlassBlurStrength = prefsNavBarGlassBlurStrength
@@ -744,6 +976,31 @@ object BackgroundConfig {
         titleImageNightOpacity = 1.0f
         titleImageDim = 0.0f
         titleImageOffsetX = 0f
+
+        focusCardKernelBgUri = null
+        focusCardAppBgUri = null
+        focusCardDeviceBgUri = null
+        focusCardStorageBgUri = null
+        isFocusCardBackgroundEnabled = false
+        focusCardBgDim = 0.3f
+        isFocusCardDualDimEnabled = false
+        focusCardBgDayDim = 0.3f
+        focusCardBgNightDim = 0.3f
+        isFocusCardDualOpacityEnabled = false
+        focusCardBgOpacity = 1f
+        focusCardBgDayOpacity = 1f
+        focusCardBgNightOpacity = 1f
+
+        dashboardCardBgUri = null
+        isDashboardCardBackgroundEnabled = false
+        dashboardCardBgDim = 0.3f
+        isDashboardCardDualDimEnabled = false
+        dashboardCardBgDayDim = 0.3f
+        dashboardCardBgNightDim = 0.3f
+        dashboardCardBgOpacity = 1f
+        isDashboardCardDualOpacityEnabled = false
+        dashboardCardBgDayOpacity = 1f
+        dashboardCardBgNightOpacity = 1f
 
         isNavBarGlassEnabled = true
         navBarGlassBlurStrength = 0.7f
@@ -1036,6 +1293,70 @@ object BackgroundManager {
     
     fun clearSettingsBackground(context: Context) = 
         clearGenericBackground(context, SETTINGS_BACKGROUND_FILENAME) { BackgroundConfig.updateSettingsBackgroundUri(it) }
+
+    // ==================== FocusUI Card Wallpapers ====================
+
+    // FocusUI卡片壁纸文件名前缀
+    private const val FOCUS_CARD_KERNEL_BG_FILENAME = "focus_card_kernel_bg"
+    private const val FOCUS_CARD_APP_BG_FILENAME = "focus_card_app_bg"
+    private const val FOCUS_CARD_DEVICE_BG_FILENAME = "focus_card_device_bg"
+    private const val FOCUS_CARD_STORAGE_BG_FILENAME = "focus_card_storage_bg"
+    private const val DASHBOARD_CARD_BG_FILENAME = "dashboard_card_bg"
+
+    /**
+     * 根据卡片ID获取对应的文件名前缀
+     */
+    private fun getFocusCardFilenameBase(cardId: String): String {
+        return when (cardId) {
+            BackgroundConfig.FOCUS_CARD_KERNEL -> FOCUS_CARD_KERNEL_BG_FILENAME
+            BackgroundConfig.FOCUS_CARD_APP -> FOCUS_CARD_APP_BG_FILENAME
+            BackgroundConfig.FOCUS_CARD_DEVICE -> FOCUS_CARD_DEVICE_BG_FILENAME
+            BackgroundConfig.FOCUS_CARD_STORAGE -> FOCUS_CARD_STORAGE_BG_FILENAME
+            else -> FOCUS_CARD_KERNEL_BG_FILENAME
+        }
+    }
+
+    /**
+     * 保存并应用FocusUI卡片壁纸
+     * @param cardId 卡片标识: kernel / app / device / storage
+     */
+    suspend fun saveAndApplyFocusCardBackground(context: Context, cardId: String, uri: Uri): Boolean =
+        saveAndApplyGenericBackground(context, uri, getFocusCardFilenameBase(cardId)) {
+            BackgroundConfig.updateFocusCardBgUri(cardId, it)
+        }
+
+    /**
+     * 清除FocusUI卡片壁纸
+     * @param cardId 卡片标识: kernel / app / device / storage
+     */
+    fun clearFocusCardBackground(context: Context, cardId: String) =
+        clearGenericBackground(context, getFocusCardFilenameBase(cardId)) {
+            BackgroundConfig.updateFocusCardBgUri(cardId, it)
+        }
+
+    /**
+     * 清除所有FocusUI卡片壁纸
+     */
+    fun clearAllFocusCardBackgrounds(context: Context) {
+        listOf(
+            BackgroundConfig.FOCUS_CARD_KERNEL,
+            BackgroundConfig.FOCUS_CARD_APP,
+            BackgroundConfig.FOCUS_CARD_DEVICE,
+            BackgroundConfig.FOCUS_CARD_STORAGE
+        ).forEach { cardId ->
+            clearFocusCardBackground(context, cardId)
+        }
+    }
+
+    suspend fun saveAndApplyDashboardCardBackground(context: Context, uri: Uri): Boolean =
+        saveAndApplyGenericBackground(context, uri, DASHBOARD_CARD_BG_FILENAME) {
+            BackgroundConfig.updateDashboardCardBgUri(it)
+        }
+
+    fun clearDashboardCardBackground(context: Context) =
+        clearGenericBackground(context, DASHBOARD_CARD_BG_FILENAME) {
+            BackgroundConfig.updateDashboardCardBgUri(it)
+        }
 
     // Title Image
     suspend fun saveAndApplyTitleImage(context: Context, uri: Uri): Boolean {
