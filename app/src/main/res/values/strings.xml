@@ -337,6 +337,15 @@
     <string name="apm_folk_banner_saved">FolkBanner injected for %s.</string>
     <string name="apm_folk_banner_cleared">FolkBanner cleared for %s.</string>
     <string name="apm_folk_banner_failed">Failed to update FolkBanner for %s.</string>
+    <string name="folk_banner_custom_info_title">Module Info</string>
+    <string name="folk_banner_custom_info_name">Name</string>
+    <string name="folk_banner_custom_info_version">Version</string>
+    <string name="folk_banner_custom_info_author">Author</string>
+    <string name="folk_banner_custom_info_description">Description</string>
+    <string name="folk_banner_custom_info_save">Save</string>
+    <string name="folk_banner_custom_info_reset">Reset</string>
+    <string name="folk_banner_custom_info_saved">Module info saved for %s</string>
+    <string name="folk_banner_custom_info_reset_done">Module info reset for %s</string>
     <string name="apm_banner_api_mode">API Mode</string>
     <string name="apm_banner_api_mode_summary">Use random image API or local directory for module banners</string>
     <string name="apm_banner_api_source">Configure API Source</string>
