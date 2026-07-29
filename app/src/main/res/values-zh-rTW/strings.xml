@@ -185,6 +185,8 @@
     <string name="kpm_load">匯入</string>
     <string name="kpm_install">安裝</string>
     <string name="kpm_embed">嵌入</string>
+    <string name="kpm_embedded">已嵌入</string>
+    <string name="kpm_loaded">已載入</string>
     <string name="kpm_load_toast_succ">匯入成功</string>
     <string name="kpm_load_toast_failed">匯入失敗</string>
     <string name="kpm_unload_confirm">解除安裝 \"%s\" 模組？</string>
@@ -325,6 +327,8 @@
     <string name="settings_simple_list_bottom_bar_summary">模組操作使用純圖示按鈕樣式，靈感來自APatch</string>
     <string name="settings_spliced_card_group">拼接卡片組</string>
     <string name="settings_spliced_card_group_summary">模組列表使用 M3E 連續拼接卡片樣式</string>
+    <string name="settings_show_kpm_status_badge">顯示核心模組狀態徽章</string>
+    <string name="settings_show_kpm_status_badge_summary">在核心模組卡片上顯示已嵌入/已載入狀態徽章</string>
     <string name="apm_install_confirm_title">安裝模組</string>
     <string name="apm_install_confirm_content">確定要安裝 %s 嗎？</string>
     <string name="apm_disable_all_title">停用所有系統模組</string>
