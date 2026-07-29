@@ -760,7 +760,7 @@ class MainActivity : AppCompatActivity() {
                 // plus 3s auto-hide after last interaction.
                 val isFloatingMode = navMode == "floating"
 
-                LaunchedEffect(isFloatingMode, autoHideKey, floatingAutoHide) {
+                LaunchedEffect(isFloatingMode, autoHideKey, floatingAutoHide, MainActivity.pendingBarReset.value) {
                     if (MainActivity.pendingBarReset.value && isFloatingMode && floatingAutoHide) {
                         resetBottomBarAutoHide()
                         MainActivity.pendingBarReset.value = false
