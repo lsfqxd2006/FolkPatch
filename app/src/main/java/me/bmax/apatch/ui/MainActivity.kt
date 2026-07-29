@@ -763,6 +763,9 @@ class MainActivity : AppCompatActivity() {
                 LaunchedEffect(isFloatingMode, autoHideKey, floatingAutoHide, MainActivity.pendingBarReset.value) {
                     if (MainActivity.pendingBarReset.value && isFloatingMode && floatingAutoHide) {
                         resetBottomBarAutoHide()
+                        isScrollingDown.value = false
+                        scrollOffset.value = 0f
+                        previousScrollOffset.value = 0f
                         MainActivity.pendingBarReset.value = false
                     }
                     if (isFloatingMode && floatingAutoHide && isBottomBarVisible) {
