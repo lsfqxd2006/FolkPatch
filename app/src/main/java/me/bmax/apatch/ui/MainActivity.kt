@@ -10,9 +10,10 @@ import android.os.Looper
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.BackHandler
-import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -178,9 +179,6 @@ import me.bmax.apatch.util.ui.isRealTimeBlurAvailable
 import me.bmax.apatch.util.ui.showToast
 
 class MainActivity : AppCompatActivity() {
-    companion object {
-        val pendingBarReset = mutableStateOf(false)
-    }
     private var isLoading = true
     private var installUri: Uri? = null
     private var installUris: ArrayList<Uri>? = null
@@ -693,15 +691,15 @@ class MainActivity : AppCompatActivity() {
                     isBottomBarVisible = true
                     autoHideKey++
                 }
-                
-                // 新增：重置导航栏 + 滚动状态的组合方法 
+
+                // Reset bar visibility together with scroll state so the bar
+                // shows immediately regardless of the previous scroll direction
                 fun resetBottomBarFully() {
                     resetBottomBarAutoHide()
                     isScrollingDown.value = false
                     scrollOffset.value = 0f
                     previousScrollOffset.value = 0f
                 }
-                
                 // Remember the last valid navbar selection (persists across navbar hide/show)
                 val lastValidNavbarSelection = remember { mutableStateOf(0) }
 
@@ -713,11 +711,15 @@ class MainActivity : AppCompatActivity() {
                 // plus 3s auto-hide after last interaction.
                 val isFloatingMode = navMode == "floating"
 
-                LaunchedEffect(isFloatingMode, autoHideKey, floatingAutoHide, MainActivity.pendingBarReset.value) {
-                    if (MainActivity.pendingBarReset.value && isFloatingMode && floatingAutoHide) {
+                // Force the floating bar back to a fully visible state whenever
+                // the app returns to the foreground
+                LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+                    if (isFloatingMode && (floatingAutoHide || floatingSwipeHide)) {
                         resetBottomBarFully()
-                        MainActivity.pendingBarReset.value = false
                     }
+                }
+
+                LaunchedEffect(isFloatingMode, autoHideKey, floatingAutoHide) {
                     if (isFloatingMode && floatingAutoHide && isBottomBarVisible) {
                         delay(3000L)
                         isBottomBarVisible = false
@@ -737,7 +739,8 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
 
-                // 从二级页面返回一级 tab 时，强制显示导航栏并重置滚动方向
+                // Returning from a secondary page to a main tab: show the bar
+                // immediately with scroll state reset
                 val previousRoute = remember { mutableStateOf<String?>(null) }
                 LaunchedEffect(currentRoute, isFloatingMode) {
                     if (isFloatingMode) {
@@ -841,22 +844,16 @@ class MainActivity : AppCompatActivity() {
 
                         if (!useNavigationRail) {
                             if (isFloatingMode) {
-                                // ========== 悬浮导航栏返回键处理（始终存活）==========
-                                val currentRouteForBack = navController.currentBackStackEntry?.destination?.route
+                                // Back press on a non-home tab returns to the home tab
+                                // with the floating bar reset; back on the home tab keeps
+                                // the system default (predictive back) behavior
                                 val homeRoute = bottomBarRoutes.first()
-                                val activityForBack = LocalContext.current as ComponentActivity
-                        
-                                BackHandler(enabled = currentRouteForBack in bottomBarRoutes) {
-                                    if (currentRouteForBack != null && currentRouteForBack != homeRoute) {
-                                        // 完整重置滚动相关状态，确保导航栏立即显示
-                                        resetBottomBarFully()
-                                        // 原子操作：清空返回栈并跳转主页
-                                        navController.navigate(homeRoute) {
-                                            popUpTo(NavGraphs.root.route) { inclusive = true }
-                                            launchSingleTop = true
-                                        }
-                                    } else {
-                                        activityForBack.moveTaskToBack(false)
+                                BackHandler(enabled = currentRoute in bottomBarRoutes && currentRoute != homeRoute) {
+                                    resetBottomBarFully()
+                                    navController.navigate(homeRoute) {
+                                        popUpTo(NavGraphs.root.route) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
                                 }
                                 AnimatedVisibility(
