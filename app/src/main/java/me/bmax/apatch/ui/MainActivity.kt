@@ -324,12 +324,6 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         showBiometricPromptIfNeeded()
-        val prefs = APApplication.sharedPreferences
-        val navMode = prefs.getString("nav_mode", "floating") ?: "floating"
-        val floatingAutoHide = prefs.getBoolean("floating_auto_hide", true)
-        if (navMode == "floating" && floatingAutoHide) {
-            MainActivity.pendingBarReset.value = true
-        }
     }
 
     private fun showBiometricPromptIfNeeded() {
@@ -700,6 +694,7 @@ class MainActivity : AppCompatActivity() {
                     scrollOffset.value = 0f
                     previousScrollOffset.value = 0f
                 }
+
                 // Remember the last valid navbar selection (persists across navbar hide/show)
                 val lastValidNavbarSelection = remember { mutableStateOf(0) }
 
