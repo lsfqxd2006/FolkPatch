@@ -11,7 +11,7 @@ import me.bmax.apatch.BuildConfig
 object UpdateChecker {
     private const val TAG = "UpdateChecker"
     private const val UPDATE_API_URL = "https://folk.mysqil.com/api/version"
-    private const val UPDATE_URL = "https://github.com/LyraVoid/FolkPatch/releases"
+    private const val UPDATE_URL = "https://github.com/lsfqxd2006/FolkPatch/releases"
 
     suspend fun checkUpdate(): Boolean {
         return withContext(Dispatchers.IO) {
