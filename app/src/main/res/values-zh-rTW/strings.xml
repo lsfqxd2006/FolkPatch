@@ -172,6 +172,8 @@
     <string name="settings_selinux_current_mode">目前: %s</string>
     <string name="settings_selinux_mode_enforcing_summary">SELinux 會強制執行所有存取規則</string>
     <string name="settings_selinux_mode_permissive_summary">SELinux 僅記錄違規行為，不會阻擋存取</string>
+    <string name="msg_selinux_permissive_warning">切換至寬容模式將關閉 SELinux 強制攔截，權限違規行為只會紀錄日誌而不會直接阻斷，裝置安全性會下降，是否繼續？</string>
+    <string name="msg_selinux_enforcing_confirm">切換至強制模式？SELinux 將完整執行所有權限規則，阻擋一切未經授權的存取動作。</string>
 
     <string name="home_device_info">裝置</string>
     <string name="home_system_version">系統版本</string>
