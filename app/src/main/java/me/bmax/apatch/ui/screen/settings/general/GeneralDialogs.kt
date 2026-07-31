@@ -619,6 +619,7 @@ fun DesktopAppNameChooseDialog(showDialog: MutableState<Boolean>, onNameChanged:
                                 putString("desktop_app_name", "FolkPatch")
                             }
                             onNameChanged("FolkPatch")
+                            LauncherIconUtils.applySaved(context)
                         },
                         trailingContent = {
                             if (currentName == "FolkPatch" || currentName == null) {
@@ -636,6 +637,7 @@ fun DesktopAppNameChooseDialog(showDialog: MutableState<Boolean>, onNameChanged:
                                 putString("desktop_app_name", "FPatch")
                             }
                             onNameChanged("FPatch")
+                            LauncherIconUtils.applySaved(context)
                         },
                         trailingContent = {
                             if (currentName == "FPatch") {

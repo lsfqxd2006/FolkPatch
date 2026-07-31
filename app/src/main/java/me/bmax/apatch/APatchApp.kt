@@ -400,6 +400,8 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
             me.bmax.apatch.ui.theme.BackgroundManager.provisionDefaultDashboardCardBg(this)
         }
         
+        me.bmax.apatch.util.LauncherIconUtils.applySaved(this)
+
         Log.d(TAG, "Initializing OkHttpClient...")
         okhttpClient =
             OkHttpClient.Builder()
