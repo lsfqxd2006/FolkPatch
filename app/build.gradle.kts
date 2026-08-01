@@ -302,16 +302,14 @@ registerDownloadTask(
 )
 
 // Compat kp version less than 0.10.7
-// https://github.com/bmax121/KernelPatch/releases/download/0.10.7/kpatch-android
-// TODO: Remove
-
-//registerDownloadTask(
-//   taskName = "downloadKpatch",
-//    srcUrl = "https://github.com/bmax121/KernelPatch/releases/download/0.10.7/kpatch-android",
-//    destPath = "${project.projectDir}/libs/arm64-v8a/libkpatch.so",
-//    project = project,
-//    version = "0.10.7"
-//)
+// TODO: Remove in future
+registerDownloadTask(
+    taskName = "downloadCompatKpatch",
+    srcUrl = "https://github.com/bmax121/KernelPatch/releases/download/0.10.7/kpatch-android",
+    destPath = "${project.projectDir}/libs/arm64-v8a/libkpatch.so",
+    project = project,
+    version = "0.10.7"
+)
 
 tasks.register<Copy>("mergeScripts") {
     into("${project.projectDir}/src/main/resources/META-INF/com/google/android")
@@ -343,7 +341,7 @@ tasks.register<Exec>("buildFpd") {
 tasks.getByName("preBuild").dependsOn(
     "downloadKpimg",
     "downloadKptools",
-//    "downloadKpatch",
+    "downloadCompatKpatch",
     "mergeScripts",
     "buildFpd",
 )
