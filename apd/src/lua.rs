@@ -104,7 +104,11 @@ fn append_plugin_log(lua: &Lua, line: &str) {
         return;
     };
     let log_path = Path::new(&dir).join("last_output.log");
-    if let Ok(mut file) = fs::OpenOptions::new().create(true).append(true).open(&log_path) {
+    if let Ok(mut file) = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&log_path)
+    {
         let _ = writeln!(file, "{line}");
     }
 }
@@ -135,9 +139,7 @@ pub fn read_text_lua(lua: &Lua) -> LuaResult<Function> {
 
 /// `getprop(name)` — read an Android system property.
 pub fn getprop_lua(lua: &Lua) -> LuaResult<Function> {
-    lua.create_function(|_, name: String| {
-        Ok(crate::utils::getprop(&name).unwrap_or_default())
-    })
+    lua.create_function(|_, name: String| Ok(crate::utils::getprop(&name).unwrap_or_default()))
 }
 
 /// `setprop(name, value)` — set an Android system property (bypasses read-only).
@@ -170,8 +172,14 @@ pub fn exec_lua(lua: &Lua) -> LuaResult<Function> {
         let table = lua.create_table()?;
         table.set("ok", output.status.success())?;
         table.set("code", output.status.code().unwrap_or(-1))?;
-        table.set("stdout", String::from_utf8_lossy(&output.stdout).into_owned())?;
-        table.set("stderr", String::from_utf8_lossy(&output.stderr).into_owned())?;
+        table.set(
+            "stdout",
+            String::from_utf8_lossy(&output.stdout).into_owned(),
+        )?;
+        table.set(
+            "stderr",
+            String::from_utf8_lossy(&output.stderr).into_owned(),
+        )?;
         Ok(table)
     })
 }
@@ -194,11 +202,9 @@ pub fn write_file_lua(lua: &Lua) -> LuaResult<Function> {
 
 /// `read_file(path)` — read a file's text content.
 pub fn read_file_lua(lua: &Lua) -> LuaResult<Function> {
-    lua.create_function(|_, path: String| {
-        match fs::read_to_string(&path) {
-            Ok(s) => Ok(s),
-            Err(e) => Err(mlua::Error::external(format!("read_file failed: {e}"))),
-        }
+    lua.create_function(|_, path: String| match fs::read_to_string(&path) {
+        Ok(s) => Ok(s),
+        Err(e) => Err(mlua::Error::external(format!("read_file failed: {e}"))),
     })
 }
 
@@ -224,9 +230,8 @@ pub fn chmod_lua(lua: &Lua) -> LuaResult<Function> {
             mlua::Value::Integer(i) => *i as u32,
             mlua::Value::String(s) => {
                 let s = s.to_string_lossy();
-                u32::from_str_radix(s.trim_start_matches('0'), 8).map_err(|e| {
-                    mlua::Error::external(format!("invalid mode '{s}': {e}"))
-                })?
+                u32::from_str_radix(s.trim_start_matches('0'), 8)
+                    .map_err(|e| mlua::Error::external(format!("invalid mode '{s}': {e}")))?
             }
             _ => return Err(mlua::Error::external("mode must be number or string")),
         };
@@ -400,8 +405,8 @@ pub fn exec_plugin_stage(stage: &str) -> Result<()> {
 }
 
 fn run_plugin(id: &str, function: &str) -> LuaResult<()> {
-    let path = crate::plugin::plugin_path(id)
-        .map_err(|error| mlua::Error::external(error.to_string()))?;
+    let path =
+        crate::plugin::plugin_path(id).map_err(|error| mlua::Error::external(error.to_string()))?;
     let entry = crate::plugin::read_manifest_optional(id)
         .map(|m| crate::plugin::plugin_entry_name(&m).to_string())
         .unwrap_or_else(|| crate::plugin::PLUGIN_ENTRY.to_string());
@@ -424,6 +429,100 @@ fn run_plugin(id: &str, function: &str) -> LuaResult<()> {
 
 pub fn run_plugin_callback(id: &str, function: &str) -> Result<()> {
     run_plugin(id, function).map_err(|error| anyhow::anyhow!(error.to_string()))
+}
+
+/// Enabled plugins that declare a `package_added` callback, sorted by id.
+/// Used both to build the fingerprint and to dispatch package events.
+pub fn active_package_plugins() -> Vec<String> {
+    let plugins_dir = Path::new(defs::PLUGIN_DIR);
+    let mut ids: Vec<String> = Vec::new();
+    if let Ok(entries) = fs::read_dir(plugins_dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if !path.is_dir() || path.join(defs::DISABLE_FILE_NAME).exists() {
+                continue;
+            }
+            let Some(id) = path.file_name().and_then(|name| name.to_str()) else {
+                continue;
+            };
+            if plugin_has_callback(id, "package_added") {
+                ids.push(id.to_string());
+            }
+        }
+    }
+    ids.sort();
+    ids
+}
+
+/// Ask enabled plugins how a newly installed package should be profiled.
+/// The first valid answer wins; plugins may return `root`, `exclude`, or nil.
+/// The Lua state is short-lived so package events cannot leak state between plugins.
+pub fn new_package_profile(pkg: &str, uid: i32) -> Option<&'static str> {
+    let plugins_dir = Path::new(defs::PLUGIN_DIR);
+    info!(
+        "[package_plugin] dispatch package_added for {pkg} ({uid}), plugin_dir={}",
+        plugins_dir.display()
+    );
+    let mut paths: Vec<_> = fs::read_dir(plugins_dir)
+        .ok()?
+        .flatten()
+        .map(|entry| entry.path())
+        .collect();
+    paths.sort();
+    if paths.is_empty() {
+        info!("[package_plugin] no installed plugins found");
+    }
+    for path in paths {
+        if !path.is_dir() || path.join(defs::DISABLE_FILE_NAME).exists() {
+            continue;
+        }
+        let Some(id) = path.file_name().and_then(|name| name.to_str()) else {
+            continue;
+        };
+        let entry_name = crate::plugin::read_manifest_optional(id)
+            .map(|m| crate::plugin::plugin_entry_name(&m).to_string())
+            .unwrap_or_else(|| crate::plugin::PLUGIN_ENTRY.to_string());
+        let script_path = path.join(entry_name);
+        let Ok(code) = fs::read_to_string(&script_path) else {
+            warn!("[package_plugin] plugin {id} entry file is unreadable");
+            continue;
+        };
+        let lua = unsafe { Lua::unsafe_new() };
+        if bind_plugin_api(&lua).is_err() {
+            continue;
+        }
+        let _ = lua.globals().set("PLUGIN_ID", id);
+        let _ = lua
+            .globals()
+            .set("PLUGIN_DIR", path.to_string_lossy().to_string());
+        let Ok(plugin) = lua
+            .load(&code)
+            .set_name(script_path.to_string_lossy())
+            .eval::<Table>()
+        else {
+            warn!("Plugin {id} failed to load for package event");
+            continue;
+        };
+        let Ok(callback) = plugin.get::<Function>("package_added") else {
+            info!("[package_plugin] plugin {id} has no package_added callback");
+            continue;
+        };
+        info!("[package_plugin] calling {id}::package_added for {pkg} ({uid})");
+        match callback.call::<Option<String>>((pkg, uid)) {
+            Ok(Some(mode)) if mode == "root" => {
+                info!("[package_plugin] {id} selected root for {pkg}");
+                return Some("root");
+            }
+            Ok(Some(mode)) if mode == "exclude" => {
+                info!("[package_plugin] {id} selected exclude for {pkg}");
+                return Some("exclude");
+            }
+            Ok(Some(mode)) => warn!("Plugin {id} returned invalid package profile '{mode}'"),
+            Ok(None) => {}
+            Err(error) => warn!("Plugin {id} package_added failed: {error}"),
+        }
+    }
+    None
 }
 
 /// Run a plugin callback in a loop with a fixed interval.

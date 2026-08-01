@@ -2,10 +2,7 @@ use crate::sepolicy::get_policy_main;
 use anyhow::{Context, Result};
 use libc::SIGPWR;
 use log::{info, warn};
-use notify::{
-    Config, Event, EventKind, INotifyWatcher, RecursiveMode, Watcher,
-    event::{ModifyKind, RenameMode},
-};
+use notify::{Config, Event, INotifyWatcher, RecursiveMode, Watcher};
 use signal_hook::{consts::signal::*, iterator::Signals};
 use std::process::Stdio;
 use std::{
@@ -125,7 +122,10 @@ fn exec_fpd_hide() {
     }
     info!("Hide Service enabled, executing fpd -hide...");
     if !Path::new(defs::HIDE_BINARY_PATH).exists() {
-        warn!("fpd binary not found at {}, please copy it manually", defs::HIDE_BINARY_PATH);
+        warn!(
+            "fpd binary not found at {}, please copy it manually",
+            defs::HIDE_BINARY_PATH
+        );
         return;
     }
     let result = Command::new(defs::HIDE_BINARY_PATH).arg("-hide").status();
@@ -150,7 +150,10 @@ fn exec_fpd_umount() {
     }
     info!("Umount Service enabled, executing fpd -umount...");
     if !Path::new(defs::UMOUNT_BINARY_PATH).exists() {
-        warn!("fpd binary not found at {}, please copy it manually", defs::UMOUNT_BINARY_PATH);
+        warn!(
+            "fpd binary not found at {}, please copy it manually",
+            defs::UMOUNT_BINARY_PATH
+        );
         return;
     }
     let result = unsafe {
@@ -188,10 +191,16 @@ fn exec_fpd_umount() {
 
 pub fn on_post_data_fs(superkey: Option<String>) -> Result<()> {
     let key_len = superkey.as_ref().map(|s| s.len()).unwrap_or(0);
-    let key_preview = superkey.as_ref().map(|s| {
-        if s.len() > 4 { &s[..2] } else { s }
-    }).unwrap_or("<None>");
-    info!("[diag:post_fs_data] ENTER superkey_present={} key_len={} preview='{}..'", superkey.is_some(), key_len, key_preview);
+    let key_preview = superkey
+        .as_ref()
+        .map(|s| if s.len() > 4 { &s[..2] } else { s })
+        .unwrap_or("<None>");
+    info!(
+        "[diag:post_fs_data] ENTER superkey_present={} key_len={} preview='{}..'",
+        superkey.is_some(),
+        key_len,
+        key_preview
+    );
 
     utils::umask(0);
     if let Err(e) = report_kernel(superkey.clone(), "post-fs-data", "before") {
@@ -359,7 +368,11 @@ fn run_stage(stage: &str, superkey: Option<String>, block: bool) {
 
 pub fn on_services(superkey: Option<String>) -> Result<()> {
     let key_len = superkey.as_ref().map(|s| s.len()).unwrap_or(0);
-    info!("[diag:services] ENTER superkey_present={} key_len={}", superkey.is_some(), key_len);
+    info!(
+        "[diag:services] ENTER superkey_present={} key_len={}",
+        superkey.is_some(),
+        key_len
+    );
 
     if Path::new(defs::UTS_SPOOF_RETRY_FILE).exists() {
         info!("Retrying deferred UTS spoof apply from services stage");
@@ -402,7 +415,11 @@ fn run_uid_monitor() {
 
 pub fn on_boot_completed(superkey: Option<String>) -> Result<()> {
     let key_len = superkey.as_ref().map(|s| s.len()).unwrap_or(0);
-    info!("[diag:boot_completed] ENTER superkey_present={} key_len={}", superkey.is_some(), key_len);
+    info!(
+        "[diag:boot_completed] ENTER superkey_present={} key_len={}",
+        superkey.is_some(),
+        key_len
+    );
 
     // Clear UTS spoof boot safety flag — boot completed successfully
     if Path::new(defs::UTS_SPOOF_BOOT_PENDING).exists() {
@@ -436,14 +453,22 @@ pub fn on_boot_completed(superkey: Option<String>) -> Result<()> {
 
 pub fn on_manager_boot_completed(superkey: Option<String>) -> Result<()> {
     let key_len_before = superkey.as_ref().map(|s| s.len()).unwrap_or(0);
-    info!("[diag:manager_boot] ENTER superkey_present={} key_len_before={}", superkey.is_some(), key_len_before);
+    info!(
+        "[diag:manager_boot] ENTER superkey_present={} key_len_before={}",
+        superkey.is_some(),
+        key_len_before
+    );
 
     let superkey = superkey.or_else(|| {
         info!("Manager boot fallback invoked without explicit superkey, defaulting to trusted-manager key 'su'");
         Some("su".to_string())
     });
 
-    info!("[diag:manager_boot] superkey_present={} key_len_after={}", superkey.is_some(), superkey.as_ref().map(|s| s.len()).unwrap_or(0));
+    info!(
+        "[diag:manager_boot] superkey_present={} key_len_after={}",
+        superkey.is_some(),
+        superkey.as_ref().map(|s| s.len()).unwrap_or(0)
+    );
 
     if Path::new(defs::UTS_SPOOF_BOOT_PENDING).exists() {
         let _ = std::fs::remove_file(defs::UTS_SPOOF_BOOT_PENDING);
@@ -455,7 +480,9 @@ pub fn on_manager_boot_completed(superkey: Option<String>) -> Result<()> {
         supercall::apply_pathhide(&superkey);
     }
 
-    if Path::new(defs::UTS_SPOOF_ENABLE_FILE).exists() || Path::new(defs::UTS_SPOOF_RETRY_FILE).exists() {
+    if Path::new(defs::UTS_SPOOF_ENABLE_FILE).exists()
+        || Path::new(defs::UTS_SPOOF_RETRY_FILE).exists()
+    {
         info!("Manager boot fallback: applying UTS spoof");
         supercall::apply_uts_spoof(&superkey);
         if Path::new(defs::UTS_SPOOF_BOOT_PENDING).exists() {
@@ -493,6 +520,7 @@ pub fn start_uid_listener() -> Result<()> {
     // create inotify instance
     const SYS_PACKAGES_LIST_TMP: &str = "/data/system/packages.list.tmp";
     let sys_packages_list_tmp = PathBuf::from(&SYS_PACKAGES_LIST_TMP);
+    let sys_packages_list = PathBuf::from("/data/system/packages.list");
     let dir: PathBuf = sys_packages_list_tmp.parent().unwrap().into();
 
     let (tx, rx) = std::sync::mpsc::channel();
@@ -513,20 +541,46 @@ pub fn start_uid_listener() -> Result<()> {
         });
     }
 
+    // Self-healing watchdog: when the manager replaces /data/adb/apd, exec the
+    // new binary so the new logic takes effect without a reboot. The uid
+    // listener is long-lived and otherwise keeps running the old code.
+    {
+        let daemon_path = defs::DAEMON_PATH.to_string();
+        let started_meta = fs::metadata(&daemon_path)
+            .ok()
+            .map(|m| (m.len(), m.modified().ok()));
+        thread::spawn(move || loop {
+            thread::sleep(Duration::from_secs(10));
+            let now_meta = fs::metadata(&daemon_path)
+                .ok()
+                .map(|m| (m.len(), m.modified().ok()));
+            if let (Some(a), Some(b)) = (started_meta, now_meta) {
+                if a != b {
+                    info!("[uid_listener] apd binary changed, restarting with new code");
+                    use std::os::unix::process::CommandExt;
+                    let err = Command::new(defs::DAEMON_PATH)
+                        .arg("uid-listener")
+                        .exec();
+                    log::error!("[uid_listener] re-exec failed: {err}");
+                    return;
+                }
+            }
+        });
+    }
+
     let mut watcher = INotifyWatcher::new(
         move |ev: notify::Result<Event>| match ev {
-            Ok(Event {
-                kind: EventKind::Modify(ModifyKind::Name(RenameMode::Both)),
-                paths,
-                ..
-            }) => {
-                if paths.contains(&sys_packages_list_tmp) {
+            Ok(Event { paths, .. }) => {
+                // Android versions update packages.list in-place or by rename.
+                if paths
+                    .iter()
+                    .any(|path| path == &sys_packages_list || path == &sys_packages_list_tmp)
+                {
                     info!("[uid_monitor] System packages list changed, sending to tx...");
-                    tx_clone.send(false).unwrap()
+                    tx_clone.send(false).unwrap();
                 }
             }
             Err(err) => warn!("inotify error: {err}"),
-            _ => (),
         },
         Config::default(),
     )?;

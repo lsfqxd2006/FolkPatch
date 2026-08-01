@@ -17,8 +17,7 @@ pub const UTS_SPOOF_CONFIG_FILE: &str = concatcp!(ADB_DIR, ".uts_spoof_config");
 pub const UTS_SPOOF_BOOT_PENDING: &str = concatcp!(ADB_DIR, ".uts_spoof_boot_pending");
 pub const UTS_SPOOF_RETRY_FILE: &str = concatcp!(ADB_DIR, ".uts_spoof_retry");
 pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "apd");
-pub const AUTO_EXCLUDE_KNOWN_PACKAGES_FILE: &str =
-    concatcp!(WORKING_DIR, "auto_exclude_known_packages");
+pub const PACKAGE_PLUGIN_KNOWN_FILE: &str = concatcp!(WORKING_DIR, "package_plugin_known");
 
 pub const PATHHIDE_DIR: &str = concatcp!(ADB_DIR, "fp/pathhide/");
 pub const PATHHIDE_ENABLE_FILE: &str = concatcp!(ADB_DIR, "fp/pathhide/enabled");

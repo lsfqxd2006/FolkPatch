@@ -1,6 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
-    fs::File,
+    fs::{self, File},
     io::{self, BufRead},
     path::Path,
     process::Command,
@@ -11,9 +11,8 @@ use std::{
 use log::{info, warn};
 use serde::{Deserialize, Serialize};
 
-use crate::defs;
+use crate::{defs, lua};
 
-const DEFAULT_SCONTEXT: &str = "u:r:untrusted_app:s0";
 const MAGISK_SCONTEXT: &str = "u:r:magisk:s0";
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -26,29 +25,6 @@ pub struct PackageConfig {
     pub sctx: String,
 }
 
-fn read_known_user_packages() -> HashSet<String> {
-    std::fs::read_to_string(defs::AUTO_EXCLUDE_KNOWN_PACKAGES_FILE)
-        .map(|content| {
-            content
-                .lines()
-                .map(str::trim)
-                .filter(|line| !line.is_empty())
-                .map(ToOwned::to_owned)
-                .collect()
-        })
-        .unwrap_or_default()
-}
-
-fn write_known_user_packages(packages: &HashSet<String>) -> io::Result<()> {
-    let mut sorted_packages: Vec<_> = packages.iter().cloned().collect();
-    sorted_packages.sort();
-    let mut content = sorted_packages.join("\n");
-    if !content.is_empty() {
-        content.push('\n');
-    }
-    std::fs::write(defs::AUTO_EXCLUDE_KNOWN_PACKAGES_FILE, content)
-}
-
 fn list_user_packages() -> HashSet<String> {
     let commands: [(&str, &[&str]); 2] = [
         ("cmd", &["package", "list", "packages", "-3"]),
@@ -59,7 +35,12 @@ fn list_user_packages() -> HashSet<String> {
         let output = match Command::new(program).args(args).output() {
             Ok(output) if output.status.success() => output,
             Ok(output) => {
-                warn!("User package query {} {:?} failed: {:?}", program, args, output.status.code());
+                warn!(
+                    "User package query {} {:?} failed: {:?}",
+                    program,
+                    args,
+                    output.status.code()
+                );
                 continue;
             }
             Err(e) => {
@@ -80,45 +61,106 @@ fn list_user_packages() -> HashSet<String> {
     HashSet::new()
 }
 
-pub fn sync_auto_exclude_new_apps(
+fn read_plugin_known(path: &Path) -> (String, HashSet<String>) {
+    let mut fingerprint = String::new();
+    let mut known = HashSet::new();
+    if let Ok(content) = fs::read_to_string(path) {
+        let mut lines = content.lines();
+        if let Some(first) = lines.next() {
+            if let Some(value) = first.strip_prefix("fp=") {
+                fingerprint = value.to_string();
+            }
+        }
+        for line in lines {
+            let pkg = line.trim();
+            if !pkg.is_empty() {
+                known.insert(pkg.to_string());
+            }
+        }
+    }
+    (fingerprint, known)
+}
+
+fn write_plugin_known(
+    path: &Path,
+    fingerprint: &str,
+    packages: &HashSet<String>,
+) -> io::Result<()> {
+    let mut sorted: Vec<_> = packages.iter().cloned().collect();
+    sorted.sort();
+    let mut content = format!("fp={fingerprint}\n");
+    for pkg in sorted {
+        content.push_str(&pkg);
+        content.push('\n');
+    }
+    // Atomic write: the watchdog may restart this process at any moment, and a
+    // torn write would look like a truncated baseline on the next refresh.
+    let tmp = path.with_extension("tmp");
+    fs::write(&tmp, content)?;
+    fs::rename(&tmp, path)
+}
+
+fn apply_new_package_plugins(
     package_configs: &mut Vec<PackageConfig>,
     uid_map: &HashMap<String, i32>,
-    mode: i32,
 ) -> io::Result<bool> {
     let current_user_packages = list_user_packages();
     if current_user_packages.is_empty() {
+        warn!("[package_plugin] user package query returned no packages");
         return Ok(false);
     }
 
-    let known_user_packages = read_known_user_packages();
-    let known_initialized = Path::new(defs::AUTO_EXCLUDE_KNOWN_PACKAGES_FILE).exists();
-    let mut changed = false;
+    // Only handle applications that appeared after the package plugin set was
+    // last (re)activated. The fingerprint changes whenever a package_added
+    // plugin is installed, enabled, disabled or removed, which rebuilds the
+    // baseline so pre-existing apps are never auto-profiled.
+    let fingerprint = crate::lua::active_package_plugins().join(",");
+    let known_path = Path::new(defs::PACKAGE_PLUGIN_KNOWN_FILE);
+    let (stored_fp, mut known) = read_plugin_known(known_path);
 
-    if mode != 0 && known_initialized {
-        let new_packages: Vec<_> = current_user_packages
-            .difference(&known_user_packages)
+    // Safety: never bulk-profile every app. A baseline is only usable when it
+    // covers most current user packages. If the known file is missing,
+    // truncated, or somehow only covers a small fraction of installed apps,
+    // rebuild it instead of treating the whole device as "newly installed".
+    let covered = current_user_packages
+        .iter()
+        .filter(|pkg| known.contains(*pkg))
+        .count();
+    let baseline_usable = known_path.exists()
+        && stored_fp == fingerprint
+        && !known.is_empty()
+        && covered * 2 >= current_user_packages.len();
+
+    let mut changed = false;
+    if baseline_usable {
+        let mut new_packages: Vec<_> = current_user_packages
+            .iter()
+            .filter(|pkg| !known.contains(*pkg))
             .cloned()
             .collect();
+        new_packages.sort();
+        info!(
+            "[package_plugin] scanned {} user packages, {} new packages",
+            current_user_packages.len(),
+            new_packages.len()
+        );
 
         for pkg in new_packages {
             let Some(&uid) = uid_map.get(&pkg) else {
-                warn!("[auto_exclude] Missing uid for package {}, skip", pkg);
+                // UID not ready yet: keep the package out of the known set so
+                // it is retried on the next refresh instead of being dropped.
+                warn!("[package_plugin] Missing uid for package {}, skip", pkg);
                 continue;
             };
 
-            let exists = package_configs.iter().any(|config| config.pkg == pkg || config.uid == uid);
-            if exists {
-                continue;
-            }
-
-            let (allow, exclude, sctx, mode_name) = match mode {
-                1 => (1, 0, MAGISK_SCONTEXT.to_string(), "root"),
-                2 => (0, 1, DEFAULT_SCONTEXT.to_string(), "exclude"),
+            let (allow, exclude, sctx, mode_name) = match lua::new_package_profile(&pkg, uid) {
+                Some("root") => (1, 0, MAGISK_SCONTEXT.to_string(), "root"),
+                Some("exclude") => (0, 1, "u:r:untrusted_app:s0".to_string(), "exclude"),
                 _ => continue,
             };
 
             info!(
-                "[new_app_profile] New package detected, apply {} by default: {} ({})",
+                "[package_plugin] apply {} profile: {} ({})",
                 mode_name, pkg, uid
             );
             package_configs.push(PackageConfig {
@@ -131,10 +173,26 @@ pub fn sync_auto_exclude_new_apps(
             });
             changed = true;
         }
+    } else {
+        info!(
+            "[package_plugin] building/rebuilding package baseline of {} packages",
+            current_user_packages.len()
+        );
     }
 
-    write_known_user_packages(&current_user_packages)?;
-    Ok(changed || !known_initialized)
+    // Drop packages that are no longer installed, so re-installing an app is
+    // treated as a new install and the package_added callback runs again.
+    known.retain(|pkg| current_user_packages.contains(pkg));
+    // Only mark packages whose UID was resolved as known; packages whose UID
+    // was missing during the install race stay pending for the next refresh.
+    let known_uids_ready: HashSet<_> = current_user_packages
+        .iter()
+        .filter(|pkg| uid_map.contains_key(*pkg))
+        .cloned()
+        .collect();
+    known.extend(known_uids_ready);
+    write_plugin_known(&known_path, &fingerprint, &known)?;
+    Ok(changed)
 }
 
 pub fn read_ap_package_config() -> Vec<PackageConfig> {
@@ -270,8 +328,7 @@ pub fn synchronize_package_uid() -> io::Result<()> {
 
                 let mut updated = false;
 
-                let new_app_profile_mode = crate::supercall::get_new_app_profile_mode();
-                if sync_auto_exclude_new_apps(&mut package_configs, &uid_map, new_app_profile_mode)? {
+                if apply_new_package_plugins(&mut package_configs, &uid_map)? {
                     updated = true;
                 }
 
