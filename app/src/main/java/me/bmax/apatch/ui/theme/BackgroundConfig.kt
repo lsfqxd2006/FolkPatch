@@ -73,7 +73,7 @@ object BackgroundConfig {
         private set
 
     // Banner Settings
-    var isBannerEnabled: Boolean by mutableStateOf(true)
+    var isBannerEnabled: Boolean by mutableStateOf(false)
         private set
     var isFolkBannerEnabled: Boolean by mutableStateOf(true)
         private set
@@ -780,7 +780,7 @@ object BackgroundConfig {
         val listModeHidden = prefs.getBoolean(KEY_LIST_WORKING_CARD_MODE_HIDDEN, false)
         val badgeTextMode = prefs.getInt(KEY_CUSTOM_BADGE_TEXT_MODE, 0)
 
-        val bannerEnabled = prefs.getBoolean(KEY_BANNER_ENABLED, true)
+        val bannerEnabled = prefs.getBoolean(KEY_BANNER_ENABLED, false)
         val folkBannerEnabled = prefs.getBoolean(KEY_FOLK_BANNER_ENABLED, true)
         val bannerCustomOpacityEnabled = prefs.getBoolean(KEY_BANNER_CUSTOM_OPACITY_ENABLED, true)
         val bannerCustomOpacity = prefs.getFloat(KEY_BANNER_CUSTOM_OPACITY, 1.0f)
@@ -957,7 +957,7 @@ object BackgroundConfig {
         isListWorkingCardModeHidden = false
         customBadgeTextMode = 0
 
-        isBannerEnabled = true
+        isBannerEnabled = false
         isFolkBannerEnabled = true
         isBannerCustomOpacityEnabled = true
         bannerCustomOpacity = 1.0f
