@@ -143,7 +143,6 @@ fun GeneralSettingsContent(
     val appListLoadingSchemeTitle = stringResource(id = R.string.settings_app_list_loading_scheme)
     var currentScheme by remember { mutableStateOf(prefs.getString("app_list_loading_scheme", "root_service") ?: "root_service") }
     val currentSchemeLabel = if (currentScheme == "root_service") stringResource(R.string.app_list_loading_scheme_root_service) else stringResource(R.string.app_list_loading_scheme_package_manager)
-    val newAppProfileTitle = stringResource(id = R.string.settings_new_app_profile_mode)
 
     val blockUpdateTitle = stringResource(id = R.string.settings_block_kernelpatch_update)
     val blockUpdateSummary = stringResource(id = R.string.settings_block_kernelpatch_update_summary)
@@ -161,7 +160,6 @@ fun GeneralSettingsContent(
     val showFolkXAnimationTypeDialog = remember { mutableStateOf(false) }
     val showFolkXAnimationSpeedDialog = remember { mutableStateOf(false) }
     val showAppListLoadingSchemeDialog = remember { mutableStateOf(false) }
-    val showNewAppProfileModeDialog = remember { mutableStateOf(false) }
     val showSELinuxModeDialog = remember { mutableStateOf(false) }
 
     var autoUpdateCheck by remember { mutableStateOf(prefs.getBoolean("auto_update_check", true)) }
@@ -172,22 +170,6 @@ fun GeneralSettingsContent(
     var currentSpeed by remember { mutableStateOf(prefs.getFloat("folkx_animation_speed", 1.0f)) }
     var predictiveBackEnabled by remember { mutableStateOf(prefs.getBoolean("predictive_back_enabled", true)) }
 
-    val newAppProfileEnabledTitle = stringResource(id = R.string.settings_new_app_profile_enabled)
-    val newAppProfileEnabledSummary = stringResource(id = R.string.settings_new_app_profile_enabled_summary)
-    var newAppProfileEnabled by remember {
-        mutableStateOf(prefs.getBoolean(APApplication.PREF_NEW_APP_PROFILE_ENABLED, false))
-    }
-    var newAppProfileMode by remember {
-        mutableIntStateOf(prefs.getInt(APApplication.PREF_AUTO_EXCLUDE_NEW_APPS, 0))
-    }
-    LaunchedEffect(Unit) {
-        newAppProfileMode = loadNewAppProfileMode(prefs)
-    }
-    val currentNewAppProfileLabel = when (newAppProfileMode) {
-        1 -> stringResource(R.string.settings_new_app_profile_root)
-        2 -> stringResource(R.string.settings_new_app_profile_exclude)
-        else -> stringResource(R.string.settings_new_app_profile_normal)
-    }
 
     SplicedColumnGroup(flat = flat, highlightKey = highlightKey) {
 
@@ -372,54 +354,6 @@ fun GeneralSettingsContent(
                     (context as? Activity)?.recreate()
                 }
             )
-        }
-
-        item(key = "general_new_app_profile_enabled", visible = kPatchReady) {
-            ToggleSettingCard(
-                flat = flat,
-                icon = Icons.Filled.Block,
-                title = newAppProfileEnabledTitle,
-                description = newAppProfileEnabledSummary,
-                checked = newAppProfileEnabled,
-                onCheckedChange = {
-                    newAppProfileEnabled = it
-                    if (it) {
-                        prefs.edit { putBoolean(APApplication.PREF_NEW_APP_PROFILE_ENABLED, true) }
-                    } else {
-                        runCatching { Natives.setNewAppProfileMode(0) }
-                        newAppProfileMode = 0
-                        prefs.edit {
-                            putBoolean(APApplication.PREF_NEW_APP_PROFILE_ENABLED, false)
-                            putInt(APApplication.PREF_AUTO_EXCLUDE_NEW_APPS, 0)
-                        }
-                    }
-                }
-            )
-        }
-
-        item(key = "general_new_app_profile", visible = kPatchReady && newAppProfileEnabled) {
-            ExpressiveCard(flat = flat, onClick = { showNewAppProfileModeDialog.value = true }) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(imageVector = Icons.Filled.Block, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
-                    Spacer(Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = newAppProfileTitle,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = currentNewAppProfileLabel,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
         }
 
         item(key = "general_app_list_scheme", visible = kPatchReady) {
@@ -754,10 +688,4 @@ fun GeneralSettingsContent(
         }
     }
 
-    if (showNewAppProfileModeDialog.value) {
-        NewAppProfileModeDialog(showNewAppProfileModeDialog, newAppProfileMode) { mode ->
-            newAppProfileMode = mode
-            prefs.edit { putInt(APApplication.PREF_AUTO_EXCLUDE_NEW_APPS, mode) }
-        }
-    }
 }

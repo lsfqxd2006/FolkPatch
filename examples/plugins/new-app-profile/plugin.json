@@ -1,0 +1,29 @@
+{
+  "id": "new-app-profile",
+  "name": "New App Default Profile",
+  "author": "FolkPatch",
+  "version": "1.0.0",
+  "description": "Choose the default profile for newly installed user apps",
+  "license": "MIT",
+  "quick_action": {
+    "function": "action",
+    "label": "Test plugin",
+    "labels": {
+      "zh": "测试插件",
+      "ja": "プラグインをテスト"
+    }
+  },
+  "config": [
+    {
+      "key": "mode",
+      "label": "Default profile",
+      "labels": {
+        "zh": "新应用默认权能",
+        "ja": "新しいアプリのデフォルトプロファイル"
+      },
+      "type": "select",
+      "default": "exclude",
+      "options": ["root", "exclude"]
+    }
+  ]
+}
