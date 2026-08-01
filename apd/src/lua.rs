@@ -350,6 +350,13 @@ pub fn plugin_has_callback(id: &str, function: &str) -> bool {
         return false;
     };
     let lua = unsafe { Lua::unsafe_new() };
+    // The plugin entry may call API functions (e.g. get_config) at load time,
+    // so the same bindings and globals used by run_plugin must be present.
+    if bind_plugin_api(&lua).is_err() {
+        return false;
+    }
+    let _ = lua.globals().set("PLUGIN_ID", id);
+    let _ = lua.globals().set("PLUGIN_DIR", path.to_string_lossy().to_string());
     let Ok(plugin) = lua
         .load(&code)
         .set_name(script_path.to_string_lossy())

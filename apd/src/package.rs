@@ -131,6 +131,16 @@ fn apply_new_package_plugins(
         && !known.is_empty()
         && covered * 2 >= current_user_packages.len();
 
+    info!(
+        "[package_plugin] fingerprint='{}' stored='{}' known={} covered={}/{} usable={}",
+        fingerprint,
+        stored_fp,
+        known.len(),
+        covered,
+        current_user_packages.len(),
+        baseline_usable
+    );
+
     let mut changed = false;
     if baseline_usable {
         let mut new_packages: Vec<_> = current_user_packages
