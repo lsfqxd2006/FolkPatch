@@ -595,12 +595,6 @@ Aqui estão algumas possíveis razões para a falha de autenticação—verifiqu
     <string name="alt_icon_summary">Usar ícone alternativo do lançador</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Ativar o sistema de montagem de módulos integrado</string>
-    <string name="settings_new_app_profile_enabled">Modo padrão para novos apps</string>
-    <string name="settings_new_app_profile_enabled_summary">Configurar automaticamente o perfil padrão para aplicativos recém-instalados</string>
-    <string name="settings_new_app_profile_mode">Modo padrão para novos apps</string>
-    <string name="settings_new_app_profile_normal">SEM ROOT</string>
-    <string name="settings_new_app_profile_root">ROOT</string>
-    <string name="settings_new_app_profile_exclude">Excluir</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">Ocultar o status de desbloqueio do bootloader em certa medida</string>
     <string name="settings_app_title">Título do App</string>
@@ -1309,7 +1303,6 @@ Por favor, certifique-se de fechar completamente o app e reabri-lo para que os c
     <string name="settings_startup_sound_save_failed">Falha ao salvar o som de inicialização</string>
     <string name="script_library_downloaded_to">Baixado em: %s</string>
     <string name="script_library_download_failed">Falha no download: %s</string>
-    <string name="settings_new_app_profile_update_failed">Falha ao atualizar o perfil de novo app: %s</string>
     <string name="settings_info_copy">Toque longo para copiar informações</string>
     <string name="settings_info_copy_summary">Toque e segure um item do painel de informações da tela inicial para copiar seu conteúdo</string>
     <string name="home_info_copied">%1$s copiado</string>

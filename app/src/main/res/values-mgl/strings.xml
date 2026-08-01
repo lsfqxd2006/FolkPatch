@@ -591,12 +591,6 @@ KernelPatch 魔法阵需要 boot 核心来施展。
     <string name="dpi_confirm_message">将应用DPI从%1$s更改为%2$s？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">启用内置的魔法阵挂载系统</string>
-    <string name="settings_new_app_profile_enabled">新魔法使默认形态</string>
-    <string name="settings_new_app_profile_enabled_summary">开启后，新魔法使会按默认形态自动配置</string>
-    <string name="settings_new_app_profile_mode">新魔法使默认形态</string>
-    <string name="settings_new_app_profile_normal">日常形态</string>
-    <string name="settings_new_app_profile_root">魔法形态</string>
-    <string name="settings_new_app_profile_exclude">驱逐</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">用魔法阵隐藏Bootloader解锁状态</string>
     <string name="settings_app_title">魔法使名称</string>
@@ -1294,7 +1288,6 @@ KernelPatch 魔法阵需要 boot 核心来施展。
     <string name="settings_startup_sound_save_failed">启动音效魔法保存失败</string>
     <string name="script_library_downloaded_to">已召唤到：%s</string>
     <string name="script_library_download_failed">召唤失败：%s</string>
-    <string name="settings_new_app_profile_update_failed">新魔法使配置更新失败：%s</string>
     <string name="settings_info_copy">长按抄录信息</string>
     <string name="settings_info_copy_summary">长按首页信息栏中的条目即可抄录其内容</string>
     <string name="home_info_copied">%1$s 已抄录完毕</string>

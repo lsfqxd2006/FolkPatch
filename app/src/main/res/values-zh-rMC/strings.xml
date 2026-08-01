@@ -572,12 +572,6 @@ KernelPatch 附魔需要 boot 方块作为材料。
     <string name="dpi_confirm_message">将渲染距离从%1$s更改为%2$s？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">开启内置的模组区块挂载系统</string>
-    <string name="settings_new_app_profile_enabled">新模组默认模式</string>
-    <string name="settings_new_app_profile_enabled_summary">开启后，新安装的模组会根据下方选择的模式自动配置</string>
-    <string name="settings_new_app_profile_mode">新模组默认模式</string>
-    <string name="settings_new_app_profile_normal">生存</string>
-    <string name="settings_new_app_profile_root">创造</string>
-    <string name="settings_new_app_profile_exclude">移除</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">把Bootloader解锁状态藏起来，别让别人看到</string>
     <string name="settings_app_title">应用名称</string>
@@ -1291,7 +1285,6 @@ KernelPatch 附魔需要 boot 方块作为材料。
     <string name="settings_startup_sound_save_failed">启动音效保存到末影箱失败了！</string>
     <string name="script_library_downloaded_to">已下载到：%s</string>
     <string name="script_library_download_failed">下载被苦力怕炸了：%s</string>
-    <string name="settings_new_app_profile_update_failed">新应用配置更新被苦力怕炸了：%s</string>
     <string name="settings_info_copy">长按复制信息</string>
     <string name="settings_info_copy_summary">长按主界面信息栏中的条目即可复制其内容</string>
     <string name="home_info_copied">%1$s 已复制</string>

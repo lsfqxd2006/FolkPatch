@@ -592,12 +592,6 @@ Bol şans! Ayrıca, aşağıdaki belge butonuna tıklamak kesinlikle doğru!</st
     <string name="dpi_confirm_message">Uygulama DPI değerini %1$s ile %2$s arasında değiştirmek ister misiniz?</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Dahili modül bağlama sistemini etkinleştir</string>
-    <string name="settings_new_app_profile_enabled">Yeni Uygulamalar için Varsayılan Mod</string>
-    <string name="settings_new_app_profile_enabled_summary">Yeni yüklenen uygulamalar için varsayılan profili otomatik yapılandır</string>
-    <string name="settings_new_app_profile_mode">Yeni uygulamalar için varsayılan mod</string>
-    <string name="settings_new_app_profile_normal">ROOT YOK</string>
-    <string name="settings_new_app_profile_root">ROOT</string>
-    <string name="settings_new_app_profile_exclude">Hariç tut</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">Bootloader kilidi açık durumunu bir ölçüde gizle</string>
     <string name="settings_app_title">Uygulama Başlığı</string>
@@ -1313,7 +1307,6 @@ Komutların çalışması için uygulamanın tamamen kapatılıp yeniden açıld
     <string name="settings_startup_sound_save_failed">Başlangıç sesi kaydedilemedi</string>
     <string name="script_library_downloaded_to">İndirilen konum: %s</string>
     <string name="script_library_download_failed">İndirme başarısız: %s</string>
-    <string name="settings_new_app_profile_update_failed">Yeni uygulama profili güncellenemedi: %s</string>
     <string name="settings_info_copy">Bilgiyi kopyalamak için basılı tutun</string>
     <string name="settings_info_copy_summary">İçeriğini kopyalamak için ana ekrandaki bilgi kartındaki bir öğeyi basılı tutun</string>
     <string name="home_info_copied">%1$s kopyalandı</string>

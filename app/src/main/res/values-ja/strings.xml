@@ -545,12 +545,6 @@ KernelPatch は boot イメージをパッチする必要があります。
     <string name="dpi_confirm_message">アプリのDPIを%1$sから%2$sに変更しますか？</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">内蔵のモジュールマウントシステムを有効化します。</string>
-    <string name="settings_new_app_profile_enabled">新しいアプリのデフォルトモード</string>
-    <string name="settings_new_app_profile_enabled_summary">新しくインストールされたアプリのデフォルトプロファイルを自動構成する</string>
-    <string name="settings_new_app_profile_mode">新しいアプリのデフォルトモード</string>
-    <string name="settings_new_app_profile_normal">ROOTなし</string>
-    <string name="settings_new_app_profile_root">ROOT</string>
-    <string name="settings_new_app_profile_exclude">除外</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">Bootloader Unlock 状態をある程度非表示にします。</string>
     <!-- Umount Service -->
@@ -1235,7 +1229,6 @@ KernelPatch は boot イメージをパッチする必要があります。
     <string name="settings_startup_sound_save_failed">起動音の保存に失敗しました</string>
     <string name="script_library_downloaded_to">ダウンロード先: %s</string>
     <string name="script_library_download_failed">ダウンロードに失敗: %s</string>
-    <string name="settings_new_app_profile_update_failed">新規アプリプロファイルの更新に失敗: %s</string>
     <string name="settings_info_copy">長押しで情報をコピー</string>
     <string name="settings_info_copy_summary">ホーム画面の情報欄の項目を長押しすると内容をコピーできます。</string>
     <string name="home_info_copied">%1$sをコピーしました。</string>

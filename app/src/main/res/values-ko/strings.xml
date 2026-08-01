@@ -597,12 +597,6 @@ KernelPatch는 boot 이미지를 패치해야 합니다.
     <string name="dpi_confirm_message">앱 DPI를 %1$s에서 %2$s(으)로 변경하시겠습니까?</string>
     <string name="settings_magic_mount">Folk 마운트 API</string>
     <string name="settings_magic_mount_summary">내장된 모듈 마운트 시스템을 활성화합니다.</string>
-    <string name="settings_new_app_profile_enabled">새 앱 기본 모드</string>
-    <string name="settings_new_app_profile_enabled_summary">새로 설치된 앱의 기본 프로필을 자동으로 구성합니다</string>
-    <string name="settings_new_app_profile_mode">새 앱의 기본 모드</string>
-    <string name="settings_new_app_profile_normal">루트 없음</string>
-    <string name="settings_new_app_profile_root">루트</string>
-    <string name="settings_new_app_profile_exclude">제외</string>
     <string name="settings_hide_service">FolkPatch 숨김</string>
     <string name="settings_hide_service_summary">부트로더 잠금 해제 상태를 어느 정도 숨깁니다.</string>
     <!-- Umount Service -->
@@ -1326,7 +1320,6 @@ KernelPatch는 boot 이미지를 패치해야 합니다.
     <string name="settings_startup_sound_save_failed">시작음 저장에 실패했습니다</string>
     <string name="script_library_downloaded_to">다운로드 위치: %s</string>
     <string name="script_library_download_failed">다운로드 실패: %s</string>
-    <string name="settings_new_app_profile_update_failed">새 앱 프로필 업데이트 실패: %s</string>
     <string name="settings_info_copy">길게 눌러 정보 복사</string>
     <string name="settings_info_copy_summary">홈 정보 카드의 항목을 길게 누르면 내용이 복사됩니다</string>
     <string name="home_info_copied">%1$s 복사됨</string>

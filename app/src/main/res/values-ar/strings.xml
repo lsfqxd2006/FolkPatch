@@ -593,12 +593,6 @@
     <string name="alt_icon_summary">استخدم أيقونة المشغل البديلة</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">تفعيل نظام تركيب الوحدات المدمج</string>
-    <string name="settings_new_app_profile_enabled">الوضع الافتراضي للتطبيقات الجديدة</string>
-    <string name="settings_new_app_profile_enabled_summary">تكوين الملف التعريفي الافتراضي تلقائيًا للتطبيقات المثبتة حديثًا</string>
-    <string name="settings_new_app_profile_mode">الوضع الافتراضي للتطبيقات الجديدة</string>
-    <string name="settings_new_app_profile_normal">بدون صلاحية</string>
-    <string name="settings_new_app_profile_root">صلاحية الجذر</string>
-    <string name="settings_new_app_profile_exclude">استبعاد</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">إخفاء حالة فتح قفل محمل الإقلاع إلى حد ما</string>
     <string name="settings_app_title">عنوان التطبيق</string>
@@ -1300,7 +1294,6 @@
     <string name="settings_startup_sound_save_failed">فشل حفظ صوت البدء</string>
     <string name="script_library_downloaded_to">تم التنزيل إلى: %s</string>
     <string name="script_library_download_failed">فشل التنزيل: %s</string>
-    <string name="settings_new_app_profile_update_failed">فشل تحديث ملف تعريف التطبيق الجديد: %s</string>
     <string name="settings_info_copy">النسخ بالضغط المطول</string>
     <string name="settings_info_copy_summary">اضغط مطولاً على عنصر في لوحة معلومات الشاشة الرئيسية لنسخ محتواه</string>
     <string name="home_info_copied">تم نسخ %1$s</string>

@@ -588,12 +588,6 @@ Berikut adalah beberapa kemungkinan penyebab kegagalan autentikasi—silakan cek
     <string name="dpi_confirm_message">Ubah DPI aplikasi dari %1$s ke %2$s?</string>
     <string name="settings_magic_mount">Folk Mount API</string>
     <string name="settings_magic_mount_summary">Aktifkan sistem pemasangan modul bawaan</string>
-    <string name="settings_new_app_profile_enabled">Mode Default untuk Aplikasi Baru</string>
-    <string name="settings_new_app_profile_enabled_summary">Konfigurasi otomatis profil default untuk aplikasi yang baru diinstal</string>
-    <string name="settings_new_app_profile_mode">Mode default untuk aplikasi baru</string>
-    <string name="settings_new_app_profile_normal">TANPA ROOT</string>
-    <string name="settings_new_app_profile_root">ROOT</string>
-    <string name="settings_new_app_profile_exclude">Kecualikan</string>
     <string name="settings_hide_service">FolkPatch Hide</string>
     <string name="settings_hide_service_summary">Sembunyikan status buka kunci bootloader sampai tingkat tertentu</string>
     <string name="settings_app_title">Judul Aplikasi</string>
@@ -1290,7 +1284,6 @@ Pastikan aplikasi ditutup sepenuhnya dan dimulai ulang untuk menjalankan perinta
     <string name="settings_startup_sound_save_failed">Gagal menyimpan suara pembuka</string>
     <string name="script_library_downloaded_to">Diunduh ke: %s</string>
     <string name="script_library_download_failed">Gagal mengunduh: %s</string>
-    <string name="settings_new_app_profile_update_failed">Gagal memperbarui profil aplikasi baru: %s</string>
     <string name="settings_info_copy">Tekan lama untuk menyalin info</string>
     <string name="settings_info_copy_summary">Tekan lama item di panel info beranda untuk menyalin isinya</string>
     <string name="home_info_copied">%1$s disalin</string>
