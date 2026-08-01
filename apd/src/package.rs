@@ -184,6 +184,22 @@ fn apply_new_package_plugins(
             changed = true;
         }
     } else {
+        // Recovering from the broken empty-fingerprint state: the old known
+        // list was built while plugin_has_callback always failed, so packages
+        // installed during that period were never dispatched.  Preserve the
+        // old known set (intersected with current packages) so the NEXT
+        // refresh detects them as new instead of absorbing them silently.
+        if stored_fp.is_empty() && !fingerprint.is_empty() && !known.is_empty() {
+            info!(
+                "[package_plugin] recovering baseline: preserving {} known packages, will detect new on next scan",
+                known.len()
+            );
+            known.retain(|pkg| current_user_packages.contains(pkg));
+            write_plugin_known(&known_path, &fingerprint, &known)?;
+            return Ok(false);
+        }
+        // Fresh start or fingerprint change with valid prior state: treat all
+        // current packages as the new baseline.
         info!(
             "[package_plugin] building/rebuilding package baseline of {} packages",
             current_user_packages.len()
