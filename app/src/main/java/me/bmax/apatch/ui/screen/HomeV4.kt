@@ -484,7 +484,6 @@ private fun HeroStatusCard(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         VersionInfoColumn(
                             modifier = Modifier.weight(1f),
@@ -772,10 +771,12 @@ private fun ModeLabelChip(label: String, contentColor: Color) {
 private fun VersionInfoColumn(
     modifier: Modifier = Modifier,
     label: String,
-    value: String
+    value: String,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally
 ) {
     Column(
-        modifier = modifier
+        modifier = modifier,
+        horizontalAlignment = horizontalAlignment
     ) {
         Text(
             text = label,
