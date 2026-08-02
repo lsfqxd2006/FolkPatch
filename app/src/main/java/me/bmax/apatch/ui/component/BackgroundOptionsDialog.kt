@@ -69,8 +69,8 @@ fun BackgroundOptionsDialog(
     showBannerSection: Boolean = true,
     onSelectImage: () -> Unit,
     onClearImage: () -> Unit,
-    onRestoreDefault: () -> Unit,
-    restoreLabel: String,
+    onRestoreDefault: (() -> Unit)? = null,   // 改为可空，默认 null
+    restoreLabel: String = "",                 // 改为默认空字符串
     // 模块信息相关（可选，不提供时不显示模块信息区域）
     customInfoTitle: String = "",
     customInfoNameLabel: String = "",
@@ -157,18 +157,20 @@ fun BackgroundOptionsDialog(
                                         )
                                     }
                                     //  恢复默认壁纸按钮（和"选择图片"风格一致）
-                                    FilledTonalButton(
-                                        onClick = {
-                                            onDismiss()
-                                            onRestoreDefault()
-                                        },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(52.dp),
-                                        shape = RoundedCornerShape(14.dp),
-                                    ) {
-                                        Icon(Icons.Default.Restore, contentDescription = null, modifier = Modifier.size(20.dp))
-                                        Text(text = restoreLabel, modifier = Modifier.padding(start = 8.dp))
+                                    if (onRestoreDefault != null) {
+                                        FilledTonalButton(
+                                            onClick = {
+                                                onDismiss()
+                                                onRestoreDefault()
+                                            },
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(52.dp),
+                                            shape = RoundedCornerShape(14.dp),
+                                        ) {
+                                            Icon(Icons.Default.Restore, contentDescription = null, modifier = Modifier.size(20.dp))
+                                            Text(text = restoreLabel, modifier = Modifier.padding(start = 8.dp))
+                                        }
                                     }
                                     // 清除按钮 — Outlined 风格，仅有已存在图片时显示
                                     if (hasExisting) {
