@@ -74,6 +74,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Restore
+import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material.icons.automirrored.outlined.Wysiwyg
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -1173,17 +1174,15 @@ private fun TopBar(
         searchText = searchQuery,
         onSearchTextChange = onSearchQueryChange,
         onClearClick = { onSearchQueryChange("") },
-        leadingActions = {
+        dropdownContent = {
             androidx.compose.material3.IconButton(onClick = {
                 navigator.navigate(OnlineModuleScreenDestination)
             }) {
                 Icon(
-                    imageVector = Icons.Filled.Download,
+                    imageVector = Icons.Outlined.Storefront,
                     contentDescription = "Online Modules"
                 )
             }
-        },
-        dropdownContent = {
             androidx.compose.material3.IconButton(onClick = { showMenu = true }) {
                 Icon(Icons.Filled.MoreVert, contentDescription = "More")
                 WallpaperAwareDropdownMenu(
