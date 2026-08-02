@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Article
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Warning
@@ -35,6 +36,7 @@ import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,6 +59,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,11 +85,15 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ConfirmResult
 import me.bmax.apatch.ui.component.ExpressiveSwitch
+import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenu
+import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenuItem
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.component.splicedLazyColumnGroup
+import me.bmax.apatch.ui.theme.BackgroundConfig
 import me.bmax.apatch.ui.viewmodel.PluginViewModel
 import me.bmax.apatch.util.ui.APDialogBlurBehindUtils
 import me.bmax.apatch.util.ui.showToast
@@ -99,6 +106,9 @@ fun PluginScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val confirmDialog = rememberConfirmDialog()
+
+    val state by APApplication.apStateLiveData.observeAsState(APApplication.State.UNKNOWN_STATE)
+    val apdReady = (state == APApplication.State.ANDROIDPATCH_INSTALLING || state == APApplication.State.ANDROIDPATCH_INSTALLED || state == APApplication.State.ANDROIDPATCH_NEED_UPDATE)
 
     var pendingInstallUri by remember { mutableStateOf<Uri?>(null) }
     var configPlugin by remember { mutableStateOf<PluginViewModel.PluginInfo?>(null) }
@@ -157,16 +167,18 @@ fun PluginScreen(navigator: DestinationsNavigator) {
         },
         containerColor = Color.Transparent,
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = dropUnlessResumed {
-                    val intent = Intent(Intent.ACTION_GET_CONTENT)
-                    intent.type = "application/zip"
-                    intent.addCategory(Intent.CATEGORY_OPENABLE)
-                    installLauncher.launch(intent)
-                },
-                icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
-                text = { Text(stringResource(R.string.plugin_install)) },
-            )
+            if (apdReady) {
+                ExtendedFloatingActionButton(
+                    onClick = dropUnlessResumed {
+                        val intent = Intent(Intent.ACTION_GET_CONTENT)
+                        intent.type = "application/zip"
+                        intent.addCategory(Intent.CATEGORY_OPENABLE)
+                        installLauncher.launch(intent)
+                    },
+                    icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
+                    text = { Text(stringResource(R.string.plugin_install)) },
+                )
+            }
         },
     ) { paddingValues ->
         val listState = rememberLazyListState()
@@ -187,8 +199,13 @@ fun PluginScreen(navigator: DestinationsNavigator) {
                 )
             }
         ) {
-            if (viewModel.plugins.isEmpty() && !viewModel.isRefreshing) {
-                EmptyPlugins(viewModel.errorMessage)
+            if (!apdReady) {
+                ApdNotInstalled()
+            } else if (viewModel.plugins.isEmpty() && !viewModel.isRefreshing) {
+                EmptyPlugins(
+                    errorMessage = viewModel.errorMessage,
+                    modifier = Modifier.fillMaxSize(),
+                )
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -209,7 +226,17 @@ fun PluginScreen(navigator: DestinationsNavigator) {
                         PluginCard(
                             plugin = plugin,
                             onToggle = { enabled ->
-                                viewModel.setPluginEnabled(plugin.id, enabled)
+                                scope.launch {
+                                    val ok = viewModel.setPluginEnabled(plugin.id, enabled)
+                                    val msg = if (ok) {
+                                        context.getString(
+                                            if (enabled) R.string.plugin_state_enabled else R.string.plugin_state_disabled
+                                        )
+                                    } else {
+                                        context.getString(R.string.plugin_toggle_failed)
+                                    }
+                                    showToast(context, msg)
+                                }
                             },
                             onAction = {
                                 scope.launch {
@@ -320,13 +347,21 @@ fun PluginScreen(navigator: DestinationsNavigator) {
 
 @Composable
 private fun PluginSummaryCard(enabledCount: Int, totalCount: Int) {
+    val isWallpaperMode = BackgroundConfig.isCustomBackgroundEnabled
+    val opacity = if (isWallpaperMode) {
+        BackgroundConfig.customBackgroundOpacity.coerceAtLeast(0.35f)
+    } else {
+        1f
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(
+                alpha = if (isWallpaperMode) opacity else 1f
+            )
         )
     ) {
         Row(
@@ -370,6 +405,27 @@ private fun PluginCard(
     onViewLog: () -> Unit,
     onRemove: () -> Unit,
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    val isWallpaperMode = BackgroundConfig.isCustomBackgroundEnabled
+    val opacity = if (isWallpaperMode) {
+        BackgroundConfig.customBackgroundOpacity.coerceAtLeast(0.35f)
+    } else {
+        1f
+    }
+    val iconContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+        alpha = if (isWallpaperMode) (opacity + 0.1f).coerceAtMost(1f) else 1f
+    )
+    val buttonColors = if (isWallpaperMode) {
+        ButtonDefaults.filledTonalButtonColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+                alpha = (opacity + 0.3f).coerceAtMost(1f)
+            )
+        )
+    } else {
+        ButtonDefaults.filledTonalButtonColors()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -378,7 +434,7 @@ private fun PluginCard(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer
+                color = iconContainerColor
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Extension,
@@ -393,18 +449,17 @@ private fun PluginCard(
                     text = plugin.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Spacer(Modifier.height(2.dp))
-                val meta = buildList {
-                    add(plugin.id)
-                    if (plugin.version.isNotEmpty()) add(plugin.version)
+                val metadata = buildList {
+                    if (plugin.version.isNotEmpty()) add("v${plugin.version}")
                     if (plugin.author.isNotEmpty()) add(plugin.author)
-                }.joinToString(" 路 ")
-                if (meta.isNotEmpty()) {
+                }.joinToString(" · ")
+                if (metadata.isNotEmpty()) {
+                    Spacer(Modifier.height(2.dp))
                     Text(
-                        text = meta,
+                        text = metadata,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -412,20 +467,39 @@ private fun PluginCard(
                     )
                 }
             }
-            Spacer(Modifier.width(12.dp))
-            IconButton(onClick = onViewLog) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.Article,
-                    contentDescription = stringResource(R.string.plugin_log_title),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            IconButton(onClick = onRemove) {
-                Icon(
-                    imageVector = Icons.Outlined.Delete,
-                    contentDescription = stringResource(R.string.plugin_uninstall),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = stringResource(R.string.home_stats_more_options),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                WallpaperAwareDropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                ) {
+                    WallpaperAwareDropdownMenuItem(
+                        text = { Text(stringResource(R.string.plugin_log_title)) },
+                        leadingIcon = {
+                            Icon(Icons.AutoMirrored.Outlined.Article, contentDescription = null)
+                        },
+                        onClick = {
+                            showMenu = false
+                            onViewLog()
+                        },
+                    )
+                    WallpaperAwareDropdownMenuItem(
+                        text = { Text(stringResource(R.string.plugin_uninstall)) },
+                        leadingIcon = {
+                            Icon(Icons.Outlined.Delete, contentDescription = null)
+                        },
+                        onClick = {
+                            showMenu = false
+                            onRemove()
+                        },
+                    )
+                }
             }
             ExpressiveSwitch(checked = plugin.enabled, onCheckedChange = onToggle)
         }
@@ -436,7 +510,7 @@ private fun PluginCard(
                 text = pluginDescription(plugin),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
             )
         }
@@ -449,6 +523,7 @@ private fun PluginCard(
                     FilledTonalButton(
                         onClick = onQuickAction,
                         modifier = Modifier.weight(1f),
+                        colors = buttonColors,
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.PlayArrow,
@@ -466,6 +541,7 @@ private fun PluginCard(
                     FilledTonalButton(
                         onClick = onAction,
                         modifier = Modifier.weight(1f),
+                        colors = buttonColors,
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.PlayArrow,
@@ -480,6 +556,7 @@ private fun PluginCard(
                     FilledTonalButton(
                         onClick = onConfig,
                         modifier = Modifier.weight(1f),
+                        colors = buttonColors,
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Settings,
@@ -496,10 +573,10 @@ private fun PluginCard(
 }
 
 @Composable
-private fun EmptyPlugins(errorMessage: String?) {
+private fun EmptyPlugins(errorMessage: String?, modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier
+            .fillMaxWidth()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -521,6 +598,38 @@ private fun EmptyPlugins(errorMessage: String?) {
         Spacer(Modifier.height(8.dp))
         Text(
             text = stringResource(R.string.plugin_empty_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+/** Centered plain-text prompt shown when APD is not installed. */
+@Composable
+private fun ApdNotInstalled() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Extension,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(56.dp)
+        )
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.plugin_summary_title),
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.plugin_summary_not_installed),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
