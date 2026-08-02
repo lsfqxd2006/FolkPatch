@@ -592,8 +592,13 @@ private fun HeroStatusCard(
             },
             // 新增：恢复默认壁纸
             onRestoreDefault = {
-                BackgroundManager.provisionDefaultDashboardCardBg(context)
-                showToast(context, context.getString(R.string.dashboard_card_background_restored))
+                val restored = BackgroundManager.provisionDefaultDashboardCardBg(context)
+                val message = if (restored) {
+                    R.string.dashboard_card_background_restored
+                } else {
+                    R.string.dashboard_card_background_error
+                }
+                showToast(context, context.getString(message))
             },
             restoreLabel = stringResource(R.string.dashboard_card_background_restore)
         )

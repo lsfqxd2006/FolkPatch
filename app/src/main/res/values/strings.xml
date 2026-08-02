@@ -420,13 +420,13 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="home_more_menu_feedback_or_suggestion">Feedback or suggestion</string>
     <string name="home_more_menu_about">About</string>
     <string name="home_more_menu_document">Document</string>
-    <string name="home_more_menu_plugin">Plugins</string>
+    <string name="home_more_menu_music_play">Play Music</string>
+    <string name="home_more_menu_music_pause">Pause Music</string>
 
     <!-- Plugin strings -->
     <string name="plugin_title">Plugins</string>
     <string name="plugin_refresh">Refresh</string>
     <string name="plugin_summary_title">APD Lua Plugin</string>
-    <string name="plugin_summary_desc">%1$d enabled · %2$d total</string>
     <string name="plugin_summary_not_installed">APD not installed · plugins unavailable</string>
     <string name="plugin_state_enabled">Enabled</string>
     <string name="plugin_state_disabled">Disabled</string>
@@ -572,6 +572,12 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="online_kpm_download_start">Start downloading: %s</string>
     <string name="online_kpm_download_complete">Download complete: %s</string>
     <string name="online_kpm_download_notification">Downloading %s. Please check notification panel for progress and Download folder for completed file.</string>
+
+    <!-- Online Plugin Strings -->
+    <string name="online_plugin_title">Online Plugins</string>
+    <string name="online_plugin_download_start">Start downloading: %s</string>
+    <string name="online_plugin_download_complete">Download complete: %s</string>
+    <string name="online_plugin_download_notification">Downloading %s. Please check notification panel for progress and Download folder for completed file.</string>
 
     <!-- Online Script Strings -->
     <string name="online_script_title">Online Scripts</string>
