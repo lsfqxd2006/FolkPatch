@@ -590,6 +590,12 @@ private fun HeroStatusCard(
                     markdown = false,
                 )
             },
+            // 新增：恢复默认壁纸
+            onRestoreDefault = {
+                BackgroundManager.provisionDefaultDashboardCardBg(context)
+                showToast(context, context.getString(R.string.dashboard_card_background_restored))
+            },
+            restoreLabel = stringResource(R.string.dashboard_card_background_restore)
         )
     }
 }
