@@ -1389,26 +1389,6 @@ object BackgroundManager {
             return false
         }
     }
-    suspend fun ensureDashboardCardWallpaper(context: Context): Boolean {
-        return withContext(Dispatchers.IO) {
-            val uri = BackgroundConfig.dashboardCardBgUri
-            if (!uri.isNullOrEmpty()) {
-                return@withContext true
-            }
-            
-            Log.d(TAG, "仪表盘壁纸 URI 不存在，自动部署默认壁纸")
-            val appContext = context.applicationContext
-            val success = provisionDefaultDashboardCardBg(appContext)
-            
-            if (success) {
-                Log.d(TAG, "✅ 自动部署默认壁纸成功")
-            } else {
-                Log.e(TAG, "❌ 自动部署默认壁纸失败")
-            }
-            
-            success
-        }
-    }
     // Title Image
     suspend fun saveAndApplyTitleImage(context: Context, uri: Uri): Boolean {
         return try {

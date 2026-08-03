@@ -1926,36 +1926,15 @@ fun AppearanceSettingsContent(
                             stringResource(R.string.settings_dashboard_card_background_summary)
                         },
                         checked = BackgroundConfig.isDashboardCardBackgroundEnabled,
-                        onCheckedChange = { it ->
+                        onCheckedChange = {
+                            BackgroundConfig.setDashboardCardBackgroundEnabledState(it)
+                            BackgroundConfig.save(context)
                             if (it) {
-                                // 用户要打开开关
                                 scope.launch {
-                                    loadingDialog.show()
-                                    
-                                    val available = BackgroundManager.ensureDashboardCardWallpaper(
-                                        context.applicationContext
-                                    )
-                                    
-                                    loadingDialog.hide()
-                                    
-                                    if (available) {
-                                        BackgroundConfig.setDashboardCardBackgroundEnabledState(true)
-                                        BackgroundConfig.save(context)
-                                        refreshTheme.value = true
-                                        snackBarHost.showSnackbar(
-                                            message = context.getString(R.string.dashboard_card_background_restored)
-                                        )
-                                    } else {
-                                        snackBarHost.showSnackbar(
-                                            message = context.getString(R.string.dashboard_card_background_error)
-                                        )
+                                    if (BackgroundConfig.dashboardCardBgUri.isNullOrEmpty()) {
+                                        BackgroundManager.provisionDefaultDashboardCardBg(context)
                                     }
                                 }
-                            } else {
-                                // 用户关闭开关
-                                BackgroundConfig.setDashboardCardBackgroundEnabledState(false)
-                                BackgroundConfig.save(context)
-                                refreshTheme.value = true
                             }
                         },
                     )
