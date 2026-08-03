@@ -1365,6 +1365,7 @@ object BackgroundManager {
         try {
             clearOldFiles(context, DASHBOARD_CARD_BG_FILENAME)
             val targetFile = File(context.filesDir, "$DASHBOARD_CARD_BG_FILENAME.jpg")
+            FsUtils.prepareTargetFile(targetFile)
             context.resources.openRawResource(R.raw.dashboard_card_bg_default).use { input ->
                 FileOutputStream(targetFile).use { output ->
                     input.copyTo(output)
