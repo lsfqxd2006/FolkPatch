@@ -396,8 +396,6 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
                 .putString("custom_color", "indigo")
                 .putString("home_layout_style", "dashboard_ui")
                 .apply()
-            // 首次安装部署内置仪表盘卡片壁纸
-            me.bmax.apatch.ui.theme.BackgroundManager.provisionDefaultDashboardCardBg(this)
         }
         
         me.bmax.apatch.util.LauncherIconUtils.applySaved(this)
