@@ -147,7 +147,7 @@ object BackgroundConfig {
     // DashboardUI Hero Card Wallpaper
     var dashboardCardBgUri: String? by mutableStateOf(null)
         private set
-    var isDashboardCardBackgroundEnabled: Boolean by mutableStateOf(true)
+    var isDashboardCardBackgroundEnabled: Boolean by mutableStateOf(false)
         private set
     var dashboardCardBgDim: Float by mutableStateOf(0.3f)
         private set
@@ -822,7 +822,7 @@ object BackgroundConfig {
         val focusCardNightOpacity = prefs.getFloat(KEY_FOCUS_CARD_NIGHT_OPACITY, focusCardOpacity)
 
         val dashboardCardBg = prefs.getString(KEY_DASHBOARD_CARD_BG_URI, null)
-        val dashboardCardEnabled = prefs.getBoolean(KEY_DASHBOARD_CARD_BACKGROUND_ENABLED, true)
+        val dashboardCardEnabled = prefs.getBoolean(KEY_DASHBOARD_CARD_BACKGROUND_ENABLED, false)
         val dashboardCardDim = prefs.getFloat(KEY_DASHBOARD_CARD_BG_DIM, 0.3f)
         val dashboardCardDualDim = prefs.getBoolean(KEY_DASHBOARD_CARD_DUAL_DIM_ENABLED, true)
         val dashboardCardDayDim = prefs.getFloat(KEY_DASHBOARD_CARD_DAY_DIM, 0.15f)
@@ -994,7 +994,7 @@ object BackgroundConfig {
         focusCardBgNightOpacity = 1f
 
         dashboardCardBgUri = null
-        isDashboardCardBackgroundEnabled = true
+        isDashboardCardBackgroundEnabled = false
         dashboardCardBgDim = 0.3f
         isDashboardCardDualDimEnabled = true
         dashboardCardBgDayDim = 0.15f
@@ -1375,7 +1375,7 @@ object BackgroundManager {
                 .appendQueryParameter("t", System.currentTimeMillis().toString())
                 .build()
             BackgroundConfig.updateDashboardCardBgUri(fileUri.toString())
-            BackgroundConfig.setDashboardCardBackgroundEnabledState(true)
+            //BackgroundConfig.setDashboardCardBackgroundEnabledState(true)
             BackgroundConfig.setDashboardCardDualDimEnabledState(true)
             BackgroundConfig.setDashboardCardBgDayDimValue(0.15f)
             BackgroundConfig.setDashboardCardBgNightDimValue(0.5f)
