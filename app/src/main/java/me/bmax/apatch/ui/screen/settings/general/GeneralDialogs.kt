@@ -41,6 +41,114 @@ import me.bmax.apatch.util.ui.APDialogBlurBehindUtils
 import me.bmax.apatch.util.ui.showToast
 import java.io.File
 
+@Composable
+fun NewAppProfileModeDialog(
+    showDialog: MutableState<Boolean>,
+    initialMode: Int,
+    onModeChanged: (Int) -> Unit,
+) {
+    val context = LocalContext.current
+    val currentMode = remember(initialMode) { mutableIntStateOf(initialMode) }
+    val options = listOf(
+        0 to R.string.settings_new_app_profile_normal,
+        1 to R.string.settings_new_app_profile_root,
+        2 to R.string.settings_new_app_profile_exclude,
+    )
+
+    BasicAlertDialog(
+        onDismissRequest = { showDialog.value = false },
+        properties = DialogProperties(
+            decorFitsSystemWindows = true,
+            usePlatformDefaultWidth = false,
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .width(310.dp)
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(30.dp),
+            tonalElevation = AlertDialogDefaults.TonalElevation,
+            color = AlertDialogDefaults.containerColor,
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Text(
+                    text = stringResource(R.string.settings_new_app_profile_mode),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = AlertDialogDefaults.containerColor,
+                    tonalElevation = 2.dp
+                ) {
+                    Column {
+                        options.forEach { (mode, labelId) ->
+                            ListItem(
+                                headlineContent = { Text(stringResource(labelId)) },
+                                leadingContent = {
+                                    RadioButton(
+                                        selected = currentMode.intValue == mode,
+                                        onClick = null
+                                    )
+                                },
+                                modifier = Modifier.clickable {
+                                    val result = Natives.setNewAppProfileMode(mode)
+                                    if (result == 0L) {
+                                        currentMode.intValue = mode
+                                        onModeChanged(mode)
+                                        showDialog.value = false
+                                    } else {
+                                        showToast(context, context.getString(R.string.settings_new_app_profile_update_failed, result.toString()))
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { showDialog.value = false }) {
+                        Text(stringResource(id = android.R.string.cancel))
+                    }
+                }
+            }
+            val dialogWindowProvider = LocalView.current.parent as DialogWindowProvider
+            APDialogBlurBehindUtils.setupWindowBlurListener(dialogWindowProvider.window)
+        }
+    }
+}
+
+internal suspend fun loadNewAppProfileMode(prefs: SharedPreferences): Int = withContext(Dispatchers.IO) {
+    val prefsValue = runCatching {
+        prefs.getInt(APApplication.PREF_AUTO_EXCLUDE_NEW_APPS, 0)
+    }.getOrDefault(0)
+    val nativeMode = runCatching {
+        Natives.getNewAppProfileMode()
+    }.getOrDefault(prefsValue)
+    when {
+        // Native has an explicit non-zero value — trust it as authoritative
+        nativeMode != 0 -> {
+            if (nativeMode != prefsValue) {
+                prefs.edit { putInt(APApplication.PREF_AUTO_EXCLUDE_NEW_APPS, nativeMode) }
+            }
+            nativeMode
+        }
+        // Native returned 0 (default or read failure), but prefs has a saved preference — restore native
+        prefsValue != 0 -> {
+            runCatching { Natives.setNewAppProfileMode(prefsValue) }
+            prefsValue
+        }
+        // Both are 0 — true default
+        else -> 0
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DpiChooseDialog(showDialog: MutableState<Boolean>) {

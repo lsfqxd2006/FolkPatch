@@ -143,6 +143,18 @@ object Natives {
     }
 
     @FastNative
+    private external fun nativeSetNewAppProfileMode(superKey: String, mode: Int): Long
+    fun setNewAppProfileMode(mode: Int): Long {
+        return nativeSetNewAppProfileMode(APApplication.superKey, mode)
+    }
+
+    @FastNative
+    private external fun nativeGetNewAppProfileMode(superKey: String): Int
+    fun getNewAppProfileMode(): Int {
+        return nativeGetNewAppProfileMode(APApplication.superKey)
+    }
+
+    @FastNative
     private external fun nativeSuProfile(superKey: String, uid: Int): Profile
     fun suProfile(uid: Int): Profile {
         return nativeSuProfile(APApplication.superKey, uid)

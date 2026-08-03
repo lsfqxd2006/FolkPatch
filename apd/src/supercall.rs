@@ -16,11 +16,11 @@ const MINOR: c_long = 13;
 const PATCH: c_long = 1;
 
 const KSTORAGE_EXCLUDE_LIST_GROUP: i32 = 1;
+const KSTORAGE_AUTO_EXCLUDE_GROUP: i32 = 3;
 
 const __NR_SUPERCALL: c_long = 45;
 const SUPERCALL_SU: c_long = 0x1010;
 const SUPERCALL_KSTORAGE_WRITE: c_long = 0x1041;
-#[allow(dead_code)]
 const SUPERCALL_KSTORAGE_READ: c_long = 0x1042;
 const SUPERCALL_SU_GRANT_UID: c_long = 0x1100;
 const SUPERCALL_SU_REVOKE_UID: c_long = 0x1101;
@@ -114,7 +114,6 @@ fn sc_kstorage_write(
     }
 }
 
-#[allow(dead_code)]
 fn sc_kstorage_read(
     key: &CStr,
     gid: i32,
@@ -148,6 +147,23 @@ fn sc_set_ap_mod_exclude(key: &CStr, uid: i64, exclude: i32) -> c_long {
         0,
         size_of::<i32>() as i32,
     )
+}
+
+pub fn get_new_app_profile_mode() -> i32 {
+    let key = CStr::from_bytes_with_nul(b"su\0").expect("auto exclude key init failed");
+    let mut enabled = 0_i32;
+    let rc = sc_kstorage_read(
+        key,
+        KSTORAGE_AUTO_EXCLUDE_GROUP,
+        0,
+        &mut enabled as *mut i32 as *mut c_void,
+        0,
+        size_of::<i32>() as i32,
+    );
+    if rc < 0 {
+        return 0;
+    }
+    enabled
 }
 
 pub fn sc_su_get_safemode(key: &CStr) -> c_long {
@@ -267,15 +283,9 @@ fn convert_string_to_u8_array(s: &str) -> [u8; SUPERCALL_SCONTEXT_LEN] {
 fn convert_superkey(s: &Option<String>) -> Option<CString> {
     let result = s.as_ref().and_then(|s| CString::new(s.clone()).ok());
     if let Some(ref cs) = result {
-        info!(
-            "[diag:convert_superkey] input_present=true cstr_len={}",
-            cs.to_bytes().len()
-        );
+        info!("[diag:convert_superkey] input_present=true cstr_len={}", cs.to_bytes().len());
     } else {
-        warn!(
-            "[diag:convert_superkey] input_present={} result=None",
-            s.is_some()
-        );
+        warn!("[diag:convert_superkey] input_present={} result=None", s.is_some());
     }
     result
 }
@@ -378,11 +388,7 @@ pub fn privilege_apd_profile(superkey: &Option<String>) {
         scontext: convert_string_to_u8_array(all_allow_ctx),
     };
     if let Some(ref key) = key {
-        info!(
-            "[diag:privilege] key_len={} key_is_empty={}",
-            key.to_bytes().len(),
-            key.to_bytes().is_empty()
-        );
+        info!("[diag:privilege] key_len={} key_is_empty={}", key.to_bytes().len(), key.to_bytes().is_empty());
         let result = sc_su(key, &profile);
         info!("[privilege_apd_profile] result = {}", result);
     } else {
@@ -650,12 +656,7 @@ fn sc_pathhide_enable(key: &CStr, enable: bool) -> c_long {
             if enable { 1i64 } else { 0i64 },
         ) as c_long
     };
-    info!(
-        "[diag:sc_pathhide_enable] key_len={} enable={} rc={}",
-        key.to_bytes().len(),
-        enable,
-        rc
-    );
+    info!("[diag:sc_pathhide_enable] key_len={} enable={} rc={}", key.to_bytes().len(), enable, rc);
     rc
 }
 
@@ -672,11 +673,7 @@ fn sc_pathhide_add(key: &CStr, path: &CStr) -> c_long {
         ) as c_long
     };
     if rc < 0 {
-        warn!(
-            "[diag:sc_pathhide_add] path='{}' rc={}",
-            path.to_string_lossy(),
-            rc
-        );
+        warn!("[diag:sc_pathhide_add] path='{}' rc={}", path.to_string_lossy(), rc);
     }
     rc
 }
@@ -692,11 +689,7 @@ fn sc_pathhide_clear(key: &CStr) -> c_long {
             ver_and_cmd(SUPERCALL_PATHHIDE_CLEAR),
         ) as c_long
     };
-    info!(
-        "[diag:sc_pathhide_clear] key_len={} rc={}",
-        key.to_bytes().len(),
-        rc
-    );
+    info!("[diag:sc_pathhide_clear] key_len={} rc={}", key.to_bytes().len(), rc);
     rc
 }
 
@@ -767,12 +760,7 @@ fn sc_netisolate_enable(key: &CStr, enable: bool) -> c_long {
             if enable { 1i64 } else { 0i64 },
         ) as c_long
     };
-    info!(
-        "[diag:sc_netisolate_enable] key_len={} enable={} rc={}",
-        key.to_bytes().len(),
-        enable,
-        rc
-    );
+    info!("[diag:sc_netisolate_enable] key_len={} enable={} rc={}", key.to_bytes().len(), enable, rc);
     rc
 }
 
@@ -1001,19 +989,9 @@ fn sc_uts_set(key: &CStr, release: Option<&CStr>, version: Option<&CStr>) -> c_l
             version_ptr,
         ) as c_long
     };
-    let rel_str = release
-        .map(|r| r.to_string_lossy().into_owned())
-        .unwrap_or_default();
-    let ver_str = version
-        .map(|v| v.to_string_lossy().into_owned())
-        .unwrap_or_default();
-    info!(
-        "[diag:sc_uts_set] key_len={} release='{}' version='{}' rc={}",
-        key.to_bytes().len(),
-        rel_str,
-        ver_str,
-        rc
-    );
+    let rel_str = release.map(|r| r.to_string_lossy().into_owned()).unwrap_or_default();
+    let ver_str = version.map(|v| v.to_string_lossy().into_owned()).unwrap_or_default();
+    info!("[diag:sc_uts_set] key_len={} release='{}' version='{}' rc={}", key.to_bytes().len(), rel_str, ver_str, rc);
     rc
 }
 
@@ -1028,11 +1006,7 @@ fn sc_uts_reset(key: &CStr) -> c_long {
             ver_and_cmd(SUPERCALL_UTS_RESET),
         ) as c_long
     };
-    info!(
-        "[diag:sc_uts_reset] key_len={} rc={}",
-        key.to_bytes().len(),
-        rc
-    );
+    info!("[diag:sc_uts_reset] key_len={} rc={}", key.to_bytes().len(), rc);
     rc
 }
 

@@ -46,6 +46,7 @@ object SettingsRegistry {
             add(SettingEntry("general_folkx_animation_type", R.string.settings_folkx_animation_type, category = SettingCategory.GENERAL))
             add(SettingEntry("general_folkx_animation_speed", R.string.settings_folkx_animation_speed, category = SettingCategory.GENERAL))
             add(SettingEntry("general_predictive_back", R.string.settings_predictive_back, R.string.settings_predictive_back_summary, SettingCategory.GENERAL))
+            add(SettingEntry("general_new_app_profile", R.string.settings_new_app_profile_mode, category = SettingCategory.GENERAL))
             add(SettingEntry("general_app_list_scheme", R.string.settings_app_list_loading_scheme, category = SettingCategory.GENERAL))
             add(SettingEntry("general_selinux_mode", R.string.settings_selinux_mode, R.string.settings_selinux_mode_summary, SettingCategory.GENERAL))
             add(SettingEntry("general_global_namespace", R.string.settings_global_namespace_mode, R.string.settings_global_namespace_mode_summary, SettingCategory.GENERAL))

@@ -58,10 +58,6 @@ Get started quickly with our comprehensive documentation. Whether it's installat
 Plugins are lightweight extensions sitting between APM and KPM: no system file modification, no kernel injection — just Lua callbacks running in the `apd` lifecycle.
 
 - Storage: `/data/adb/plugins/<id>/`
-
-Plugins may declare `package_added(package_name, uid)` to choose a default profile for newly installed user apps. Return `root` or `exclude`; returning another value or omitting the callback leaves the app unchanged. The callback only runs for installed and enabled plugins, so the core does not automatically profile new apps when no such plugin is installed.
-
-Plugins are called only for user apps installed after the plugin was (re)activated. The core keeps a known-package baseline plus a plugin fingerprint: installing, enabling, disabling or removing a package plugin rebuilds the baseline, so existing apps are never auto-profiled; only apps installed after the baseline is established trigger the callback.
 - Package: zip containing `plugin.json` (manifest) + `main.lua` (entry script)
 - Features: enable/disable, quick actions, user config UI, persistent execution logs (exportable)
 - API: `exec`, `getprop`, `setprop`, `read_file`, `write_file`, `sysctl`, `chmod`, `mkdir`, `rm`, `start_daemon`, `get_config`, `set_config`
