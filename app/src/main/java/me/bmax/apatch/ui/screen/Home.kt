@@ -1084,6 +1084,18 @@ fun getSystemVersion(): String {
 }
 
 fun getDeviceInfo(): String {
+    // 添加信息卡片显示机型 优先展示商品名逻辑
+    try {
+        val clazz = Class.forName("android.os.SystemProperties")
+        val method = clazz.getMethod("get", String::class.java, String::class.java)
+        val marketName = method.invoke(null, "ro.product.marketname", "") as? String
+        if (!marketName.isNullOrEmpty()) {
+            return marketName
+        }
+    } catch (_: Exception) {
+        // 失败走原逻辑
+    }
+    //原逻辑 显示内部型号
     var manufacturer =
         Build.MANUFACTURER[0].uppercaseChar().toString() + Build.MANUFACTURER.substring(1)
     if (!Build.BRAND.equals(Build.MANUFACTURER, ignoreCase = true)) {
