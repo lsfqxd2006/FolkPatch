@@ -1057,7 +1057,7 @@ fun verifyAppSignature(validSignature: String): Boolean {
 
 fun getMountImplement(): String {
     if (isMagicMountEnabled()) {
-        return "Folk Mount API"
+        return apApp.getString(R.string.settings_magic_mount)
     }
     val metaModule = getMetaModuleImplement()
     if (metaModule != "None") {
