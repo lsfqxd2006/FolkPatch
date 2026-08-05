@@ -589,7 +589,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="dpi_apply_settings">应用</string>
     <string name="dpi_confirm_title">确认更改 DPI</string>
     <string name="dpi_confirm_message">将应用 DPI 从 %1$s 更改为 %2$s？</string>
-    <string name="settings_magic_mount">Folk 挂载服务</string>
+    <string name="settings_magic_mount">FolkPatch 内置挂载</string>
     <string name="settings_magic_mount_summary">启用内置的模块挂载系统</string>
     <string name="settings_new_app_profile_enabled">新装应用自动授权</string>
     <string name="settings_new_app_profile_enabled_summary">开启后，新安装的应用自动套用下方预设的授权模式</string>
