@@ -41,6 +41,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Android
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -60,6 +61,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material.icons.outlined.RestartAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -72,6 +74,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -156,7 +160,8 @@ fun HomeScreenV4(
     apState: APApplication.State
 ) {
     // 检查是否屏蔽更新通知
-    val kpStateResolved = if (kpState == APApplication.State.KERNELPATCH_NEED_UPDATE && apApp.isKernelPatchUpdateBlocked()) {
+    val isJailbreak = LocalHomeJailbreakState.current.isActive
+    val kpStateResolved = if (kpState == APApplication.State.KERNELPATCH_NEED_UPDATE && (apApp.isKernelPatchUpdateBlocked() || isJailbreak)) {
         APApplication.State.KERNELPATCH_INSTALLED
     } else {
         kpState
@@ -316,6 +321,11 @@ private fun HeroStatusCard(
     val isUpdate = kpState == APApplication.State.KERNELPATCH_NEED_UPDATE || 
         kpState == APApplication.State.KERNELPATCH_NEED_REBOOT
     val isUnknown = kpState == APApplication.State.UNKNOWN_STATE
+
+    val jailbreakState = LocalHomeJailbreakState.current
+    val isJailbreak = jailbreakState.isActive
+    val isPermissive = jailbreakState.isPermissive
+
     val wallpaperEnabled = BackgroundConfig.isDashboardCardBackgroundEnabled
     val wallpaperUri = BackgroundConfig.dashboardCardBgUri
     val hasWallpaper = wallpaperEnabled && !wallpaperUri.isNullOrEmpty()
@@ -358,6 +368,7 @@ private fun HeroStatusCard(
     // 颜色状态动画
     val containerColor by animateColorAsState(
         targetValue = when {
+            isJailbreak -> MaterialTheme.colorScheme.tertiaryContainer
             isWorking -> MaterialTheme.colorScheme.primary
             isUpdate -> MaterialTheme.colorScheme.secondary
             else -> MaterialTheme.colorScheme.errorContainer
@@ -368,7 +379,9 @@ private fun HeroStatusCard(
 
     val contentColor by animateColorAsState(
         targetValue = when {
-            isWorking -> if (hasWallpaper) Color.White else MaterialTheme.colorScheme.onPrimary
+            hasWallpaper && (isWorking || isJailbreak) -> Color.White
+            isJailbreak -> MaterialTheme.colorScheme.onTertiaryContainer
+            isWorking -> MaterialTheme.colorScheme.onPrimary
             isUpdate -> MaterialTheme.colorScheme.onSecondary
             else -> MaterialTheme.colorScheme.onErrorContainer
         },
@@ -379,8 +392,14 @@ private fun HeroStatusCard(
     // 渐变背景
     val gradientBrush = Brush.linearGradient(
         colors = listOf(
-            if (isWorking) containerColor.copy(alpha = breathAlpha) else containerColor,
-            containerColor.copy(alpha = 0.8f)
+            containerColor.copy(
+                alpha = (if (isWorking) breathAlpha else 1f) *
+                    if (BackgroundConfig.isCustomBackgroundEnabled) BackgroundConfig.customBackgroundOpacity else 1f
+            ),
+            containerColor.copy(
+                alpha = 0.8f *
+                    if (BackgroundConfig.isCustomBackgroundEnabled) BackgroundConfig.customBackgroundOpacity else 1f
+            )
         )
     )
 
@@ -388,7 +407,7 @@ private fun HeroStatusCard(
     val isFull = apState == APApplication.State.ANDROIDPATCH_INSTALLED
     val modeText = BackgroundConfig.getCustomBadgeText() ?: if (isFull) "Full" else "Half"
 
-    if (isWorking) {
+    if (isWorking || isJailbreak) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -429,7 +448,7 @@ private fun HeroStatusCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.CheckCircle,
+                                imageVector = if (isJailbreak) Icons.Filled.LockOpen else Icons.Filled.CheckCircle,
                                 contentDescription = null,
                                 modifier = Modifier.size(32.dp),
                                 tint = contentColor
@@ -439,15 +458,25 @@ private fun HeroStatusCard(
 
                             Column {
                                 Text(
-                                    text = if (classicEmojiEnabled) 
-                                        stringResource(R.string.home_working) + "😋" 
-                                    else 
-                                        stringResource(R.string.home_working),
+                                    text = if (isJailbreak) {
+                                        stringResource(R.string.settings_jailbreak_mode)
+                                    } else if (classicEmojiEnabled) {
+                                        stringResource(R.string.home_working) + "😋"
+                                    } else {
+                                        stringResource(R.string.home_working)
+                                    },
                                     style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.Bold
                                 )
 
-                                if (!classicEmojiEnabled) {
+                                if (isJailbreak) {
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        text = stringResource(R.string.settings_jailbreak_mode_summary),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = contentColor.copy(alpha = 0.85f)
+                                    )
+                                } else if (!classicEmojiEnabled) {
                                     Spacer(Modifier.height(4.dp))
                                     ModeLabelChip(label = modeText, contentColor = contentColor)
                                 }
@@ -456,22 +485,43 @@ private fun HeroStatusCard(
 
                         Spacer(Modifier.width(8.dp))
 
-                        OutlinedButton(
-                            onClick = { showUninstallDialog.value = true },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = contentColor
-                            ),
-                            border = androidx.compose.foundation.BorderStroke(
-                                1.dp,
-                                contentColor.copy(alpha = 0.5f)
-                            ),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Delete,
-                                contentDescription = stringResource(R.string.home_ap_cando_uninstall),
-                                modifier = Modifier.size(20.dp)
-                            )
+                        if (isJailbreak) {
+                            IconButton(
+                                onClick = jailbreakState::performPrimaryAction,
+                                enabled = !jailbreakState.isTriggering,
+                                colors = IconButtonDefaults.iconButtonColors(contentColor = contentColor),
+                            ) {
+                                if (jailbreakState.isTriggering) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(22.dp),
+                                        strokeWidth = 2.dp,
+                                        color = contentColor,
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Outlined.RestartAlt,
+                                        contentDescription = stringResource(R.string.reboot_soft),
+                                    )
+                                }
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = { showUninstallDialog.value = true },
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = contentColor
+                                ),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    1.dp,
+                                    contentColor.copy(alpha = 0.5f)
+                                ),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Delete,
+                                    contentDescription = stringResource(R.string.home_ap_cando_uninstall),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
 
@@ -514,7 +564,13 @@ private fun HeroStatusCard(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { navigator.navigate(InstallModeSelectScreenDestination) },
+                .clickable {
+                    if (isUnknown && isPermissive) {
+                        jailbreakState.performPrimaryAction()
+                    } else {
+                        navigator.navigate(InstallModeSelectScreenDestination)
+                    }
+                },
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
                 containerColor = finalContainerColor,
@@ -526,6 +582,11 @@ private fun HeroStatusCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 when {
+                    isJailbreak -> Icon(
+                        imageVector = Icons.Filled.LockOpen,
+                        contentDescription = null,
+                        modifier = Modifier.size(32.dp)
+                    )
                     isUpdate -> Icon(
                         imageVector = Icons.Outlined.SystemUpdate,
                         contentDescription = null,
@@ -545,9 +606,10 @@ private fun HeroStatusCard(
 
                 Spacer(Modifier.width(20.dp))
 
-                Column {
+                Column(Modifier.weight(1f)) {
                     Text(
                         text = when {
+                            isJailbreak -> stringResource(R.string.settings_jailbreak_mode)
                             isUpdate -> stringResource(R.string.home_kp_need_update)
                             isUnknown -> stringResource(R.string.home_install_unknown)
                             else -> stringResource(R.string.home_not_installed)
@@ -556,9 +618,22 @@ private fun HeroStatusCard(
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = stringResource(R.string.home_click_to_install),
+                        text = stringResource(
+                            if (isUnknown && isPermissive) R.string.jailbreak else R.string.home_click_to_install
+                        ),
                         style = MaterialTheme.typography.bodyMedium
                     )
+                }
+                if (isUnknown && isPermissive) {
+                    Spacer(Modifier.width(12.dp))
+                    if (jailbreakState.isTriggering) {
+                        CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.LockOpen,
+                            contentDescription = stringResource(R.string.jailbreak),
+                        )
+                    }
                 }
             }
         }
