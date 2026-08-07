@@ -538,6 +538,7 @@ private fun EmptyPlugins(errorMessage: String?, modifier: Modifier = Modifier) {
                 if (errorMessage != null) R.string.plugin_load_failed else R.string.plugin_empty
             ),
             style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))

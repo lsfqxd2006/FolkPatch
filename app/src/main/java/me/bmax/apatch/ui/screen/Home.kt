@@ -415,6 +415,7 @@ private fun RebootDialog(
                         Surface(
                             shape = RoundedCornerShape(16.dp),
                             color = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                             onClick = {
                                 onDismiss()
                                 onReboot(option.reason)
