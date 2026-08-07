@@ -69,7 +69,7 @@
     <string name="settings_global_namespace_mode_summary">所有 Root 会话使用全局挂载命名空间</string>
     <string name="settings_clear_super_key_dialog">确定要继续吗？</string>
     <string name="settings_sucompat">旧版 su 兼容</string>
-    <string name="settings_sucompat_summary">启用旧版 su 兼容(适用于 su 不生效)</string>
+    <string name="settings_sucompat_summary">启用旧版 su 兼容 (适用于 su 不生效)</string>
 
     <string name="home_learn_apatch">了解 FolkPatch</string>
     <string name="home_click_to_learn_apatch">了解 FolkPatch 的功能及使用方法</string>
@@ -169,7 +169,7 @@
     <string name="patch_item_skey">超级密钥</string>
     <string name="patch_custom_superkey">自定义超级密钥</string>
     <string name="patch_custom_superkey_summary">你仍可以设置超级密钥来管理 Root 以及内核，管理器已由内置签名授权</string>
-    <string name="patch_item_set_skey_label">超级密钥长度应为 8-63 个字符，包含数字和字母，不能包含特殊字符。</string>
+    <string name="patch_item_set_skey_label">超级密钥长度应为 8 - 63 个字符，包含数字和字母，不能包含特殊字符。</string>
     <string name="patch_confirm_superkey">确认超级密钥</string>
     <string name="patch_skey_mismatch">两次输入的超级密钥不一致</string>
 
@@ -190,8 +190,8 @@
     <string name="settings_selinux_current_mode">当前：%s</string>
     <string name="settings_selinux_mode_enforcing_summary">SELinux 完全强制执行访问规则</string>
     <string name="settings_selinux_mode_permissive_summary">SELinux 仅记录违规操作，不会拒绝</string>
-    <string name="msg_selinux_permissive_warning">切换为宽容模式将关闭SELinux强制拦截，权限违规行为仅记录日志而不会直接拒绝，设备安全性会下降，是否继续？</string>
-    <string name="msg_selinux_enforcing_confirm">切换为强制模式？SELinux将启用完整权限管控，拦截所有未授权访问行为。</string>
+    <string name="msg_selinux_permissive_warning">切换为宽容模式将关闭 SELinux 强制拦截，权限违规行为仅记录日志而不会直接拒绝，设备安全性会下降，是否继续？</string>
+    <string name="msg_selinux_enforcing_confirm">切换为强制模式？SELinux 将启用完整权限管控，拦截所有未授权访问行为。</string>
 
     <string name="home_device_info">设备</string>
     <string name="home_system_version">系统版本</string>
@@ -223,7 +223,7 @@
     <string name="kpm_args">参数</string>
 
     <string name="su_title">超级用户</string>
-    <string name="su_selinux_via_hook">通过 hook 绕过</string>
+    <string name="su_selinux_via_hook">通过 Hook 绕过</string>
     <string name="su_pkg_excluded_label">排除</string>
     <string name="su_batch_exclude_title">批量排除</string>
     <string name="su_batch_exclude_content">为全部非 Root 权限软件排除注入，请选择一个操作</string>
@@ -402,15 +402,15 @@ KernelPatch 需要修补 boot 镜像。
 
     <string name="home_dialog_auth_fail_title">认证失败</string>
     <string name="home_dialog_auth_fail_content">无法认证超级密钥，导致 FolkPatch 激活失败。  
-以下是认证失败的一些可能原因——请对号入座：
+以下是认证失败的一些可能原因 -- 请对号入座：
 \n1. 您根本没使用 KernelPatch 来修补 boot.img，或者忘了自己到底做了啥。
 \n2. 修补完的 boot.img 还躺在电脑里睡觉，根本没刷进设备。
 \n3. 超级密钥输错了，或者夹杂了神秘符号，比如来自外星文的字符。
 \n4. 您的设备可能并不兼容 FolkPatch 和 KernelPatch，强行折腾也是徒劳。
-\n5. 您可能搞了一些神秘操作——比如用了某些排除包名的模块把 FolkPatch 给屏蔽了，结果把自己整出局了。
+\n5. 您可能搞了一些神秘操作 -- 比如用了某些排除包名的模块把 FolkPatch 给屏蔽了，结果把自己整出局了。
 \n请先好好检查一遍，再试一次。如果问题依旧，欢迎到官方仓库的 issue 页面提问。  
 毕竟，有些问题可能纯粹是您自己亲手造成的！
-祝你好运 啊!顺带一提，您点击下面的文档按钮准没错！
+祝你好运啊！顺带一提，您点击下面的文档按钮准没错！
 </string>
 
     <string name="home_more_menu_feedback_or_suggestion">反馈或建议</string>
@@ -730,7 +730,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="apm_bulk_install_empty">未添加模块</string>
     <string name="apm_bulk_install_action">批量刷入</string>
     <string name="apm_bulk_install_log_title">批量刷入日志</string>
-    <string name="apm_bulk_install_log_start">开始批量刷入...</string>
+    <string name="apm_bulk_install_log_start">开始批量刷入…</string>
     <string name="apm_bulk_install_log_installing">正在安装 %1$s</string>
     <string name="apm_batch_install_full_process">完整批量安装流程</string>
     <string name="apm_batch_install_full_process_summary">使用完整流程进行系统模块批量安装</string>
@@ -913,9 +913,9 @@ KernelPatch 需要修补 boot 镜像。
     <string name="theme_source">来源</string>
     <string name="theme_store_download_failed">下载失败</string>
     <string name="theme_store_download">下载</string>
-    <string name="theme_store_search_hint">搜索主题...</string>
-    <string name="search_modules">搜索模块...</string>
-    <string name="search_scripts">搜索脚本...</string>
+    <string name="theme_store_search_hint">搜索主题…</string>
+    <string name="search_modules">搜索模块…</string>
+    <string name="search_scripts">搜索脚本…</string>
 
     <!-- Update Check Strings -->
     <string name="settings_auto_update_check">自动检查更新</string>
@@ -1059,11 +1059,11 @@ KernelPatch 需要修补 boot 镜像。
     <string name="theme_download_retry">重试</string>
     <string name="theme_download_apply">应用主题</string>
     <string name="theme_download_go_to_my_themes">我的主题</string>
-    <string name="theme_download_retrying">正在重试 (%d/3)...</string>
-    <string name="theme_download_preparing">准备下载...</string>
-    <string name="theme_download_downloading_file">正在下载主题文件...</string>
-    <string name="theme_download_downloading_image">正在下载预览图片...</string>
-    <string name="theme_download_finalizing">正在完成...</string>
+    <string name="theme_download_retrying">正在重试 (%d/3)…</string>
+    <string name="theme_download_preparing">准备下载…</string>
+    <string name="theme_download_downloading_file">正在下载主题文件…</string>
+    <string name="theme_download_downloading_image">正在下载预览图片…</string>
+    <string name="theme_download_finalizing">正在完成…</string>
 
     <!-- File Picker -->
     <string name="file_picker_permission_required">需要权限</string>
@@ -1191,7 +1191,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="webdav_password">密码</string>
     <string name="webdav_test_success">测试成功</string>
     <string name="webdav_test_failed">测试失败：%s</string>
-    <string name="webdav_uploading">正在上传到 WebDAV...</string>
+    <string name="webdav_uploading">正在上传到 WebDAV…</string>
     <string name="webdav_backup_success">WebDAV 备份成功</string>
     <string name="webdav_backup_failed">WebDAV 备份失败：%s</string>
     <string name="save">保存</string>
@@ -1321,7 +1321,7 @@ KernelPatch 需要修补 boot 镜像。
 
     <!-- 色彩标准 -->
     <string name="color_standard_md3_2021">MD3 2021</string>
-    <string name="color_standard_m3e_2025">M3e 2025</string>
+    <string name="color_standard_m3e_2025">M3E 2025</string>
     <string name="color_standard_label">色彩标准</string>
 
     <!-- 色彩风格 -->
