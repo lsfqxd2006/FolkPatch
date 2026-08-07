@@ -74,7 +74,7 @@
     <string name="settings_global_namespace_mode_summary">所有 Root 工作階段將會全域掛載命名空間</string>
     <string name="settings_clear_super_key_dialog">確定要繼續嗎？</string>
     <string name="settings_sucompat">舊版 su 相容性</string>
-    <string name="settings_sucompat_summary">啟用舊版 su 兼容(適用於 su 不生效)</string>
+    <string name="settings_sucompat_summary">啟用舊版 su 兼容 (適用於 su 不生效)</string>
 
     <string name="home_learn_apatch">深入了解 FolkPatch</string>
     <string name="home_click_to_learn_apatch">學習有關 FolkPatch 的功能及使用方式</string>
@@ -153,7 +153,7 @@
     <string name="patch_item_skey">超級密鑰</string>
     <string name="patch_custom_superkey">自訂超級密鑰</string>
     <string name="patch_custom_superkey_summary">你仍可以設定超級密鑰來管理 Root 以及內核，管理器已由內建簽名授權</string>
-    <string name="patch_item_set_skey_label">超級密鑰至少需要 ８ 個字元，並且同時包含數字和字母。</string>
+    <string name="patch_item_set_skey_label">超級密鑰至少需要 8 個字元，並且同時包含數字和字母。</string>
     <string name="patch_confirm_superkey">確認超級密鑰</string>
     <string name="patch_skey_mismatch">兩次輸入的超級密鑰不一致</string>
 
@@ -278,7 +278,7 @@
     <string name="apm_reboot_to_apply">重新啟動以應用變更</string>
     <string name="apm_changelog">「更新日誌」</string>
     <string name="apm_update">更新</string>
-    <string name="apm_downloading">正在下載 \"%s\" 模組……</string>
+    <string name="apm_downloading">正在下載 \"%s\" 模組…</string>
     <string name="apm_start_downloading">開始下載 %s</string>
     <string name="apm_new_version_available">點擊以安裝新版本的 %s。</string>
 
@@ -414,12 +414,12 @@ KernelPatch 需要修補 boot 映像檔。
 
     <string name="home_dialog_auth_fail_title">驗證失敗</string>
     <string name="home_dialog_auth_fail_content">無法認證超級密鑰，導致 FolkPatch 激活失敗。
-以下是認證失敗的一些可能原因——請對號入座：
+以下是認證失敗的一些可能原因 -- 請對號入座：
 \n1. 您根本沒使用 KernelPatch 來修補 boot.img，或者忘了自己到底做了啥。
 \n2. 修補完的 boot.img 還躺在電腦裡睡覺，根本沒刷進設備。
 \n3. 超級密鑰輸錯了，或者夾雜了神秘符號，比如來自外星文的字符。
 \n4. 您的設備可能並不兼容 FolkPatch 和 KernelPatch，強行折騰也是徒勞。
-\n5. 您可能搞了一些神秘操作——比如用了某些排除包名的模組把 FolkPatch 給屏蔽了，結果把自己整出局了。
+\n5. 您可能搞了一些神秘操作 -- 比如用了某些排除包名的模組把 FolkPatch 給屏蔽了，結果把自己整出局了。
 \n請先好好檢查一遍，再試一次。如果問題依舊，歡迎到官方倉庫的 issue 頁面提問。
 畢竟，有些問題可能純粹是您自己親手造成的！
 祝你好運啊！順帶一提，您點擊下面的文檔按鈕準沒錯！</string>
@@ -747,7 +747,7 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="apm_bulk_install_empty">未添加模組</string>
     <string name="apm_bulk_install_action">批次安裝</string>
     <string name="apm_bulk_install_log_title">批次安裝日誌</string>
-    <string name="apm_bulk_install_log_start">開始批次安裝...</string>
+    <string name="apm_bulk_install_log_start">開始批次安裝…</string>
     <string name="apm_bulk_install_log_installing">正在安裝 %1$s</string>
     <string name="apm_batch_install_full_process">完整批次安裝流程</string>
     <string name="apm_batch_install_full_process_summary">使用完整流程進行系統模組批次安裝</string>
@@ -928,7 +928,7 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="theme_source">來源</string>
     <string name="theme_store_download_failed">下載失敗</string>
     <string name="theme_store_download">下載</string>
-    <string name="theme_store_search_hint">搜尋主題...</string>
+    <string name="theme_store_search_hint">搜尋主題…</string>
 
     <!-- Update Check Strings -->
     <string name="settings_auto_update_check">自動檢查更新</string>
@@ -1141,7 +1141,7 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="webdav_password">密碼</string>
     <string name="webdav_test_success">測試成功</string>
     <string name="webdav_test_failed">測試失敗：%s</string>
-    <string name="webdav_uploading">正在上傳至 WebDAV...</string>
+    <string name="webdav_uploading">正在上傳至 WebDAV…</string>
     <string name="webdav_backup_success">WebDAV 備份成功</string>
     <string name="webdav_backup_failed">WebDAV 備份失敗：%s</string>
     <string name="save">儲存</string>
@@ -1184,8 +1184,8 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="script_library_log_saved">日誌已儲存至 %s</string>
     <string name="script_library_log_save_failed">儲存日誌失敗：%s</string>
 
-    <string name="search_modules">搜尋模組...</string>
-    <string name="search_scripts">搜尋腳本...</string>
+    <string name="search_modules">搜尋模組…</string>
+    <string name="search_scripts">搜尋腳本…</string>
 
     <!-- Umount Service -->
     <string name="settings_umount_service">Umount 服務</string>
@@ -1228,11 +1228,11 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="theme_download_retry">重試</string>
     <string name="theme_download_apply">應用主題</string>
     <string name="theme_download_go_to_my_themes">我的主題</string>
-    <string name="theme_download_retrying">正在重試 (%d/3)...</string>
-    <string name="theme_download_preparing">準備下載...</string>
-    <string name="theme_download_downloading_file">正在下載主題檔案...</string>
-    <string name="theme_download_downloading_image">正在下載預覽圖片...</string>
-    <string name="theme_download_finalizing">正在完成...</string>
+    <string name="theme_download_retrying">正在重試 (%d/3)…</string>
+    <string name="theme_download_preparing">準備下載…</string>
+    <string name="theme_download_downloading_file">正在下載主題檔案…</string>
+    <string name="theme_download_downloading_image">正在下載預覽圖片…</string>
+    <string name="theme_download_finalizing">正在完成…</string>
     <string name="settings_predictive_back">預測性返回手勢</string>
     <string name="settings_predictive_back_summary">啟用 Android 14+ 的預測性返回手勢動畫</string>
 
