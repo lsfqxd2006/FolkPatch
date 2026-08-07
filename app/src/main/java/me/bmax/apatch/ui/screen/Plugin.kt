@@ -570,6 +570,7 @@ private fun ApdNotInstalled() {
         Spacer(Modifier.height(16.dp))
         Text(
             text = stringResource(R.string.plugin_summary_title),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
         )
