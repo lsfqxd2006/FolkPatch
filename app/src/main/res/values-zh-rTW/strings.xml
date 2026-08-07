@@ -73,8 +73,8 @@
     <string name="settings_global_namespace_mode">全域命名空間模式</string>
     <string name="settings_global_namespace_mode_summary">所有 Root 工作階段將會全域掛載命名空間</string>
     <string name="settings_clear_super_key_dialog">確定要繼續嗎？</string>
-    <string name="settings_sucompat">舊版 su 相容性</string>
-    <string name="settings_sucompat_summary">啟用舊版su兼容(適用於su不生效)</string>
+    <string name="settings_sucompat">舊版 SU 相容性</string>
+    <string name="settings_sucompat_summary">啟用舊版 SU 兼容(適用於su不生效)</string>
 
     <string name="home_learn_apatch">深入了解 FolkPatch</string>
     <string name="home_click_to_learn_apatch">學習有關 FolkPatch 的功能及使用方式</string>
@@ -152,7 +152,7 @@
     <string name="patch_item_extra_event">事件：</string>
     <string name="patch_item_skey">超級密鑰</string>
     <string name="patch_custom_superkey">自訂超級密鑰</string>
-    <string name="patch_custom_superkey_summary">你仍可以設定超級密鑰來管理 Root 以及內核，管理器已由內建簽名授權</string>
+    <string name="patch_custom_superkey_summary">你仍可以設定超級密鑰來管理 ROOT 以及內核，管理器已由內建簽名授權</string>
     <string name="patch_item_set_skey_label">超級密鑰至少需要８個字元，並且同時包含數字和字母。</string>
     <string name="patch_confirm_superkey">確認超級密鑰</string>
     <string name="patch_skey_mismatch">兩次輸入的超級密鑰不一致</string>
@@ -214,9 +214,9 @@
     <string name="su_pkg_root_setting_title">超級使用者</string>
     <string name="su_pkg_root_setting_summary">啟用此選項為您的軟體啟動超級使用者，軟體能夠使用 SU 指令</string>
     <string name="su_pkg_normal_setting_title">常規模式</string>
-    <string name="su_pkg_normal_setting_summary">不授予 root 權限，應用在沒有超級用戶權限下運行。</string>
+    <string name="su_pkg_normal_setting_summary">不授予 ROOT 權限，應用在沒有超級用戶權限下運行。</string>
     <string name="su_batch_exclude_title">批次排除</string>
-    <string name="su_batch_exclude_content">為全部非 Root 權限應用程式排除注入，請選擇一個操作</string>
+    <string name="su_batch_exclude_content">為全部非 ROOT 權限應用程式排除注入，請選擇一個操作</string>
     <string name="su_exclude_btn">排除</string>
     <string name="su_exclude_reverse_btn">反排除</string>
 
@@ -330,7 +330,7 @@
     <string name="settings_fold_system_module">折疊系統模組</string>
     <string name="settings_fold_system_module_summary">點擊模組卡片展開/折疊操作按鈕</string>
     <string name="settings_simple_list_bottom_bar">簡約列表底欄</string>
-    <string name="settings_simple_list_bottom_bar_summary">模組操作使用純圖示按鈕樣式，靈感來自APatch</string>
+    <string name="settings_simple_list_bottom_bar_summary">模組操作使用純圖示按鈕樣式，靈感來自 APatch</string>
     <string name="settings_spliced_card_group">拼接卡片組</string>
     <string name="settings_spliced_card_group_summary">模組列表使用 M3E 連續拼接卡片樣式</string>
     <string name="settings_show_kpm_status_badge">顯示核心模組狀態徽章</string>
@@ -358,18 +358,18 @@
     <string name="folk_banner_custom_info_reset">重置</string>
     <string name="folk_banner_custom_info_saved">已儲存 %s 的模組自訂資訊</string>
     <string name="folk_banner_custom_info_reset_done">已重置 %s 的模組自訂資訊</string>
-    <string name="apm_banner_api_mode">API模式</string>
-    <string name="apm_banner_api_mode_summary">使用隨機圖API或本機目錄為模組提供橫幅</string>
-    <string name="apm_banner_api_source">設定API來源</string>
-    <string name="apm_banner_api_source_hint">輸入API網址或本機路徑</string>
-    <string name="apm_banner_api_source_saved">API來源已儲存</string>
+    <string name="apm_banner_api_mode">API 模式</string>
+    <string name="apm_banner_api_mode_summary">使用隨機圖 API 或本機目錄為模組提供橫幅</string>
+    <string name="apm_banner_api_source">設定 API 來源</string>
+    <string name="apm_banner_api_source_hint">輸入 API 網址或本機路徑</string>
+    <string name="apm_banner_api_source_saved">API 來源已儲存</string>
     <string name="apm_banner_api_source_not_configured">未設定</string>
-    <string name="apm_banner_api_url_configured">API網址已設定</string>
+    <string name="apm_banner_api_url_configured">API 網址已設定</string>
     <string name="apm_banner_local_dir_configured">本機目錄已設定</string>
     <string name="apm_banner_clear_cache">清除快取</string>
     <string name="apm_banner_cache_cleared">橫幅快取已清除</string>
-    <string name="apm_banner_api_config_title">設定API來源</string>
-    <string name="apm_banner_api_config_desc">輸入隨機圖API網址或本機目錄路徑，每個模組將獲得唯一的橫幅圖片。</string>
+    <string name="apm_banner_api_config_title">設定 API 來源</string>
+    <string name="apm_banner_api_config_desc">輸入隨機圖 API 網址或本機目錄路徑，每個模組將獲得唯一的橫幅圖片。</string>
     <string name="apm_banner_api_examples_title">範例：</string>
     <string name="apm_banner_api_examples">API: https://picsum.photos/800/400\n本機: /sdcard/Pictures/Banners</string>
     <!-- API 接口市場 -->
@@ -613,7 +613,7 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="settings_new_app_profile_root">超級使用者</string>
     <string name="settings_new_app_profile_exclude">排除</string>
     <string name="settings_hide_service">FolkPatch 隱藏</string>
-    <string name="settings_hide_service_summary">一定程度上隱藏Bootloader解鎖狀態</string>
+    <string name="settings_hide_service_summary">一定程度上隱藏 Bootloader 解鎖狀態</string>
     <string name="settings_app_title">應用程式標題</string>
     <string name="app_title_custom">自訂</string>
     <string name="settings_custom_app_title">設定應用程式名稱</string>
@@ -712,7 +712,11 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="kpm_autoload_add_kpm">新增 KPM</string>
     <string name="kpm_autoload_remove_kpm">移除</string>
     <string name="kpm_autoload_edit_kpm">編輯</string>
-    <string name="kpm_autoload_edit_dialog_title">編輯 KPM</string>    <string name="kpm_autoload_event_label">事件:</string>    <string name="kpm_autoload_args_label">參數:</string>    <string name="kpm_autoload_event_service">service</string>    <string name="kpm_autoload_event_post_fs_data">post-fs-data</string>
+    <string name="kpm_autoload_edit_dialog_title">編輯 KPM</string>    
+    <string name="kpm_autoload_event_label">事件:</string>    
+    <string name="kpm_autoload_args_label">參數:</string>    
+    <string name="kpm_autoload_event_service">service</string>    
+    <string name="kpm_autoload_event_post_fs_data">post-fs-data</string>
     <string name="kpm_autoload_kpm_list_title">KPM 模組列表</string>
     <string name="kpm_autoload_no_kpm_added">未新增 KPM 模組</string>
     <string name="kpm_autoload_kpm_path">KPM 路徑</string>
@@ -757,13 +761,13 @@ KernelPatch 需要修補 boot 映像檔。
 
     <!-- Welcome Guide -->
     <string name="welcome_title_1">歡迎使用 FolkPatch</string>
-    <string name="welcome_desc_1">FolkPatch 是一個主打高度自訂和便捷操作的 Root 管理器，基於 KernelPatch 構建。讓你的裝置，由你做主。</string>
+    <string name="welcome_desc_1">FolkPatch 是一個主打高度自訂和便捷操作的 ROOT 管理器，基於 KernelPatch 構建。讓你的裝置，由你做主。</string>
     <string name="welcome_title_2">高度自訂</string>
     <string name="welcome_desc_2">從主題顏色、背景、字型到音效、震動，一切都可以自由定製。前往主題商店探索更多風格！</string>
     <string name="welcome_title_3">核心功能控制</string>
-    <string name="welcome_desc_3">在設定頁面點擊右上角的調音圖示，即可進入核心功能控制：FolkPatch Hide、Umount、Path Hide 等進階功能。</string>
+    <string name="welcome_desc_3">在設定頁面點擊右上角的調音圖示，即可進入核心功能控制：FolkPatch 隱藏、Umount 服務、路徑隱藏等進階功能。</string>
     <string name="welcome_title_4">準備好了嗎？</string>
-    <string name="welcome_desc_4">現在你已經了解了基本功能。開始享受高度自由的 Root 管理體驗吧！</string>
+    <string name="welcome_desc_4">現在你已經了解了基本功能。開始享受高度自由的 ROOT 管理體驗吧！</string>
     <string name="welcome_prev">上一步</string>
     <string name="welcome_next">下一步</string>
     <string name="welcome_skip">跳過</string>
@@ -1016,11 +1020,11 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="settings_category_multimedia">多媒體</string>
     <string name="settings_category_general_summary">語言、更新、SELinux、系統調整</string>
     <string name="settings_category_appearance_summary">主題、顏色、佈局、背景、字型</string>
-    <string name="settings_category_behavior_summary">Web除錯、安裝行為、首頁顯示</string>
+    <string name="settings_category_behavior_summary">Web 除錯、安裝行為、首頁顯示</string>
     <string name="settings_category_security_summary">應用認證與模組操作驗證</string>
     <string name="settings_category_backup_summary">本地備份、雲端備份、WebDAV</string>
     <string name="settings_category_module_summary">模組資訊、排序、批次安裝</string>
-    <string name="settings_category_function_summary">FolkPatch隱藏、Umount服務</string>
+    <string name="settings_category_function_summary">FolkPatch 隱藏、Umount 服務</string>
     <string name="settings_category_multimedia_summary">背景音樂、音效、振動</string>
     <string name="settings_music_playback_control">播放控制</string>
     <!-- Theme Store Filter -->
@@ -1276,11 +1280,11 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="path_hide_uid_mode_enabled">UID 執行模式已啟用</string>
     <string name="path_hide_uid_mode_disabled">UID 執行模式已停用</string>
     <string name="path_hide_filter_system">過濾系統 UID</string>
-    <string name="path_hide_filter_system_summary">同時對 root 和系統進程（UID &lt; 10000）隱藏路徑</string>
+    <string name="path_hide_filter_system_summary">同時對 ROOT 和系統進程（UID &lt; 10000）隱藏路徑</string>
     <string name="path_hide_filter_system_enabled">系統 UID 過濾已啟用</string>
     <string name="path_hide_filter_system_disabled">系統 UID 過濾已停用</string>
     <string name="path_hide_filter_system_warning_title">警告</string>
-    <string name="path_hide_filter_system_warning_message">啟用後將同時對 root 和系統進程（UID &lt; 10000）隱藏路徑。這可能導致部分系統功能異常，請謹慎操作。</string>
+    <string name="path_hide_filter_system_warning_message">啟用後將同時對 ROOT 和系統進程（UID &lt; 10000）隱藏路徑。這可能導致部分系統功能異常，請謹慎操作。</string>
     <string name="path_hide_uid_applied">UID 白名單已套用</string>
     <string name="path_hide_select_apps">選擇應用</string>
     <string name="path_hide_no_apps_selected">未選擇應用</string>
@@ -1340,6 +1344,6 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="settings_jailbreak_failed">越獄模組載入失敗</string>
     <string name="jailbreak_no_patch">越獄模式下不允許修補。</string>
     <string name="jailbreak">越獄</string>
-    <string name="jailbreak_triggered">越獄已觸發，等待取得 root 後軟重啟。</string>
+    <string name="jailbreak_triggered">越獄已觸發，等待取得 ROOT 後軟重啟。</string>
     <string name="reboot_soft">軟重啟</string>
 </resources>

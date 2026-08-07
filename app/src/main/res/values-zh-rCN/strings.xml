@@ -66,23 +66,23 @@
     <string name="settings_app_language">语言</string>
     <string name="system_default">系统默认</string>
     <string name="settings_global_namespace_mode">全局命名空间模式</string>
-    <string name="settings_global_namespace_mode_summary">所有 root 会话使用全局挂载命名空间</string>
+    <string name="settings_global_namespace_mode_summary">所有 ROOT 会话使用全局挂载命名空间</string>
     <string name="settings_clear_super_key_dialog">确定要继续吗？</string>
-    <string name="settings_sucompat">旧版 su 兼容</string>
-    <string name="settings_sucompat_summary">启用旧版su兼容(适用于su不生效)</string>
+    <string name="settings_sucompat">旧版 SU 兼容</string>
+    <string name="settings_sucompat_summary">启用旧版 SU 兼容(适用于 SU 不生效)</string>
 
     <string name="home_learn_apatch">了解 FolkPatch</string>
     <string name="home_click_to_learn_apatch">了解 FolkPatch 的功能及使用方法</string>
-    <string name="settings_hide_apatch_card">隐藏"了解 FolkPatch"卡片</string>
-    <string name="settings_hide_apatch_card_summary">隐藏首页的"了解 FolkPatch"卡片</string>
+    <string name="settings_hide_apatch_card">隐藏“了解 FolkPatch”卡片</string>
+    <string name="settings_hide_apatch_card_summary">隐藏首页的“了解 FolkPatch”卡片</string>
     <string name="settings_grid_working_card_hide_check">隐藏状态图标</string>
     <string name="settings_grid_working_card_hide_check_summary">隐藏工作卡片上的对号或警告图标</string>
     <string name="settings_grid_working_card_hide_text">隐藏状态文字</string>
-    <string name="settings_grid_working_card_hide_text_summary">隐藏工作卡片上的"工作中"或"未安装"文字</string>
+    <string name="settings_grid_working_card_hide_text_summary">隐藏工作卡片上的“工作中”或“未安装”文字</string>
     <string name="settings_grid_working_card_hide_mode">隐藏工作模式</string>
-    <string name="settings_grid_working_card_hide_mode_summary">隐藏工作卡片上的"Full"或"Half"文字</string>
+    <string name="settings_grid_working_card_hide_mode_summary">隐藏工作卡片上的 “Full” 或 “Half” 文字</string>
 
-    <string name="settings_folkx_engine_title">FolkX动画引擎</string>
+    <string name="settings_folkx_engine_title">FolkX 动画引擎</string>
     <string name="settings_folkx_engine_summary">在顶层页面切换时使用丝滑的物理弹簧动画</string>
     <string name="settings_folkx_animation_type">动画类型</string>
     <string name="settings_folkx_animation_speed">动画速度</string>
@@ -189,9 +189,9 @@
     <string name="settings_selinux_mode_permissive">宽容模式 (宽松)</string>
     <string name="settings_selinux_current_mode">当前: %s</string>
     <string name="settings_selinux_mode_enforcing_summary">SELinux 完全强制执行访问规则</string>
-    <string name="settings_selinux_mode_permissive_summary">SELinux 仅记录违规操作,不会拒绝</string>
-    <string name="msg_selinux_permissive_warning">切换为宽容模式将关闭SELinux强制拦截，权限违规行为仅记录日志而不会直接拒绝，设备安全性会下降，是否继续？</string>
-    <string name="msg_selinux_enforcing_confirm">切换为强制模式？SELinux将启用完整权限管控，拦截所有未授权访问行为。</string>
+    <string name="settings_selinux_mode_permissive_summary">SELinux 仅记录违规操作，不会拒绝</string>
+    <string name="msg_selinux_permissive_warning">切换为宽容模式将关闭 SELinux 强制拦截，权限违规行为仅记录日志而不会直接拒绝，设备安全性会下降，是否继续？</string>
+    <string name="msg_selinux_enforcing_confirm">切换为强制模式？SELinux 将启用完整权限管控，拦截所有未授权访问行为。</string>
 
     <string name="home_device_info">设备</string>
     <string name="home_system_version">系统版本</string>
@@ -226,15 +226,15 @@
     <string name="su_selinux_via_hook">通过 hook 绕过</string>
     <string name="su_pkg_excluded_label">排除</string>
     <string name="su_batch_exclude_title">批量排除</string>
-    <string name="su_batch_exclude_content">为全部非ROOT权限软件排除注入,请选择一个操作</string>
+    <string name="su_batch_exclude_content">为全部非 ROOT 权限软件排除注入,请选择一个操作</string>
     <string name="su_exclude_btn">排除</string>
     <string name="su_exclude_reverse_btn">反排除</string>
     <string name="su_pkg_excluded_setting_title">排除修改</string>
     <string name="su_pkg_excluded_setting_summary">启用此选项将允许 FolkPatch 恢复此应用模块修改的任何文件。</string>
     <string name="su_pkg_root_setting_title">超级用户</string>
-    <string name="su_pkg_root_setting_summary">启用该选项为你的软件启动超级用户,软件能够使用SU命令</string>
+    <string name="su_pkg_root_setting_summary">启用该选项为你的软件启动超级用户,软件能够使用 SU 命令</string>
     <string name="su_pkg_normal_setting_title">常规模式</string>
-    <string name="su_pkg_normal_setting_summary">不授予 root 权限，应用在没有超级用户权限下运行。</string>
+    <string name="su_pkg_normal_setting_summary">不授予 ROOT 权限，应用在没有超级用户权限下运行。</string>
     <string name="su_show_system_apps">显示系统应用</string>
     <string name="su_hide_system_apps">隐藏系统应用</string>
     <string name="su_refresh">刷新</string>
@@ -318,11 +318,11 @@
     <string name="module_shortcut_type_action">Action</string>
     <string name="module_shortcut_icon_default">使用默认图标</string>
     <string name="module_shortcut_icon_select">选择图标</string>
-    <string name="settings_module_sort_optimization_summary">让系统模块带有WebUI和Action的模块排在前面</string>
+    <string name="settings_module_sort_optimization_summary">让系统模块带有 WebUI 和 Action 的模块排在前面</string>
     <string name="settings_fold_system_module">折叠系统模块</string>
     <string name="settings_fold_system_module_summary">点击模块卡片展开/折叠操作按钮</string>
     <string name="settings_simple_list_bottom_bar">简约列表底栏</string>
-    <string name="settings_simple_list_bottom_bar_summary">模块操作使用纯图标按钮样式，灵感来自APatch</string>
+    <string name="settings_simple_list_bottom_bar_summary">模块操作使用纯图标按钮样式，灵感来自 APatch</string>
     <string name="settings_spliced_card_group">拼接卡片组</string>
     <string name="settings_spliced_card_group_summary">模块列表使用 M3E 连续拼接卡片样式</string>
     <string name="settings_show_kpm_status_badge">显示内核模块状态徽章</string>
@@ -350,18 +350,18 @@
     <string name="folk_banner_custom_info_reset">重置</string>
     <string name="folk_banner_custom_info_saved">已保存 %s 的模块自定义信息</string>
     <string name="folk_banner_custom_info_reset_done">已重置 %s 的模块自定义信息</string>
-    <string name="apm_banner_api_mode">API模式</string>
-    <string name="apm_banner_api_mode_summary">使用随机图API或本地目录为模块提供横幅</string>
-    <string name="apm_banner_api_source">配置API源</string>
-    <string name="apm_banner_api_source_hint">输入API地址或本地路径</string>
-    <string name="apm_banner_api_source_saved">API源已保存</string>
+    <string name="apm_banner_api_mode">API 模式</string>
+    <string name="apm_banner_api_mode_summary">使用随机图 API 或本地目录为模块提供横幅</string>
+    <string name="apm_banner_api_source">配置 API 源</string>
+    <string name="apm_banner_api_source_hint">输入 API 地址或本地路径</string>
+    <string name="apm_banner_api_source_saved">API 源已保存</string>
     <string name="apm_banner_api_source_not_configured">未配置</string>
-    <string name="apm_banner_api_url_configured">API地址已配置</string>
+    <string name="apm_banner_api_url_configured">API 地址已配置</string>
     <string name="apm_banner_local_dir_configured">本地目录已配置</string>
     <string name="apm_banner_clear_cache">清除缓存</string>
     <string name="apm_banner_cache_cleared">横幅缓存已清除</string>
-    <string name="apm_banner_api_config_title">配置API源</string>
-    <string name="apm_banner_api_config_desc">输入随机图API地址或本地目录路径，每个模块将获得唯一的横幅图片。</string>
+    <string name="apm_banner_api_config_title">配置 API 源</string>
+    <string name="apm_banner_api_config_desc">输入随机图 API 地址或本地目录路径，每个模块将获得唯一的横幅图片。</string>
     <string name="apm_banner_api_examples_title">示例：</string>
     <string name="apm_banner_api_examples">API: https://picsum.photos/800/400\n本地: /sdcard/Pictures/Banners</string>
     <!-- API 接口市场 -->
@@ -602,7 +602,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="settings_new_app_profile_exclude">排除</string>
     <string name="settings_new_app_profile_update_failed">新应用配置更新失败：%s</string>
     <string name="settings_hide_service">FolkPatch 隐藏</string>
-    <string name="settings_hide_service_summary">一定程度上隐藏Bootloader锁解锁状态</string>
+    <string name="settings_hide_service_summary">一定程度上隐藏 Bootloader 锁解锁状态</string>
     <string name="settings_app_title">应用名称</string>
     <string name="app_title_custom">自定义</string>
     <string name="settings_custom_app_title">设置应用名字</string>
@@ -685,7 +685,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="settings_video_volume">视频音量</string>
     
     <string name="su_exclude_all_title">批量排除</string>
-    <string name="su_exclude_all_confirm">确定要将所有未授权Root的应用设为排除吗？</string>
+    <string name="su_exclude_all_confirm">确定要将所有未授权 ROOT 的应用设为排除吗？</string>
 
     <!-- 隐藏设定字符串 -->
     <string name="home_hide_su_path">隐藏 su 可执行文件路径</string>
@@ -699,11 +699,11 @@ KernelPatch 需要修补 boot 镜像。
     <string name="home_hide_zygisk_summary">在信息卡片中隐藏 Zygisk 实现信息</string>
     <string name="home_hide_mount_summary">在信息卡片中隐藏挂载实现信息</string>
     <!-- KPM AutoLoad Strings -->
-    <string name="kpm_autoload_title">KPM自动加载</string>
+    <string name="kpm_autoload_title">KPM 自动加载</string>
     <string name="kpm_autoload_enabled">启用自动加载</string>
     <string name="kpm_autoload_enabled_summary">开机时自动加载内核补丁模块</string>
-    <string name="kpm_autoload_json_config">JSON配置</string>
-    <string name="kpm_autoload_json_label">JSON配置</string>
+    <string name="kpm_autoload_json_config">JSON 配置</string>
+    <string name="kpm_autoload_json_label">JSON 配置</string>
     <string name="kpm_autoload_json_placeholder">{
   "enabled": true,
   "kpmEntries": [
@@ -714,14 +714,14 @@ KernelPatch 需要修补 boot 镜像。
     }
   ]
 }</string>
-    <string name="kpm_autoload_json_error">无效的JSON格式</string>
+    <string name="kpm_autoload_json_error">无效的 JSON 格式</string>
     <string name="kpm_autoload_json_helper">输入有效的 kpmEntries JSON，路径必须指向 /data/adb/fp/kpms/autoload 下已导入的文件</string>
     <string name="kpm_autoload_save">保存配置</string>
     <string name="kpm_autoload_save_confirm">保存自动加载配置？</string>
     <string name="kpm_autoload_save_success">配置保存成功</string>
     <string name="kpm_autoload_save_failed">配置保存失败</string>
     <string name="kpm_autoload_visual_mode">可视化模式</string>
-    <string name="kpm_autoload_json_mode">JSON模式</string>
+    <string name="kpm_autoload_json_mode">JSON 模式</string>
 
     <!-- APM Bulk Install Strings -->
     <string name="apm_bulk_install_title">系统模块批量安装</string>
@@ -740,7 +740,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="apm_bulk_install_first_use_text">这个功能允许你一次性刷入多个模块,属于快速刷入,适合刷一些过程中没有涉及按键操作的模块,涉及点按音量键等操作的请去设置启用完整流程刷入模式</string>
     <string name="apm_bulk_install_remove">移除</string>
     <string name="apm_first_use_title">欢迎使用系统模块</string>
-    <string name="apm_first_use_text">欢迎使用系统模块，这里使用的是兼容Magisk生态的模块，点击右下角的按钮可以安装模块，你也可以使用顶部的安装器批量安装模块，还提供了一个功能一键备份全部模块，但是注意这种方案不一定适用全部模块，还是自己多加备份</string>
+    <string name="apm_first_use_text">欢迎使用系统模块，这里使用的是兼容 Magisk 生态的模块，点击右下角的按钮可以安装模块，你也可以使用顶部的安装器批量安装模块，还提供了一个功能一键备份全部模块，但是注意这种方案不一定适用全部模块，还是自己多加备份</string>
 
     <!-- Welcome Guide -->
     <string name="welcome_title_1">欢迎使用 FolkPatch</string>
@@ -748,7 +748,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="welcome_title_2">高度自定义</string>
     <string name="welcome_desc_2">从主题颜色、背景、字体到音效、震动，一切都可以自由定制。前往主题商店探索更多风格！</string>
     <string name="welcome_title_3">内核功能控制</string>
-    <string name="welcome_desc_3">在设置页面点击右上角的调音图标，即可进入内核功能控制：FolkPatch Hide、Umount、Path Hide 等高级功能。</string>
+    <string name="welcome_desc_3">在设置页面点击右上角的调音图标，即可进入内核功能控制：FolkPatch 隐藏、Umount 服务、路径隐藏等高级功能。</string>
     <string name="welcome_title_4">准备好了吗？</string>
     <string name="welcome_desc_4">现在你已经了解了基本功能。开始享受高度自由的 Root 管理体验吧！</string>
     <string name="welcome_prev">上一步</string>
@@ -756,26 +756,30 @@ KernelPatch 需要修补 boot 镜像。
     <string name="welcome_skip">跳过</string>
     <string name="welcome_got_it">开始使用</string>
 
-    <string name="kpm_autoload_add_kpm">添加KPM</string>
+    <string name="kpm_autoload_add_kpm">添加 KPM</string>
     <string name="kpm_autoload_remove_kpm">删除</string>
     <string name="kpm_autoload_edit_kpm">编辑</string>
-    <string name="kpm_autoload_edit_dialog_title">编辑 KPM</string>    <string name="kpm_autoload_event_label">事件:</string>    <string name="kpm_autoload_args_label">参数:</string>    <string name="kpm_autoload_event_service">service</string>    <string name="kpm_autoload_event_post_fs_data">post-fs-data</string>
+    <string name="kpm_autoload_edit_dialog_title">编辑 KPM</string>    
+    <string name="kpm_autoload_event_label">事件:</string>    
+    <string name="kpm_autoload_args_label">参数:</string>    
+    <string name="kpm_autoload_event_service">service</string>    
+    <string name="kpm_autoload_event_post_fs_data">post-fs-data</string>
     <string name="kpm_autoload_kpm_list_title">内核补丁模块列表</string>
     <string name="kpm_autoload_no_kpm_added">未添加内核补丁模块</string>
-    <string name="kpm_autoload_kpm_path">KPM路径</string>
+    <string name="kpm_autoload_kpm_path">KPM 路径</string>
     <string name="kpm_autoload_file_not_found">文件未找到</string>
-    <string name="kpm_autoload_select_kpm_file">选择KPM文件</string>
-    <string name="kpm_autoload_first_time_title">关于KPM自动加载</string>
-    <string name="kpm_autoload_first_time_message">这个功能可以让你开机自动临时加载配置文件的全部KPM，这种方案相比于直接嵌入内核更加方便。
+    <string name="kpm_autoload_select_kpm_file">选择 KPM 文件</string>
+    <string name="kpm_autoload_first_time_title">关于 KPM 自动加载</string>
+    <string name="kpm_autoload_first_time_message">这个功能可以让你开机自动临时加载配置文件的全部 KPM，这种方案相比于直接嵌入内核更加方便。
 
-例如，功能为防止分区被修改的KPM，这种KPM只能临时加载使用，但是嵌入会导致不开机。或者你不想破坏BOOT分区就可以使用这个配置快速载入模块。
+例如，功能为防止分区被修改的 KPM，这种 KPM 只能临时加载使用，但是嵌入会导致不开机。或者你不想破坏 BOOT 分区就可以使用这个配置快速载入模块。
 
 需要确保软件完全退出进入才会执行命令，一般来说开机进入也是会加载的，管理器黑屏一段时间属于正常现象,使用的是纯后台的记加载方案,记得手动上滑刷新看看是否正确加载！</string>
     <string name="kpm_autoload_first_time_confirm">知道了</string>
     <string name="kpm_autoload_do_not_show_again">不再显示</string>
 
     <string name="kpm_page_first_time_title">警告</string>
-    <string name="kpm_page_first_time_message">内核模块是直接修改Boot的实现，它不像系统模块一样有很好的救砖机制，出问题只能进入Fastboot去修复。建议先加载模块没有问题再嵌入到Boot。如果是只能加载使用的模块，可以尝试使用自动内核补丁模块加载功能。如果你不了解内核模块，请不要使用本功能！</string>
+    <string name="kpm_page_first_time_message">内核模块是直接修改 Boot 的实现，它不像系统模块一样有很好的救砖机制，出问题只能进入 Fastboot 去修复。建议先加载模块没有问题再嵌入到 Boot。如果是只能加载使用的模块，可以尝试使用自动内核补丁模块加载功能。如果你不了解内核模块，请不要使用本功能！</string>
     <!-- Module Backup/Restore Strings -->
     <string name="apm_copy_list_title">复制列表</string>
     <string name="apm_copy_list_success">模块列表已复制</string>
@@ -788,8 +792,8 @@ KernelPatch 需要修补 boot 镜像。
     <string name="backup_dir_open_failed">打开备份目录失败</string>
     <string name="auto_backup_failed">自动备份失败: %s</string>
     <string name="auto_backup_success">自动备份成功: %s</string>
-    <string name="settings_auto_backup_boot">自动备份Boot</string>
-    <string name="settings_auto_backup_boot_summary">自动将Boot备份到本地存储 (Downloads/FolkPatch/BootBackups)</string>
+    <string name="settings_auto_backup_boot">自动备份 Boot</string>
+    <string name="settings_auto_backup_boot_summary">自动将 Boot 备份到本地存储 (Downloads/FolkPatch/BootBackups)</string>
 
     <!-- Home Layout Strings -->
     <string name="settings_home_layout_style">首页布局样式</string>
@@ -800,7 +804,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="settings_home_layout_circle">CircleUI</string>
     <string name="settings_home_layout_dashboard_pro">DashboardUI</string>
     <string name="unofficial_version_title">非官方版本</string>
-    <string name="unofficial_version_message">您正在使用的 FolkPatch 管理器为第三方版本，可能会造成财产损失，请下载正版APP使用！</string>
+    <string name="unofficial_version_message">您正在使用的 FolkPatch 管理器为第三方版本，可能会造成财产损失，请下载正版 APP 使用！</string>
     <string name="go_to_github">前往 Github</string>
     <string name="settings_save_theme">保存主题</string>
     <string name="settings_import_theme">导入主题</string>
@@ -1014,7 +1018,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="settings_category_security_summary">应用认证与模块操作验证</string>
     <string name="settings_category_backup_summary">本地备份、云端备份、WebDAV</string>
     <string name="settings_category_module_summary">模块信息、排序、批量安装</string>
-    <string name="settings_category_function_summary">FolkPatch隐藏、Umount服务</string>
+    <string name="settings_category_function_summary">FolkPatch 隐藏、Umount 服务</string>
     <string name="settings_category_multimedia_summary">背景音乐、音效、振动</string>
     <string name="settings_music_playback_control">播放控制</string>
 
@@ -1287,11 +1291,11 @@ KernelPatch 需要修补 boot 镜像。
     <string name="path_hide_uid_mode_enabled">UID 执行模式已启用</string>
     <string name="path_hide_uid_mode_disabled">UID 执行模式已禁用</string>
     <string name="path_hide_filter_system">过滤系统 UID</string>
-    <string name="path_hide_filter_system_summary">同时对 root 和系统进程（UID &lt; 10000）隐藏路径</string>
+    <string name="path_hide_filter_system_summary">同时对 ROOT 和系统进程（UID &lt; 10000）隐藏路径</string>
     <string name="path_hide_filter_system_enabled">系统 UID 过滤已启用</string>
     <string name="path_hide_filter_system_disabled">系统 UID 过滤已禁用</string>
     <string name="path_hide_filter_system_warning_title">警告</string>
-    <string name="path_hide_filter_system_warning_message">启用后将同时对 root 和系统进程（UID &lt; 10000）隐藏路径。这可能导致部分系统功能异常，请谨慎操作。</string>
+    <string name="path_hide_filter_system_warning_message">启用后将同时对 ROOT 和系统进程（UID &lt; 10000）隐藏路径。这可能导致部分系统功能异常，请谨慎操作。</string>
     <string name="path_hide_uid_applied">UID 白名单已应用</string>
     <string name="path_hide_select_apps">选择应用</string>
     <string name="path_hide_no_apps_selected">未选择应用</string>
@@ -1344,6 +1348,6 @@ KernelPatch 需要修补 boot 镜像。
     <string name="settings_jailbreak_failed">越狱模块加载失败</string>
     <string name="jailbreak_no_patch">越狱模式下不允许修补。</string>
     <string name="jailbreak">越狱</string>
-    <string name="jailbreak_triggered">越狱已触发，等待获取 root 后软重启。</string>
+    <string name="jailbreak_triggered">越狱已触发，等待获取 ROOT 后软重启。</string>
     <string name="reboot_soft">软重启</string>
 </resources>
