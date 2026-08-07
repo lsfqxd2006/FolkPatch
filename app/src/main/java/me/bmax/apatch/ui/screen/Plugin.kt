@@ -538,6 +538,7 @@ private fun EmptyPlugins(errorMessage: String?, modifier: Modifier = Modifier) {
                 if (errorMessage != null) R.string.plugin_load_failed else R.string.plugin_empty
             ),
             style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
@@ -569,6 +570,7 @@ private fun ApdNotInstalled() {
         Spacer(Modifier.height(16.dp))
         Text(
             text = stringResource(R.string.plugin_summary_title),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
         )
