@@ -283,7 +283,7 @@
     <string name="hide_apatch_dialog_summary">这将作为显示在启动器中的新应用名称</string>
     <string name="hide_apatch_manager_failure">隐藏失败。请报告此错误！</string>
 
-    <string name="setting_reset_su_path">重置 su 路径</string>
+    <string name="setting_reset_su_path">重置 SU 路径</string>
     <string name="setting_reset_su_new_path">新完整路径</string>
 
     <string name="apm_webui_open">打开</string>
