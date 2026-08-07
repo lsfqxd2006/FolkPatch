@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
+import me.bmax.apatch.apApp
 import me.bmax.apatch.ui.component.chart.ModulePieChart
 import me.bmax.apatch.ui.component.chart.rememberPieSliceDataFromCounts
 import me.bmax.apatch.ui.component.chart.SystemAreaChart
@@ -50,7 +52,16 @@ fun HomeScreenStats(
     val uiState by viewModel.dashboardUiState.collectAsStateWithLifecycle()
     val timeSeries by viewModel.timeSeriesData.collectAsStateWithLifecycle()
 
-    val showCoreCards = kpState != APApplication.State.UNKNOWN_STATE
+    val isJailbreak = LocalHomeJailbreakState.current.isActive
+
+    // Check if update notification is blocked (including when jailbreak mode is active)
+    val kpState = if (kpState == APApplication.State.KERNELPATCH_NEED_UPDATE && (apApp.isKernelPatchUpdateBlocked() || isJailbreak)) {
+        APApplication.State.KERNELPATCH_INSTALLED
+    } else {
+        kpState
+    }
+
+    val showCoreCards = kpState != APApplication.State.UNKNOWN_STATE || isJailbreak
     if (showCoreCards) {
         LaunchedEffect(Unit) {
             AppData.DataRefreshManager.ensureCountsLoaded()
@@ -73,7 +84,7 @@ fun HomeScreenStats(
     }
 
     val hideApatchCard = APApplication.sharedPreferences.getBoolean("hide_apatch_card", false)
-    val isInstalled = kpState != APApplication.State.UNKNOWN_STATE
+    val isInstalled = kpState != APApplication.State.UNKNOWN_STATE || isJailbreak
     val statsTopLayout = APApplication.sharedPreferences.getString("stats_top_layout", "list") ?: "list"
     val useGridTop = statsTopLayout == "grid"
     val isWallpaperMode = BackgroundConfig.isCustomBackgroundEnabled &&
@@ -653,6 +664,7 @@ private fun StatsGridTopSection(
     showUninstallDialog: MutableState<Boolean>
 ) {
     val managerVersion = Version.getManagerVersion()
+    val isJailbreak = LocalHomeJailbreakState.current.isActive
 
     Row(
         modifier = Modifier
@@ -684,9 +696,15 @@ private fun StatsGridTopSection(
         ) {
             SmallInfoCard(
                 modifier = Modifier.weight(1f),
-                title = stringResource(R.string.kernel_patch),
-                value = if (kpState != APApplication.State.UNKNOWN_STATE) "${Version.installedKPVString()} (${managerVersion.second})" else "N/A",
-                icon = Icons.Outlined.Extension,
+                title = if (isJailbreak) stringResource(R.string.settings_jailbreak_mode) else stringResource(R.string.kernel_patch),
+                value = if (isJailbreak) {
+                    stringResource(R.string.home_working)
+                } else if (kpState != APApplication.State.UNKNOWN_STATE) {
+                    "${Version.installedKPVString()} (${managerVersion.second})"
+                } else {
+                    "N/A"
+                },
+                icon = if (isJailbreak) Icons.Filled.LockOpen else Icons.Outlined.Extension,
                 onClick = {
                     if (kpState == APApplication.State.KERNELPATCH_NEED_UPDATE) {
                         navigator.navigate(InstallModeSelectScreenDestination)

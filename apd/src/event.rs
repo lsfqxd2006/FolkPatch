@@ -205,6 +205,7 @@ pub fn on_post_data_fs(superkey: Option<String>) -> Result<()> {
     supercall::autoload_kpm_modules(&superkey, "post-fs-data");
 
     init_load_su_path(&superkey);
+    supercall::apply_sucompat(&superkey);
 
     let mut sepol = get_policy_main(&["magiskpolicy".to_string(), "--live".to_string()])?;
     sepol.magisk_rules();
@@ -361,6 +362,8 @@ pub fn on_services(superkey: Option<String>) -> Result<()> {
     let key_len = superkey.as_ref().map(|s| s.len()).unwrap_or(0);
     info!("[diag:services] ENTER superkey_present={} key_len={}", superkey.is_some(), key_len);
 
+    supercall::apply_sucompat(&superkey);
+
     if Path::new(defs::UTS_SPOOF_RETRY_FILE).exists() {
         info!("Retrying deferred UTS spoof apply from services stage");
         supercall::apply_uts_spoof(&superkey);
@@ -404,6 +407,8 @@ pub fn on_boot_completed(superkey: Option<String>) -> Result<()> {
     let key_len = superkey.as_ref().map(|s| s.len()).unwrap_or(0);
     info!("[diag:boot_completed] ENTER superkey_present={} key_len={}", superkey.is_some(), key_len);
 
+    supercall::apply_sucompat(&superkey);
+
     // Clear UTS spoof boot safety flag — boot completed successfully
     if Path::new(defs::UTS_SPOOF_BOOT_PENDING).exists() {
         let _ = std::fs::remove_file(defs::UTS_SPOOF_BOOT_PENDING);
@@ -444,6 +449,8 @@ pub fn on_manager_boot_completed(superkey: Option<String>) -> Result<()> {
     });
 
     info!("[diag:manager_boot] superkey_present={} key_len_after={}", superkey.is_some(), superkey.as_ref().map(|s| s.len()).unwrap_or(0));
+
+    supercall::apply_sucompat(&superkey);
 
     if Path::new(defs::UTS_SPOOF_BOOT_PENDING).exists() {
         let _ = std::fs::remove_file(defs::UTS_SPOOF_BOOT_PENDING);
@@ -556,6 +563,51 @@ pub fn start_uid_listener() -> Result<()> {
             tx.send(true)?;
         }
     }
+
+    Ok(())
+}
+
+/// Emulate a system reboot: restart the Android framework (`stop` / `start`)
+/// and re-apply the service stage. Used by jailbreak mode so that a runtime-loaded
+/// `kernelpatch.ko` stays active (a full reboot would drop it).
+pub fn soft_reboot(superkey: Option<String>) -> Result<()> {
+    use std::process::Command;
+
+    // Detach from the caller (app root shell) first: `stop` tears down the
+    // framework including the app/zygote tree this process was spawned from, so
+    // without daemonizing the `start` below would never be reached.
+    utils::daemonize()?;
+
+    info!("emulating soft reboot!");
+    utils::switch_mnt_ns(1)?;
+    std::env::set_current_dir("/").with_context(|| "failed to chdir to /")?;
+
+    if let Err(e) = crate::resetprop::set_prop("sys.boot_completed", "0") {
+        warn!("reset boot completed failed: {e}");
+    }
+
+    info!("stop");
+    let status = Command::new("stop").status().context("stop failed")?;
+    if !status.success() {
+        warn!("stop exited with status: {status}");
+    }
+
+    info!("post-fs-data");
+    // Never abort the soft reboot here: the framework must always be restarted.
+    // The daemonized stdin (dev null) keeps the supercall/truncate redirects from
+    // blocking, so re-applying the boot stages is safe.
+    if let Err(e) = on_post_data_fs(superkey.clone()) {
+        warn!("post-fs-data failed during soft reboot: {e:#}");
+    }
+
+    info!("start");
+    let status = Command::new("start").status().context("start failed")?;
+    if !status.success() {
+        warn!("start exited with status: {status}");
+    }
+
+    info!("services");
+    on_services(superkey)?;
 
     Ok(())
 }
