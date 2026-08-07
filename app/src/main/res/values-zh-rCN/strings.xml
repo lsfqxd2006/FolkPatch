@@ -196,7 +196,7 @@
     <string name="home_device_info">设备</string>
     <string name="home_system_version">系统版本</string>
     <string name="home_kpatch_version">内核补丁版本</string>
-    <string name="home_su_path">su 可执行文件</string>
+    <string name="home_su_path">SU 可执行文件</string>
     <string name="home_apatch_version">FolkPatch 版本</string>
 
     <string name="kpm">内核模块</string>
