@@ -675,8 +675,8 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="kpm_autoload_json_config">JSON 設定</string>
     <string name="kpm_autoload_json_label">JSON 設定</string>
     <string name="kpm_autoload_json_placeholder">{
-  "enabled"：true,
-  "kpmPaths"：[
+  "enabled": true,
+  "kpmPaths": [
     "/path/to/module1.kpm",
     "/path/to/module2.kpm"
   ]
