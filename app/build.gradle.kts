@@ -347,7 +347,7 @@ tasks.register("downloadJailbreakKo") {
         assetsDir.mkdirs()
         jailbreakKmis.forEach { kmi ->
             val srcUrl =
-                "https://github.com/LyraVoid/KernelPatch/releases/download/$kernelPatchVersion/${kmi}_kernelpatch.ko"
+                "https://github.com/lsfqxd2006/KernelPatch/releases/download/$kernelPatchVersion/${kmi}_kernelpatch.ko"
             val destFile = File(assetsDir, "${kmi}_kernelpatch.ko")
             if (!destFile.exists()) {
                 println(" - Downloading $srcUrl to ${destFile.absolutePath}")
