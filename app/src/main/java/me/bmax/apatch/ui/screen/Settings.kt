@@ -92,9 +92,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
     val canAuthenticate = remember { BiometricUtils.isBiometricAvailable(context) }
 
-
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -112,8 +109,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     IconButton(onClick = dropUnlessResumed { navigator.navigate(PluginScreenDestination) }) {
                         Icon(Icons.Outlined.Extension, contentDescription = stringResource(R.string.plugin_title))
                     }
-                },
-                scrollBehavior = scrollBehavior,
+                }
             )
         },
         containerColor = Color.Transparent,
@@ -122,7 +118,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
         ) {
             item { Spacer(Modifier.height(8.dp)) }
 
