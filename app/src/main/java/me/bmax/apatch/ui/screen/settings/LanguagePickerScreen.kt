@@ -27,15 +27,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,26 +54,27 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguagePickerScreen(navigator: DestinationsNavigator) {
-    val context = LocalContext.current
     val languages = stringArrayResource(id = R.array.languages)
     val languagesValues = stringArrayResource(id = R.array.languages_values)
+    val currentLocale = AppCompatDelegate.getApplicationLocales()[0]?.toLanguageTag()
     val flat = BackgroundConfig.isCustomBackgroundEnabled || BackgroundConfig.settingsBackgroundUri != null
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val languageList = remember { languages.toList() }
 
-    val currentLocale = AppCompatDelegate.getApplicationLocales()[0]?.toLanguageTag()
+    // ============================================================
+    // 修改 1：记录用户点击的选项索引
+    // 原代码：无
+    // ============================================================
+    var lastSelectedIndex by remember { mutableStateOf(-1) }
     
-    val initialSelectedIndex = remember(currentLocale) {
-        when {
-            currentLocale == null || currentLocale.isEmpty() -> 0
-            else -> {
-                val index = languagesValues.indexOfFirst { it == currentLocale }
-                if (index >= 0) index else 0
-            }
-        }
+    // ============================================================
+    // 修改 2：系统语言变化时重置，让选中状态重新根据 currentLocale 判断
+    // 原代码：无
+    // ============================================================
+    LaunchedEffect(currentLocale) {
+        lastSelectedIndex = -1
     }
-    
-    var selectedIndex by remember { mutableIntStateOf(initialSelectedIndex) }
+    // ============================================================
 
     Scaffold(
         topBar = {
@@ -107,13 +108,36 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
                 items = languageList,
                 key = { index, _ -> languagesValues[index] },
             ) { index, item ->
-                val isSelected = selectedIndex == index
+                // ============================================================
+                // 修改 3：选中判断 - 用户点击优先
+                // 原代码：
+                //   val isSelected = if (index == 0) {
+                //       currentLocale == null || currentLocale.isEmpty()
+                //   } else {
+                //       currentLocale == languagesValues[index]
+                //   }
+                // 修改说明：用户点击过就用 lastSelectedIndex，否则用原逻辑
+                // ============================================================
+                val isSelected = if (lastSelectedIndex != -1) {
+                    lastSelectedIndex == index
+                } else if (index == 0) {
+                    currentLocale == null || currentLocale.isEmpty()
+                } else {
+                    currentLocale == languagesValues[index]
+                }
+                // ============================================================
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            selectedIndex = index
+                            // ============================================================
+                            // 修改 4：点击记录用户选择
+                            // 原代码：只保存语言
+                            // 修改说明：先记录索引，再保存语言
+                            // ============================================================
+                            lastSelectedIndex = index
+                            
                             if (index == 0) {
                                 AppCompatDelegate.setApplicationLocales(
                                     LocaleListCompat.getEmptyLocaleList()
@@ -123,6 +147,7 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
                                     LocaleListCompat.forLanguageTags(languagesValues[index])
                                 )
                             }
+                            // ============================================================
                         }
                         .padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -131,7 +156,12 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
                         Icon(
                             imageVector = Icons.Filled.Translate,
                             contentDescription = null,
+                            // ============================================================
+                            // 修改 5：图标颜色跟随选中状态（可选）
+                            // 原代码：tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            // ============================================================
                             tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            // ============================================================
                             modifier = Modifier.size(24.dp),
                         )
                     } else {
