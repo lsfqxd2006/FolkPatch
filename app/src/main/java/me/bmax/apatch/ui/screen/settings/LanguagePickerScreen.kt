@@ -28,11 +28,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,12 +54,26 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguagePickerScreen(navigator: DestinationsNavigator) {
+    val context = LocalContext.current
     val languages = stringArrayResource(id = R.array.languages)
     val languagesValues = stringArrayResource(id = R.array.languages_values)
-    val currentLocale = AppCompatDelegate.getApplicationLocales()[0]?.toLanguageTag()
     val flat = BackgroundConfig.isCustomBackgroundEnabled || BackgroundConfig.settingsBackgroundUri != null
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val languageList = remember { languages.toList() }
+
+    val currentLocale = AppCompatDelegate.getApplicationLocales()[0]?.toLanguageTag()
+    
+    val initialSelectedIndex = remember(currentLocale) {
+        when {
+            currentLocale == null || currentLocale.isEmpty() -> 0
+            else -> {
+                val index = languagesValues.indexOfFirst { it == currentLocale }
+                if (index >= 0) index else 0
+            }
+        }
+    }
+    
+    var selectedIndex by remember { mutableIntStateOf(initialSelectedIndex) }
 
     Scaffold(
         topBar = {
@@ -90,16 +107,13 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
                 items = languageList,
                 key = { index, _ -> languagesValues[index] },
             ) { index, item ->
-                val isSelected = if (index == 0) {
-                    currentLocale == null || currentLocale.isEmpty()
-                } else {
-                    currentLocale == languagesValues[index]
-                }
+                val isSelected = selectedIndex == index
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
+                            selectedIndex = index
                             if (index == 0) {
                                 AppCompatDelegate.setApplicationLocales(
                                     LocaleListCompat.getEmptyLocaleList()
@@ -117,7 +131,7 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
                         Icon(
                             imageVector = Icons.Filled.Translate,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(24.dp),
                         )
                     } else {
