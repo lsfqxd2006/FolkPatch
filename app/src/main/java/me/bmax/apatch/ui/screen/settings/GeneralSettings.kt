@@ -76,9 +76,18 @@ fun GeneralSettingsContent(
     val loadingDialog = rememberLoadingDialog()
 
     val languageTitle = stringResource(id = R.string.settings_app_language)
-    val languageValue = AppCompatDelegate.getApplicationLocales()[0]?.displayLanguage?.replaceFirstChar {
-        if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-    } ?: stringResource(id = R.string.system_default)
+    val languageValue = remember {
+        val locale = AppCompatDelegate.getApplicationLocales()[0]
+        if (locale == null) {
+            stringResource(id = R.string.system_default)
+        } else {
+            val displayLocale = AppCompatDelegate.getApplicationLocales()[0] ?: Locale.getDefault()
+            val displayName = locale.getDisplayName(displayLocale)
+            displayName.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(displayLocale) else it.toString()
+            }
+        }
+    }
 
     val updateTitle = stringResource(id = R.string.settings_check_update)
 
