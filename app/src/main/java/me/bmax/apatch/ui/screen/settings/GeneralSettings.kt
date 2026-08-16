@@ -79,7 +79,7 @@ fun GeneralSettingsContent(
     val languageValue = remember {
         val locale = AppCompatDelegate.getApplicationLocales()[0]
         if (locale == null) {
-            stringResource(id = R.string.system_default)
+            context.getString(R.string.system_default)
         } else {
             val displayLocale = AppCompatDelegate.getApplicationLocales()[0] ?: Locale.getDefault()
             val displayName = locale.getDisplayName(displayLocale)
