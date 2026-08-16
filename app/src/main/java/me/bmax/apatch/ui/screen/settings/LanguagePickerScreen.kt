@@ -61,20 +61,11 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val languageList = remember { languages.toList() }
 
-    // ============================================================
-    // 修改 1：记录用户点击的选项索引
-    // 原代码：无
-    // ============================================================
     var lastSelectedIndex by remember { mutableStateOf(-1) }
     
-    // ============================================================
-    // 修改 2：系统语言变化时重置，让选中状态重新根据 currentLocale 判断
-    // 原代码：无
-    // ============================================================
     LaunchedEffect(currentLocale) {
         lastSelectedIndex = -1
     }
-    // ============================================================
 
     Scaffold(
         topBar = {
@@ -108,16 +99,6 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
                 items = languageList,
                 key = { index, _ -> languagesValues[index] },
             ) { index, item ->
-                // ============================================================
-                // 修改 3：选中判断 - 用户点击优先
-                // 原代码：
-                //   val isSelected = if (index == 0) {
-                //       currentLocale == null || currentLocale.isEmpty()
-                //   } else {
-                //       currentLocale == languagesValues[index]
-                //   }
-                // 修改说明：用户点击过就用 lastSelectedIndex，否则用原逻辑
-                // ============================================================
                 val isSelected = if (lastSelectedIndex != -1) {
                     lastSelectedIndex == index
                 } else if (index == 0) {
@@ -125,17 +106,11 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
                 } else {
                     currentLocale == languagesValues[index]
                 }
-                // ============================================================
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            // ============================================================
-                            // 修改 4：点击记录用户选择
-                            // 原代码：只保存语言
-                            // 修改说明：先记录索引，再保存语言
-                            // ============================================================
                             lastSelectedIndex = index
                             
                             if (index == 0) {
@@ -147,7 +122,6 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
                                     LocaleListCompat.forLanguageTags(languagesValues[index])
                                 )
                             }
-                            // ============================================================
                         }
                         .padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -156,12 +130,7 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
                         Icon(
                             imageVector = Icons.Filled.Translate,
                             contentDescription = null,
-                            // ============================================================
-                            // 修改 5：图标颜色跟随选中状态（可选）
-                            // 原代码：tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            // ============================================================
                             tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            // ============================================================
                             modifier = Modifier.size(24.dp),
                         )
                     } else {
