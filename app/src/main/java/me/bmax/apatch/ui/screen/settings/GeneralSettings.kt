@@ -81,11 +81,13 @@ fun GeneralSettingsContent(
         if (locale == null) {
             context.getString(R.string.system_default)
         } else {
-            val displayLocale = AppCompatDelegate.getApplicationLocales()[0] ?: Locale.getDefault()
-            val displayName = locale.getDisplayName(displayLocale)
-            displayName.replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(displayLocale) else it.toString()
-            }
+            val languageTag = locale.toLanguageTag()
+            val languages = context.resources.getStringArray(R.array.languages)
+            val languagesValues = context.resources.getStringArray(R.array.languages_values)
+            
+            // 查找匹配的索引，直接用语言列表的名字
+            val index = languagesValues.indexOf(languageTag)
+            if (index >= 0) languages[index] else languageTag
         }
     }
 
