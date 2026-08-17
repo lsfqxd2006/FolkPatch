@@ -61,6 +61,8 @@
     <string name="reboot_download">重启到 Download</string>
     <string name="reboot_edl">重启到 EDL</string>
     <string name="reboot_fastbootd">重启到 FastbootD</string>
+    <string name="reboot_download_confirm">确定要重启到 Download 模式吗？设备将进入固件刷写界面。</string>
+    <string name="reboot_edl_confirm">确定要重启到 EDL (紧急下载) 模式吗？屏幕将保持黑屏，必须用专用刷机工具才能恢复设备！</string>
     <string name="about">关于</string>
     <string name="developer_and_maintainer">开发者 | 维护者</string>
     <string name="settings_app_language">语言</string>
