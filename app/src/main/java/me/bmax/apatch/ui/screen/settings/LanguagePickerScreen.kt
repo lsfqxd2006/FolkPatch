@@ -61,11 +61,11 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val languageList = remember { languages.toList() }
 
+    // Track the most recent tap so the new selection is reflected instantly;
+    // setApplicationLocales() applies asynchronously and currentLocale only
+    // updates once the activity recreates.
     var lastSelectedIndex by remember { mutableStateOf(-1) }
-    
-    LaunchedEffect(currentLocale) {
-        lastSelectedIndex = -1
-    }
+    LaunchedEffect(currentLocale) { lastSelectedIndex = -1 }
 
     Scaffold(
         topBar = {
@@ -112,7 +112,6 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
                         .fillMaxWidth()
                         .clickable {
                             lastSelectedIndex = index
-                            
                             if (index == 0) {
                                 AppCompatDelegate.setApplicationLocales(
                                     LocaleListCompat.getEmptyLocaleList()
@@ -130,7 +129,11 @@ fun LanguagePickerScreen(navigator: DestinationsNavigator) {
                         Icon(
                             imageVector = Icons.Filled.Translate,
                             contentDescription = null,
-                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = if (isSelected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                             modifier = Modifier.size(24.dp),
                         )
                     } else {

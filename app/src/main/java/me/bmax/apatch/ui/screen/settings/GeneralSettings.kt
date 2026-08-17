@@ -85,9 +85,13 @@ fun GeneralSettingsContent(
             val languageTag = locale.toLanguageTag()
             val languages = context.resources.getStringArray(R.array.languages)
             val languagesValues = context.resources.getStringArray(R.array.languages_values)
-            
-            // 查找匹配的索引，直接用语言列表的名字
-            val index = languagesValues.indexOf(languageTag)
+
+            // Prefer an exact match, then a bare language-code match
+            // (e.g. "id" for "id-ID"), otherwise fall back to the raw tag.
+            var index = languagesValues.indexOf(languageTag)
+            if (index < 0) {
+                index = languagesValues.indexOf(languageTag.substringBefore('-'))
+            }
             if (index >= 0) languages[index] else languageTag
         }
     }
