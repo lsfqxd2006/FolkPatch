@@ -130,10 +130,12 @@ import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenu
 import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenuItem
 import me.bmax.apatch.ui.component.WelcomeGuideDialog
 import me.bmax.apatch.ui.component.copyableInfo
+import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.viewmodel.PatchesViewModel
 import me.bmax.apatch.util.Version
 import me.bmax.apatch.util.Version.getManagerVersion
 import me.bmax.apatch.util.getSELinuxStatus
+import me.bmax.apatch.util.migrateStockBootBackup
 import me.bmax.apatch.util.reboot
 import me.bmax.apatch.util.ui.APDialogBlurBehindUtils
 import me.bmax.apatch.util.ui.HomeBottomSpacer
@@ -164,6 +166,12 @@ fun HomeScreen(navigator: DestinationsNavigator) {
 
     val kpState by APApplication.kpStateLiveData.observeAsState(APApplication.State.UNKNOWN_STATE)
     val apState by APApplication.apStateLiveData.observeAsState(APApplication.State.UNKNOWN_STATE)
+
+    // Pick up a stock boot backup left behind by a manually flashed PATCH_ONLY
+    // install; see migrateStockBootBackup.
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) { migrateStockBootBackup() }
+    }
 
     SideEffect {
         if (kpState != APApplication.State.UNKNOWN_STATE) {
@@ -466,7 +474,7 @@ private fun TopBar(
     val uriHandler = LocalUriHandler.current
     val context = androidx.compose.ui.platform.LocalContext.current
     var showDropdownMoreOptions by remember { mutableStateOf(false) }
-    var showDropdownReboot by remember { mutableStateOf(false) }
+    var showRebootDialog by remember { mutableStateOf(false) }  // 改名，避免与下拉菜单混淆
     val prefs = APApplication.sharedPreferences
     val darkThemeFollowSys = prefs.getBoolean("night_mode_follow_sys", false)
     val nightModeEnabled = prefs.getBoolean("night_mode_enabled", true)
@@ -506,6 +514,17 @@ private fun TopBar(
     val titleOffsetX = if (useAdvancedTitleStyle) {
         BackgroundConfig.titleImageOffsetX * 100f
     } else 0f
+
+    // ========== 新增：上游的确认对话框状态 ==========
+    val downloadTitle = stringResource(id = R.string.reboot_download)
+    val downloadConfirmText = stringResource(id = R.string.reboot_download_confirm)
+    val edlTitle = stringResource(id = R.string.reboot_edl)
+    val edlConfirmText = stringResource(id = R.string.reboot_edl_confirm)
+    var pendingRebootReason by remember { mutableStateOf<String?>(null) }
+    val rebootConfirmDialog = rememberConfirmDialog(onConfirm = {
+        pendingRebootReason?.let { reboot(it) }
+    })
+    // ========== 新增结束 ==========
 
     TopAppBar(title = {
         if (useAdvancedTitleStyle) {
@@ -547,17 +566,36 @@ private fun TopBar(
         }
 
         if (kpState != APApplication.State.UNKNOWN_STATE) {
-            IconButton(onClick = { showDropdownReboot = true }) {
+            IconButton(onClick = { showRebootDialog = true }) {
                 Icon(
                     imageVector = Icons.Filled.PowerSettingsNew,
                     contentDescription = stringResource(id = R.string.reboot)
                 )
             }
 
+            // 我的重启弹窗 + 上游确认逻辑
             RebootDialog(
-                show = showDropdownReboot,
-                onDismiss = { showDropdownReboot = false },
-                onReboot = { reason -> reboot(reason) }
+                show = showRebootDialog,
+                onDismiss = { showRebootDialog = false },
+                onReboot = { reason ->
+                    when (reason) {
+                        "download" -> {
+                            pendingRebootReason = "download"
+                            rebootConfirmDialog.showConfirm(
+                                title = downloadTitle, 
+                                content = downloadConfirmText
+                            )
+                        }
+                        "edl" -> {
+                            pendingRebootReason = "edl"
+                            rebootConfirmDialog.showConfirm(
+                                title = edlTitle, 
+                                content = edlConfirmText
+                            )
+                        }
+                        else -> reboot(reason)
+                    }
+                }
             )
         }
 
