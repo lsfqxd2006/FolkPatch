@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose.compiler) apply false
 }
 
-project.ext.set("kernelPatchVersion", "0.13.4")
+project.ext.set("kernelPatchVersion", "0.13.5")
 
 val androidMinSdkVersion by extra(26)
 val androidTargetSdkVersion by extra(36)
@@ -34,7 +34,7 @@ fun getGitDescribe(): String {
 }
 
 fun getVersionCode(): Int {
-    return 115020
+    return 115021
 }
 
 fun getbranch(): String {
