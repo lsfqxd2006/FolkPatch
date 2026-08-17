@@ -62,6 +62,7 @@ fun GeneralSettingsContent(
     currentSELinuxMode: String,
     onSELinuxModeChange: (String) -> Unit,
     isGlobalNamespaceEnabled: Boolean,
+    namespaceLoaded: Boolean,
     onGlobalNamespaceChange: (Boolean) -> Unit,
     isMagicMountEnabled: Boolean,
     onMagicMountChange: (Boolean) -> Unit,
@@ -501,6 +502,7 @@ fun GeneralSettingsContent(
                 title = globalNamespaceTitle,
                 description = globalNamespaceSummary,
                 checked = isGlobalNamespaceEnabled,
+                enabled = namespaceLoaded,
                 onCheckedChange = {
                     setGlobalNamespaceEnabled(if (isGlobalNamespaceEnabled) "0" else "1")
                     onGlobalNamespaceChange(it)
