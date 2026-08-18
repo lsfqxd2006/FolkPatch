@@ -8,7 +8,7 @@ project.ext.set("kernelPatchVersion", "0.13.5")
 
 val androidMinSdkVersion by extra(26)
 val androidTargetSdkVersion by extra(36)
-val androidCompileSdkVersion by extra(36)
+val androidCompileSdkVersion by extra(37)
 val androidBuildToolsVersion by extra("36.1.0")
 val androidCompileNdkVersion by extra("30.0.15729638")
 val managerVersionCode by extra(getVersionCode())
@@ -34,7 +34,7 @@ fun getGitDescribe(): String {
 }
 
 fun getVersionCode(): Int {
-    return 115021
+    return 115025
 }
 
 fun getbranch(): String {
