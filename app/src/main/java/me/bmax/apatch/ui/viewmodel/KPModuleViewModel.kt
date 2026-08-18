@@ -198,7 +198,10 @@ class KPModuleViewModel : ViewModel() {
                             safeKpmModuleId(kernelName),
                             lines.firstOrNull { it.startsWith("load_source=") }?.removePrefix("load_source=") ?: ""
                         )
-                        result[info.moduleId] = info.copy(installed = info.loadSource == "file")
+                        // Only KPMs with a persistent file in KPMS_DIR are "installed";
+                        // a plain Load (load-source "file") has no disable marker to
+                        // control, so it must not show the toggle.
+                        result[info.moduleId] = info.copy(installed = false)
                     }
 
                     // File-backed KPMs from the boot-time loader: merge installed /
