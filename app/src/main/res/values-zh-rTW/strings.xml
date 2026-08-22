@@ -802,6 +802,9 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="settings_auto_backup_boot">自動備份Boot</string>
     <string name="settings_auto_backup_boot_summary">自動將 Boot 分割區備份到本機儲存 (Downloads/FolkPatch/BootBackups)</string>
 
+    <string name="dont_show_again">不再顯示</string>
+    <string name="got_it">知道了</string>
+
     <!-- Auto-added missing strings -->
     <string name="home_hide_kpatch_version_summary">在資訊卡中隱藏 「KernelPatch 版本」</string>
     <string name="home_hide_su_path_summary">在資訊卡中隱藏「可執行 SU 路徑」</string>
