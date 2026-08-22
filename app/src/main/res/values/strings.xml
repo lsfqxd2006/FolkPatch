@@ -473,7 +473,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="plugin_log_export">Export logs</string>
 
     <string name="home_dialog_uninstall_title">Uninstall</string>
-    
+
     <string name="home_dialog_uninstall_ap_only">Uninstall patch only</string>
     <string name="home_dialog_uninstall_all">Uninstall fully</string>
     <string name="home_dialog_uninstall_ap_only_desc">Remove AndroidPatch only and keep the manager.</string>
@@ -485,11 +485,11 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="kpm_control_outMsg">Output</string>
     <string name="kpm_control_ok">Success!</string>
     <string name="kpm_control_failed">Failed!</string>
-    
+
     <string name="settings_night_mode_follow_sys">Dark theme follows system</string>
     <string name="settings_night_mode_follow_sys_summary">Switch dark theme automatically based on system settings</string>
     <string name="settings_night_theme_enabled">Dark theme</string>
-    
+
     <string name="settings_use_system_color_theme">System color theme</string>
     <string name="settings_use_system_color_theme_summary">Use color theme generated from wallpaper by system</string>
     <string name="settings_custom_color_theme">Color theme</string>
@@ -525,7 +525,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="about_telegram_group">Telegram Group</string>
     <string name="github">GitHub</string>
     <string name="telegram">Telegram</string>
-    
+
     <!-- Loading Strings -->
     <string name="loading_modules">Loading modules…</string>
     <string name="loading_scripts">Finding scripts…</string>
@@ -680,7 +680,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="shizuku_permission_allow_once_summary">Allow only for this time</string>
     <string name="shizuku_permission_deny_summary">Deny access</string>
     <string name="shizuku_permission_binder_timeout">Unable to reach Shizuku service, please restart it and try again</string>
-<string name="settings_kernel_spoof">Kernel Spoof Config</string>
+    <string name="settings_kernel_spoof">Kernel Spoof Config</string>
     <string name="settings_kernel_spoof_summary">Spoof kernel version and build time</string>
     <string name="settings_kernel_spoof_version">Kernel Version</string>
     <string name="settings_kernel_spoof_build_time">Kernel Build Time</string>
@@ -776,7 +776,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="settings_title_image_dim">Background Dim</string>
     <string name="settings_title_image_offset_x">Horizontal Position</string>
 
-    
+
     <!-- Font Settings -->
     <string name="settings_custom_font">Custom Font</string>
     <string name="settings_select_font_file">Select Font File</string>
@@ -815,10 +815,10 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="settings_clear_video_background_confirm">Are you sure you want to clear the video background?</string>
     <string name="settings_video_background_enabled">Video Background Enabled</string>
     <string name="settings_video_volume">Video Volume</string>
-    
+
     <!-- KPM AutoLoad Strings -->
-    
-    
+
+
     <!-- Module Backup/Restore Strings -->
     <string name="apm_copy_list_title">Copy List</string>
     <string name="apm_copy_list_success">Module list copied</string>
@@ -856,7 +856,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="welcome_skip">Skip</string>
     <string name="welcome_got_it">Get Started</string>
 
-    
+
 
     <string name="dont_show_again">Don\'t show again</string>
     <string name="got_it">Got it</string>
@@ -873,8 +873,8 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="home_hide_zygisk_summary">Hide Zygisk implementation in info card</string>
     <string name="home_hide_mount_summary">Hide mount implementation in info card</string>
 
-    
-    
+
+
     <!-- Auto Backup Strings -->
     <string name="settings_auto_backup_module">Auto Backup System Modules</string>
     <string name="settings_auto_backup_module_summary">Automatically backup module file to private directory when installing</string>
@@ -1029,7 +1029,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="module">Modules</string>
     <string name="settings_category_appearance">Appearance</string>
     <string name="settings_category_behavior">Behavior</string>
-    
+
     <!-- Appearance Sub-Categories -->
     <string name="settings_appearance_font">Font Settings</string>
     <string name="settings_appearance_font_summary">Custom font configuration</string>
@@ -1080,7 +1080,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="settings_category_module">Modules</string>
     <string name="settings_category_security">Security</string>
     <string name="settings_category_function">Function</string>
-    
+
     <!-- Background Music Strings -->
     <string name="settings_background_music">Background Music</string>
     <string name="settings_background_music_summary">Play background music when app is in foreground</string>
