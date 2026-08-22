@@ -526,7 +526,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="about_telegram_group">Telegram 群组</string>
     <string name="github">GitHub</string>
     <string name="telegram">Telegram</string>
-    
+
     <!-- Loading Strings -->
     <string name="loading_modules">正在获取模块…</string>
     <string name="loading_scripts">正在查找脚本…</string>
@@ -679,7 +679,6 @@ KernelPatch 需要修补 boot 镜像。
     <string name="settings_path_hide">路径隐藏</string>
     <string name="settings_path_hide_summary">在内核层面向应用隐藏文件和目录</string>
     <string name="path_hide_paths_label">隐藏路径 (每行一个)</string>
-
     <string name="path_hide_paths_helper">每行输入一个路径。匹配的路径将返回 ENOENT。</string>
     <string name="path_hide_save">保存</string>
     <string name="path_hide_enabled">路径隐藏已启用</string>
@@ -805,9 +804,9 @@ KernelPatch 需要修补 boot 镜像。
     <string name="settings_clear_video_background_confirm">确定要清除视频壁纸吗？</string>
     <string name="settings_video_background_enabled">视频背景已启用</string>
     <string name="settings_video_volume">视频音量</string>
-    
+
     <!-- KPM AutoLoad Strings -->
-    
+
 
     <!-- Module Backup/Restore Strings -->
     <string name="apm_copy_list_title">复制列表</string>
@@ -846,7 +845,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="welcome_skip">跳过</string>
     <string name="welcome_got_it">开始使用</string>
 
-    
+
 
     <string name="dont_show_again">不再显示</string>
     <string name="got_it">收到</string>
@@ -863,8 +862,8 @@ KernelPatch 需要修补 boot 镜像。
     <string name="home_hide_zygisk_summary">在信息卡片中隐藏 Zygisk 实现信息</string>
     <string name="home_hide_mount_summary">在信息卡片中隐藏挂载实现信息</string>
 
-    
-    
+
+
     <!-- Auto Backup Strings -->
     <string name="settings_auto_backup_module">自动备份系统模块</string>
     <string name="settings_auto_backup_module_summary">安装模块时自动备份文件到私有目录</string>
@@ -1019,7 +1018,7 @@ KernelPatch 需要修补 boot 镜像。
     <string name="module">系统模块</string>
     <string name="settings_category_appearance">外观</string>
     <string name="settings_category_behavior">行为</string>
-    
+
     <!-- Appearance Sub-Categories -->
     <string name="settings_appearance_font">字体设置</string>
     <string name="settings_appearance_font_summary">自定义字体配置</string>
