@@ -680,7 +680,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="shizuku_permission_allow_once_summary">Allow only for this time</string>
     <string name="shizuku_permission_deny_summary">Deny access</string>
     <string name="shizuku_permission_binder_timeout">Unable to reach Shizuku service, please restart it and try again</string>
-<string name="settings_kernel_spoof">Kernel Spoof Config</string>
+    <string name="settings_kernel_spoof">Kernel Spoof Config</string>
     <string name="settings_kernel_spoof_summary">Spoof kernel version and build time</string>
     <string name="settings_kernel_spoof_version">Kernel Version</string>
     <string name="settings_kernel_spoof_build_time">Kernel Build Time</string>
@@ -776,7 +776,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="settings_title_image_dim">Background Dim</string>
     <string name="settings_title_image_offset_x">Horizontal Position</string>
 
-    
+
     <!-- Font Settings -->
     <string name="settings_custom_font">Custom Font</string>
     <string name="settings_select_font_file">Select Font File</string>
@@ -818,7 +818,7 @@ Here are some possible reasons for authentication failure—please check which o
     
     <!-- KPM AutoLoad Strings -->
     
-    
+
     <!-- Module Backup/Restore Strings -->
     <string name="apm_copy_list_title">Copy List</string>
     <string name="apm_copy_list_success">Module list copied</string>
@@ -1080,7 +1080,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="settings_category_module">Modules</string>
     <string name="settings_category_security">Security</string>
     <string name="settings_category_function">Function</string>
-    
+
     <!-- Background Music Strings -->
     <string name="settings_background_music">Background Music</string>
     <string name="settings_background_music_summary">Play background music when app is in foreground</string>
