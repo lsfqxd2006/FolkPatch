@@ -66,47 +66,4 @@ fun pickLocalizedString(map: Map<String, String>, locale: Locale?): String? {
 
     // 3c) 任意同语言族变体
     return variants.first().value
-}    if (rawLang.isEmpty()) return null
-
-    // mgl（魔法少女）本质是中文变体："mgl" 键未命中后按 "zh" 回退，
-    // 使插件只提供 "zh"/"zh-CN" 等中文键时也能显示中文而非英文。
-    val lang = if (rawLang == "mgl") "zh" else rawLang
-    if (lang != rawLang) {
-        valueOf(lang)?.let { return it }
-    }
-
-    // 3) 同语言族变体键：如 "zh-Hans"、"zh_CN"、"zh-rCN"
-    val variants = map.entries.filter { (k, v) ->
-        v.isNotBlank() && (k.startsWith("$lang-") || k.startsWith("${lang}_"))
-    }
-    if (variants.isEmpty()) return null
-
-    // 3a) 与系统地区一致的键优先，如 zh-TW 系统优先 "zh-TW" / "zh_TW"
-    val region = loc.country
-    if (region.isNotEmpty()) {
-        variants.firstOrNull { (k, _) ->
-            k.equals("$lang-$region", ignoreCase = true) ||
-                k.equals("${lang}_$region", ignoreCase = true)
-        }?.let { return it.value }
-    }
-
-    // 3b) zh 族简繁偏好：繁体系统优先繁体变体，简体系统优先简体变体
-    if (lang == "zh") {
-        val isTraditional = region in setOf("TW", "HK", "MO")
-        val preferred = if (isTraditional) {
-            variants.firstOrNull { (k, _) ->
-                k.contains("Hant", ignoreCase = true) ||
-                    listOf("TW", "HK", "MO").any { k.contains(it, ignoreCase = true) }
-            }
-        } else {
-            variants.firstOrNull { (k, _) ->
-                k.contains("Hans", ignoreCase = true) ||
-                    listOf("CN", "SG").any { k.contains(it, ignoreCase = true) }
-            }
-        }
-        preferred?.let { return it.value }
-    }
-
-    // 3c) 任意同语言族变体
-    return variants.first().value
 }
