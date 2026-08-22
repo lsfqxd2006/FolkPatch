@@ -71,9 +71,9 @@
     <string name="settings_global_namespace_mode_summary">所有 Root 工作階段將會全域掛載命名空間</string>
     <string name="settings_clear_super_key_dialog">確定要繼續嗎？</string>
     <string name="settings_sucompat">舊版 su 相容性</string>
-    <string name="settings_sucompat_summary">啟用舊版su兼容(適用於su不生效)</string>
-    <string name="settings_selinux_hide">隱藏 SELinux 修改（測試）</string>
-    <string name="settings_selinux_hide_summary">隱藏 SELinux 的修改以防止被使用者程序偵測到（此功能可能不穩定）。安全模式可停用此功能。</string>
+    <string name="settings_sucompat_summary">啟用舊版 su 兼容 (適用於 su 不生效)</string>
+    <string name="settings_selinux_hide">隱藏 SELinux 修改 (測試)</string>
+    <string name="settings_selinux_hide_summary">隱藏 SELinux 的修改以防止被使用者程序偵測到 (此功能可能不穩定)。安全模式可停用此功能。</string>
     <string name="settings_selinux_hide_warning_title">警告</string>
     <string name="settings_selinux_hide_warning_below_5_10">此功能僅在 5.10 及以上內核測試過，在較低的內核版本上可能不穩定。</string>
     <string name="settings_selinux_hide_warning_non_gki">非 GKI 內核風險更大，可能導致無法開機。請確保已備份資料。</string>
@@ -116,7 +116,7 @@
     <string name="save_log">儲存日誌</string>
     <string name="log_saved">日誌已儲存</string>
     <string name="safe_mode">安全模式</string>
-    <string name="support_or_donate">支持 / 捐贈</string>
+    <string name="support_or_donate">支持/捐贈</string>
 
     <string name="super_key">超級密鑰</string>
     <string name="clear_super_key">清除超級密鑰</string>
@@ -234,7 +234,7 @@
     <string name="kpm_desc">說明</string>
     <string name="kpm_args">參數</string>
     <string name="kpm_installed">已安裝</string>
-    <string name="kpm_disabled">已停用（重新啟動後生效）</string>
+    <string name="kpm_disabled">已停用 (重新啟動後生效)</string>
     <string name="kpm_embedded_unload_invalid">嵌入的 KPM 無法卸載；重新啟動後仍會保持啟用。</string>
 
     <string name="su_title">超級使用者</string>
@@ -646,9 +646,9 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="shizuku_management_granted">已允許</string>
     <string name="shizuku_management_denied">未允許</string>
     <string name="shizuku_management_update_failed">授權更新失敗</string>
-    <string name="shizuku_management_root_access">ROOT 權限</string>
+    <string name="shizuku_management_root_access">Root 權限</string>
     <string name="shizuku_management_allowed_title">Shizuku 存取</string>
-    <string name="shizuku_management_root_access_desc">以 R 權限執行指令。關閉後以 shell（UID 2000）執行，將無法讀取受保護的資料</string>
+    <string name="shizuku_management_root_access_desc">以 Root 權限執行指令。關閉後以 shell (UID 2000) 執行，將無法讀取受保護的資料</string>
     <string name="shizuku_management_badge_allowed">已允許</string>
     <string name="shizuku_management_badge_denied">已拒絕</string>
     <string name="shizuku_management_badge_root">ROOT</string>
@@ -851,7 +851,7 @@ KernelPatch 需要修補 boot 映像檔。
 
 
     <string name="dont_show_again">不再顯示</string>
-    <string name="got_it">收到</string>
+    <string name="got_it">我知道了</string>
 
     <!-- Hide Settings Strings -->
     <string name="home_hide_su_path">隱藏「可執行 su 路徑」</string>
@@ -875,7 +875,7 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="backup_dir_open_failed">開啟備份目錄失敗</string>
     <string name="auto_backup_failed">自動備份失敗：%s</string>
     <string name="auto_backup_success">自動備份成功：%s</string>
-    <string name="settings_auto_backup_boot">自動備份Boot</string>
+    <string name="settings_auto_backup_boot">自動備份 Boot</string>
     <string name="settings_auto_backup_boot_summary">自動將 Boot 分割區備份到本機儲存 (Downloads/FolkPatch/BootBackups)</string>
 
     <!-- Home Layout Strings -->
@@ -1044,7 +1044,7 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="settings_nav_custom_icons">自訂導航圖示</string>
     <string name="settings_nav_custom_icons_summary">用自訂圖片取代底部導航列圖示</string>
     <string name="nav_icon_home">首頁圖示</string>
-    <string name="nav_icon_kpm">KPM圖示</string>
+    <string name="nav_icon_kpm">KPM 圖示</string>
     <string name="nav_icon_superuser">超級使用者圖示</string>
     <string name="nav_icon_apm">系統模組圖示</string>
     <string name="nav_icon_settings">設定圖示</string>
@@ -1265,7 +1265,7 @@ KernelPatch 需要修補 boot 映像檔。
     <string name="settings_vibration_enabled">啟用震動</string>
     <string name="settings_vibration_intensity">震動強度</string>
     <string name="settings_vibration_scope">震動範圍</string>
-    <string name="settings_vibration_scope_global">全域(任意位置)</string>
+    <string name="settings_vibration_scope_global">全域 (任意位置)</string>
     <string name="settings_vibration_scope_bottom_bar">僅底部欄</string>
 
     <!-- Backup Settings -->
