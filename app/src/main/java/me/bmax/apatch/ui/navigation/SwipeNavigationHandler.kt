@@ -13,15 +13,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptions
 import androidx.navigation.navigate
 import com.ramcosta.composedestinations.generated.NavGraphs
-import com.ramcosta.composedestinations.navigation.navigate
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.ui.screen.BottomBarDestination
 
 /**
  * 计算当前可见的主页面列表（与底部导航栏显示完全一致）
- * 自动响应：KP/AP状态变化、用户隐藏设置变化
  */
 @Composable
 internal fun rememberVisibleDestinations(): List<BottomBarDestination> {
@@ -61,10 +60,6 @@ internal fun rememberVisibleDestinations(): List<BottomBarDestination> {
 
 /**
  * 左右滑动切换主页面手势
- *
- * @param navController 导航控制器
- * @param onSwipeStart 滑动开始回调（用于显示悬浮导航栏）
- * @param onSwipeComplete 切换完成回调（用于重置自动隐藏计时器）
  */
 @Composable
 fun Modifier.swipeToSwitchTab(
@@ -85,7 +80,8 @@ fun Modifier.swipeToSwitchTab(
                 triggered = false
                 onSwipeStart()
             },
-            onHorizontalDrag = { _, dragAmount ->
+            onDrag = { change, dragAmount ->
+                change.consume()
                 totalX += dragAmount.x
             },
             onDragEnd = {
@@ -99,11 +95,12 @@ fun Modifier.swipeToSwitchTab(
                         else -> -1
                     }
                     if (target != -1 && target != current) {
-                        navController.navigate(destinations[target].direction.route) {
-                            popUpTo(NavGraphs.root.route) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        val targetRoute = destinations[target].direction.route
+                        navController.navigate(targetRoute, NavOptions.Builder()
+                            .setPopUpTo(NavGraphs.root.route, true)
+                            .setLaunchSingleTop(true)
+                            .setRestoreState(true)
+                            .build())
                         onSwipeComplete()
                         triggered = true
                     }
