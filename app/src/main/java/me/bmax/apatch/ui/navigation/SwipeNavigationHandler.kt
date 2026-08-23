@@ -13,8 +13,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.navigate
 import com.ramcosta.composedestinations.generated.NavGraphs
-import com.ramcosta.composedestinations.rememberDestinationsNavigator
+import com.ramcosta.composedestinations.navigation.navigate
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.ui.screen.BottomBarDestination
 
@@ -73,9 +74,8 @@ fun Modifier.swipeToSwitchTab(
 ): Modifier {
     val destinations = rememberVisibleDestinations()
     val thresholdPx = with(LocalDensity.current) { 55.dp.toPx() }
-    val navigator = navController.rememberDestinationsNavigator()
 
-    return this.pointerInput(destinations, navigator, onSwipeStart, onSwipeComplete, thresholdPx) {
+    return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete, thresholdPx) {
         var totalX = 0f
         var triggered = false
 
@@ -85,7 +85,9 @@ fun Modifier.swipeToSwitchTab(
                 triggered = false
                 onSwipeStart()
             },
-            onDrag = { _, dragAmount -> totalX += dragAmount.x },
+            onHorizontalDrag = { _, dragAmount ->
+                totalX += dragAmount.x
+            },
             onDragEnd = {
                 if (triggered) return@detectHorizontalDragGestures
                 val route = navController.currentBackStackEntry?.destination?.route
@@ -97,8 +99,8 @@ fun Modifier.swipeToSwitchTab(
                         else -> -1
                     }
                     if (target != -1 && target != current) {
-                        navigator.navigate(destinations[target].direction) {
-                            popUpTo(NavGraphs.root) { saveState = true }
+                        navController.navigate(destinations[target].direction.route) {
+                            popUpTo(NavGraphs.root.route) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
                         }
