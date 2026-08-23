@@ -1,7 +1,6 @@
 package me.bmax.apatch.ui.navigation
 
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitHorizontalDragOrCancellation
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -74,21 +73,20 @@ fun Modifier.swipeToSwitchTab(
         var totalX = 0f
         var triggered = false
 
-        awaitEachGesture {
-            totalX = 0f
-            triggered = false
-            onSwipeStart()
-
-            var drag = awaitHorizontalDragOrCancellation()
-            while (drag != null) {
-                totalX += drag.delta.x
-                drag = awaitHorizontalDragOrCancellation()
-            }
-
-            if (!triggered && abs(totalX) >= thresholdPx) {
+        detectHorizontalDragGestures(
+            onDragStart = {
+                totalX = 0f
+                triggered = false
+                onSwipeStart()
+            },
+            onHorizontalDrag = { _, dragAmount ->
+                totalX += dragAmount
+            },
+            onDragEnd = {
+                if (triggered) return@detectHorizontalDragGestures
                 val route = navController.currentBackStackEntry?.destination?.route
                 val current = destinations.indexOfFirst { it.direction.route == route }
-                if (current != -1) {
+                if (current != -1 && abs(totalX) >= thresholdPx) {
                     val target = if (totalX < 0) {
                         (current + 1).coerceAtMost(destinations.lastIndex)
                     } else {
@@ -105,6 +103,6 @@ fun Modifier.swipeToSwitchTab(
                     }
                 }
             }
-        }
+        )
     }
 }
