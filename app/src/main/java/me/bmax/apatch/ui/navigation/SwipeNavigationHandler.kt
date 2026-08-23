@@ -67,7 +67,7 @@ fun Modifier.swipeToSwitchTab(
     onSwipeComplete: () -> Unit
 ): Modifier {
     val destinations = rememberVisibleDestinations()
-    val thresholdPx = with(LocalDensity.current) { 55.dp.toPx() }
+    val thresholdPx = with(LocalDensity.current) { 50.dp.toPx() }
 
     return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete, thresholdPx) {
         var totalX = 0f

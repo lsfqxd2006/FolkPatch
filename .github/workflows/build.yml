@@ -2,10 +2,10 @@ name: Build FolkPatch
 
 on:
   push:
-    branches: [ main, OriAdvResMenu ]
+    branches: [ main, swiptest ]
     paths: [ 'app/**', 'fpd/**', '.github/workflows/build.yml' ]
   pull_request:
-    branches: [ main, OriAdvResMenu ]
+    branches: [ main, swiptest ]
     paths: [ 'app/**', 'fpd/**', '.github/workflows/build.yml' ]
   workflow_dispatch:
     inputs:
