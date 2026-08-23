@@ -1,6 +1,7 @@
 package me.bmax.apatch.ui.navigation
 
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitHorizontalDragOrCancellation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -13,11 +14,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.NavOptions
-import androidx.navigation.navigate
 import com.ramcosta.composedestinations.generated.NavGraphs
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.ui.screen.BottomBarDestination
+import kotlin.math.abs
 
 /**
  * 计算当前可见的主页面列表（与底部导航栏显示完全一致）
@@ -74,38 +74,37 @@ fun Modifier.swipeToSwitchTab(
         var totalX = 0f
         var triggered = false
 
-        detectHorizontalDragGestures(
-            onDragStart = {
-                totalX = 0f
-                triggered = false
-                onSwipeStart()
-            },
-            onDrag = { change, dragAmount ->
-                change.consume()
-                totalX += dragAmount.x
-            },
-            onDragEnd = {
-                if (triggered) return@detectHorizontalDragGestures
+        awaitEachGesture {
+            totalX = 0f
+            triggered = false
+            onSwipeStart()
+
+            var drag = awaitHorizontalDragOrCancellation()
+            while (drag != null) {
+                totalX += drag.delta.x
+                drag = awaitHorizontalDragOrCancellation()
+            }
+
+            if (!triggered && abs(totalX) >= thresholdPx) {
                 val route = navController.currentBackStackEntry?.destination?.route
                 val current = destinations.indexOfFirst { it.direction.route == route }
                 if (current != -1) {
-                    val target = when {
-                        totalX < -thresholdPx -> (current + 1).coerceAtMost(destinations.lastIndex)
-                        totalX > thresholdPx -> (current - 1).coerceAtLeast(0)
-                        else -> -1
+                    val target = if (totalX < 0) {
+                        (current + 1).coerceAtMost(destinations.lastIndex)
+                    } else {
+                        (current - 1).coerceAtLeast(0)
                     }
-                    if (target != -1 && target != current) {
-                        val targetRoute = destinations[target].direction.route
-                        navController.navigate(targetRoute, NavOptions.Builder()
-                            .setPopUpTo(NavGraphs.root.route, true)
-                            .setLaunchSingleTop(true)
-                            .setRestoreState(true)
-                            .build())
+                    if (target != current) {
+                        navController.navigate(destinations[target].direction.route) {
+                            popUpTo(NavGraphs.root.route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                         onSwipeComplete()
                         triggered = true
                     }
                 }
             }
-        )
+        }
     }
 }
