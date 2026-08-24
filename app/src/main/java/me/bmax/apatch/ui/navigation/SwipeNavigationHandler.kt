@@ -17,6 +17,7 @@ import com.ramcosta.composedestinations.generated.NavGraphs
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.ui.screen.BottomBarDestination
 import kotlin.math.abs
+import kotlin.math.atan2
 
 /**
  * 计算当前可见的主页面列表（与底部导航栏显示完全一致）
@@ -59,6 +60,11 @@ internal fun rememberVisibleDestinations(): List<BottomBarDestination> {
 
 /**
  * 左右滑动切换主页面手势
+ *
+ * 配置：
+ * - 距离阈值：30dp（跟手 + 防误触）
+ * - 角度阈值：30°（以水平为基准，过滤斜滑）
+ * - 顺序切换，到边界停止
  */
 @Composable
 fun Modifier.swipeToSwitchTab(
@@ -67,40 +73,55 @@ fun Modifier.swipeToSwitchTab(
     onSwipeComplete: () -> Unit
 ): Modifier {
     val destinations = rememberVisibleDestinations()
-    val thresholdPx = with(LocalDensity.current) { 30.dp.toPx() }
+    val density = LocalDensity.current
+    val distanceThreshold = with(density) { 30.dp.toPx() }
+    val maxAngleDegrees = 30.0
 
-    return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete, thresholdPx) {
+    return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete) {
         var totalX = 0f
+        var totalY = 0f
         var triggered = false
 
         detectHorizontalDragGestures(
             onDragStart = {
                 totalX = 0f
+                totalY = 0f
                 triggered = false
                 onSwipeStart()
             },
-            onHorizontalDrag = { _, dragAmount ->
+            onHorizontalDrag = { change, dragAmount ->
                 totalX += dragAmount
+                totalY += change.positionChange().y
             },
             onDragEnd = {
                 if (triggered) return@detectHorizontalDragGestures
+
                 val route = navController.currentBackStackEntry?.destination?.route
                 val current = destinations.indexOfFirst { it.direction.route == route }
-                if (current != -1 && abs(totalX) >= thresholdPx) {
-                    val target = if (totalX < 0) {
-                        (current + 1).coerceAtMost(destinations.lastIndex)
-                    } else {
-                        (current - 1).coerceAtLeast(0)
+                if (current == -1) return@detectHorizontalDragGestures
+
+                // ★ 距离检查
+                if (abs(totalX) < distanceThreshold) return@detectHorizontalDragGestures
+
+                // ★ 角度检查（以水平为基准，水平 = 0°）
+                val angleDegrees = Math.toDegrees(atan2(abs(totalY).toDouble(), abs(totalX).toDouble()))
+                if (angleDegrees > maxAngleDegrees) return@detectHorizontalDragGestures
+
+                // ★ 确定方向
+                val target = if (totalX < 0) {
+                    if (current + 1 < destinations.size) current + 1 else current
+                } else {
+                    if (current - 1 >= 0) current - 1 else current
+                }
+
+                if (target != current) {
+                    navController.navigate(destinations[target].direction.route) {
+                        popUpTo(NavGraphs.root.route) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
                     }
-                    if (target != current) {
-                        navController.navigate(destinations[target].direction.route) {
-                            popUpTo(NavGraphs.root.route) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                        onSwipeComplete()
-                        triggered = true
-                    }
+                    onSwipeComplete()
+                    triggered = true
                 }
             }
         )
