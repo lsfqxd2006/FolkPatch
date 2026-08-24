@@ -1,6 +1,6 @@
 package me.bmax.apatch.ui.navigation
 
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -67,40 +67,50 @@ fun Modifier.swipeToSwitchTab(
     onSwipeComplete: () -> Unit
 ): Modifier {
     val destinations = rememberVisibleDestinations()
-    val thresholdPx = with(LocalDensity.current) { 50.dp.toPx() }
+    val density = LocalDensity.current
+    val distanceThreshold = with(density) { 35.dp.toPx() }      // ★ 35dp（防误触优化）
+    val velocityThreshold = with(density) { 400.dp.toPx() }     // ★ 400dp/s（原生标准）
 
-    return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete, thresholdPx) {
+    return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete) {
         var totalX = 0f
         var triggered = false
 
-        detectHorizontalDragGestures(
+        detectDragGestures(
             onDragStart = {
                 totalX = 0f
                 triggered = false
                 onSwipeStart()
             },
-            onHorizontalDrag = { _, dragAmount ->
-                totalX += dragAmount
+            onDrag = { _, dragAmount ->
+                totalX += dragAmount.x
             },
-            onDragEnd = {
-                if (triggered) return@detectHorizontalDragGestures
+            onDragEnd = { velocity ->
+                if (triggered) return@detectDragGestures
+
                 val route = navController.currentBackStackEntry?.destination?.route
                 val current = destinations.indexOfFirst { it.direction.route == route }
-                if (current != -1 && abs(totalX) >= thresholdPx) {
-                    val target = if (totalX < 0) {
-                        (current + 1).coerceAtMost(destinations.lastIndex)
-                    } else {
-                        (current - 1).coerceAtLeast(0)
+                if (current == -1) return@detectDragGestures
+
+                // 触发条件：距离达标 或 速度达标
+                val shouldTrigger = abs(totalX) >= distanceThreshold || abs(velocity.x) >= velocityThreshold
+                if (!shouldTrigger) return@detectDragGestures
+
+                // 顺序切换，到边界停止（不循环）
+                val target = if (totalX < 0) {
+                    if (current + 1 < destinations.size) current + 1 else current
+                } else {
+                    if (current - 1 >= 0) current - 1 else current
+                }
+
+                if (target != current) {
+                    navController.navigate(destinations[target].direction.route) {
+                        popUpTo(NavGraphs.root.route) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
                     }
-                    if (target != current) {
-                        navController.navigate(destinations[target].direction.route) {
-                            popUpTo(NavGraphs.root.route) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                        onSwipeComplete()
-                        triggered = true
-                    }
+                    // 切换完成 → 重置悬浮导航栏计时器
+                    onSwipeComplete()
+                    triggered = true
                 }
             }
         )
