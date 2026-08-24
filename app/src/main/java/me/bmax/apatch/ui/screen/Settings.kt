@@ -90,8 +90,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
     val canAuthenticate = remember { BiometricUtils.isBiometricAvailable(context) }
 
-
-
     Scaffold(
         topBar = {
             TopAppBar(
