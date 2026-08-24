@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -18,8 +17,10 @@ import com.ramcosta.composedestinations.generated.NavGraphs
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.ui.screen.BottomBarDestination
 import kotlin.math.abs
-import kotlin.math.atan2
 
+/**
+ * 计算当前可见的主页面列表（与底部导航栏显示完全一致）
+ */
 @Composable
 internal fun rememberVisibleDestinations(): List<BottomBarDestination> {
     val kpState by APApplication.kpStateLiveData.observeAsState(APApplication.State.UNKNOWN_STATE)
@@ -56,6 +57,9 @@ internal fun rememberVisibleDestinations(): List<BottomBarDestination> {
     }
 }
 
+/**
+ * 左右滑动切换主页面手势
+ */
 @Composable
 fun Modifier.swipeToSwitchTab(
     navController: NavHostController,
@@ -63,59 +67,40 @@ fun Modifier.swipeToSwitchTab(
     onSwipeComplete: () -> Unit
 ): Modifier {
     val destinations = rememberVisibleDestinations()
-    val density = LocalDensity.current
-    val distanceThreshold = with(density) { 30.dp.toPx() }
-    val maxAngleDegrees = 30.0
+    val thresholdPx = with(LocalDensity.current) { 30.dp.toPx() }
 
-    return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete) {
+    return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete, thresholdPx) {
         var totalX = 0f
-        var totalY = 0f
-        var lastPosition: Offset? = null
         var triggered = false
 
         detectHorizontalDragGestures(
-            onDragStart = { change ->
+            onDragStart = {
                 totalX = 0f
-                totalY = 0f
-                lastPosition = change.position
                 triggered = false
                 onSwipeStart()
             },
-            onHorizontalDrag = { change, dragAmount ->
+            onHorizontalDrag = { _, dragAmount ->
                 totalX += dragAmount
-                // ★ 通过 position 差值计算垂直分量
-                val currentY = change.position.y
-                lastPosition?.let { last ->
-                    totalY += currentY - last.y
-                }
-                lastPosition = change.position
             },
             onDragEnd = {
                 if (triggered) return@detectHorizontalDragGestures
-
                 val route = navController.currentBackStackEntry?.destination?.route
                 val current = destinations.indexOfFirst { it.direction.route == route }
-                if (current == -1) return@detectHorizontalDragGestures
-
-                if (abs(totalX) < distanceThreshold) return@detectHorizontalDragGestures
-
-                val angleDegrees = Math.toDegrees(atan2(abs(totalY).toDouble(), abs(totalX).toDouble()))
-                if (angleDegrees > maxAngleDegrees) return@detectHorizontalDragGestures
-
-                val target = if (totalX < 0) {
-                    if (current + 1 < destinations.size) current + 1 else current
-                } else {
-                    if (current - 1 >= 0) current - 1 else current
-                }
-
-                if (target != current) {
-                    navController.navigate(destinations[target].direction.route) {
-                        popUpTo(NavGraphs.root.route) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                if (current != -1 && abs(totalX) >= thresholdPx) {
+                    val target = if (totalX < 0) {
+                        (current + 1).coerceAtMost(destinations.lastIndex)
+                    } else {
+                        (current - 1).coerceAtLeast(0)
                     }
-                    onSwipeComplete()
-                    triggered = true
+                    if (target != current) {
+                        navController.navigate(destinations[target].direction.route) {
+                            popUpTo(NavGraphs.root.route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                        onSwipeComplete()
+                        triggered = true
+                    }
                 }
             }
         )
