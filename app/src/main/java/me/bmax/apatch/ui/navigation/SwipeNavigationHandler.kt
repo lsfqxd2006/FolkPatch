@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.Velocity
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -59,6 +60,12 @@ internal fun rememberVisibleDestinations(): List<BottomBarDestination> {
 
 /**
  * 左右滑动切换主页面手势
+ * 
+ * 行业标准配置：
+ * - 距离阈值：35dp（比原生 25dp 稍大，防误触更好）
+ * - 速度阈值：400dp/s（Android 原生标准）
+ * - 满足任一条件即触发切换
+ * - 顺序切换，到边界停止
  */
 @Composable
 fun Modifier.swipeToSwitchTab(
@@ -68,8 +75,8 @@ fun Modifier.swipeToSwitchTab(
 ): Modifier {
     val destinations = rememberVisibleDestinations()
     val density = LocalDensity.current
-    val distanceThreshold = with(density) { 35.dp.toPx() }      // ★ 35dp（防误触优化）
-    val velocityThreshold = with(density) { 400.dp.toPx() }     // ★ 400dp/s（原生标准）
+    val distanceThreshold = with(density) { 35.dp.toPx() }
+    val velocityThreshold = with(density) { 400.dp.toPx() }
 
     return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete) {
         var totalX = 0f
@@ -92,8 +99,10 @@ fun Modifier.swipeToSwitchTab(
                 if (current == -1) return@detectDragGestures
 
                 // 触发条件：距离达标 或 速度达标
-                val shouldTrigger = abs(totalX) >= distanceThreshold || abs(velocity.x) >= velocityThreshold
-                if (!shouldTrigger) return@detectDragGestures
+                val speed = abs(velocity.x)
+                if (abs(totalX) < distanceThreshold && speed < velocityThreshold) {
+                    return@detectDragGestures
+                }
 
                 // 顺序切换，到边界停止（不循环）
                 val target = if (totalX < 0) {
@@ -108,7 +117,6 @@ fun Modifier.swipeToSwitchTab(
                         launchSingleTop = true
                         restoreState = true
                     }
-                    // 切换完成 → 重置悬浮导航栏计时器
                     onSwipeComplete()
                     triggered = true
                 }
