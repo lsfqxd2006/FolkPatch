@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -19,9 +20,6 @@ import me.bmax.apatch.ui.screen.BottomBarDestination
 import kotlin.math.abs
 import kotlin.math.atan2
 
-/**
- * 计算当前可见的主页面列表（与底部导航栏显示完全一致）
- */
 @Composable
 internal fun rememberVisibleDestinations(): List<BottomBarDestination> {
     val kpState by APApplication.kpStateLiveData.observeAsState(APApplication.State.UNKNOWN_STATE)
@@ -58,14 +56,6 @@ internal fun rememberVisibleDestinations(): List<BottomBarDestination> {
     }
 }
 
-/**
- * 左右滑动切换主页面手势
- *
- * 配置：
- * - 距离阈值：30dp（跟手 + 防误触）
- * - 角度阈值：30°（以水平为基准，过滤斜滑）
- * - 顺序切换，到边界停止
- */
 @Composable
 fun Modifier.swipeToSwitchTab(
     navController: NavHostController,
@@ -80,18 +70,25 @@ fun Modifier.swipeToSwitchTab(
     return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete) {
         var totalX = 0f
         var totalY = 0f
+        var lastPosition: Offset? = null
         var triggered = false
 
         detectHorizontalDragGestures(
-            onDragStart = {
+            onDragStart = { change ->
                 totalX = 0f
                 totalY = 0f
+                lastPosition = change.position
                 triggered = false
                 onSwipeStart()
             },
             onHorizontalDrag = { change, dragAmount ->
                 totalX += dragAmount
-                totalY += change.positionChange().y
+                // ★ 通过 position 差值计算垂直分量
+                val currentY = change.position.y
+                lastPosition?.let { last ->
+                    totalY += currentY - last.y
+                }
+                lastPosition = change.position
             },
             onDragEnd = {
                 if (triggered) return@detectHorizontalDragGestures
@@ -100,14 +97,11 @@ fun Modifier.swipeToSwitchTab(
                 val current = destinations.indexOfFirst { it.direction.route == route }
                 if (current == -1) return@detectHorizontalDragGestures
 
-                // ★ 距离检查
                 if (abs(totalX) < distanceThreshold) return@detectHorizontalDragGestures
 
-                // ★ 角度检查（以水平为基准，水平 = 0°）
                 val angleDegrees = Math.toDegrees(atan2(abs(totalY).toDouble(), abs(totalX).toDouble()))
                 if (angleDegrees > maxAngleDegrees) return@detectHorizontalDragGestures
 
-                // ★ 确定方向
                 val target = if (totalX < 0) {
                     if (current + 1 < destinations.size) current + 1 else current
                 } else {
