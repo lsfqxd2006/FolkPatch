@@ -1,6 +1,6 @@
 package me.bmax.apatch.ui.navigation
 
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -10,7 +10,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.Velocity
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -60,12 +59,6 @@ internal fun rememberVisibleDestinations(): List<BottomBarDestination> {
 
 /**
  * 左右滑动切换主页面手势
- * 
- * 行业标准配置：
- * - 距离阈值：35dp（比原生 25dp 稍大，防误触更好）
- * - 速度阈值：400dp/s（Android 原生标准）
- * - 满足任一条件即触发切换
- * - 顺序切换，到边界停止
  */
 @Composable
 fun Modifier.swipeToSwitchTab(
@@ -74,51 +67,40 @@ fun Modifier.swipeToSwitchTab(
     onSwipeComplete: () -> Unit
 ): Modifier {
     val destinations = rememberVisibleDestinations()
-    val density = LocalDensity.current
-    val distanceThreshold = with(density) { 35.dp.toPx() }
-    val velocityThreshold = with(density) { 400.dp.toPx() }
+    val thresholdPx = with(LocalDensity.current) { 35.dp.toPx() }
 
-    return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete) {
+    return this.pointerInput(destinations, navController, onSwipeStart, onSwipeComplete, thresholdPx) {
         var totalX = 0f
         var triggered = false
 
-        detectDragGestures(
+        detectHorizontalDragGestures(
             onDragStart = {
                 totalX = 0f
                 triggered = false
                 onSwipeStart()
             },
-            onDrag = { _, dragAmount ->
-                totalX += dragAmount.x
+            onHorizontalDrag = { _, dragAmount ->
+                totalX += dragAmount
             },
-            onDragEnd = { velocity ->
-                if (triggered) return@detectDragGestures
-
+            onDragEnd = {
+                if (triggered) return@detectHorizontalDragGestures
                 val route = navController.currentBackStackEntry?.destination?.route
                 val current = destinations.indexOfFirst { it.direction.route == route }
-                if (current == -1) return@detectDragGestures
-
-                // 触发条件：距离达标 或 速度达标
-                val speed = abs(velocity.x)
-                if (abs(totalX) < distanceThreshold && speed < velocityThreshold) {
-                    return@detectDragGestures
-                }
-
-                // 顺序切换，到边界停止（不循环）
-                val target = if (totalX < 0) {
-                    if (current + 1 < destinations.size) current + 1 else current
-                } else {
-                    if (current - 1 >= 0) current - 1 else current
-                }
-
-                if (target != current) {
-                    navController.navigate(destinations[target].direction.route) {
-                        popUpTo(NavGraphs.root.route) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                if (current != -1 && abs(totalX) >= thresholdPx) {
+                    val target = if (totalX < 0) {
+                        (current + 1).coerceAtMost(destinations.lastIndex)
+                    } else {
+                        (current - 1).coerceAtLeast(0)
                     }
-                    onSwipeComplete()
-                    triggered = true
+                    if (target != current) {
+                        navController.navigate(destinations[target].direction.route) {
+                            popUpTo(NavGraphs.root.route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                        onSwipeComplete()
+                        triggered = true
+                    }
                 }
             }
         )
