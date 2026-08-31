@@ -79,7 +79,7 @@ fun InstallScreen(navigator: DestinationsNavigator, uri: Uri, type: MODULE_TYPE)
      * log is kept in [fullLogBuffer] for saving to a file.
      */
     fun appendDisplay(line: String) {
-        if (line.startsWith("\u001B[H\u001BJ")) { // clear command
+        if (line.startsWith("\u001B[H\u001B[J")) { // clear command
             displayBuffer.setLength(0)
             displayBuffer.append(line.substring(6))
         } else {
