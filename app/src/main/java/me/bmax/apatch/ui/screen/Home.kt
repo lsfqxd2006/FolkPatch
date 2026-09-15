@@ -521,9 +521,15 @@ private fun TopBar(
     val edlTitle = stringResource(id = R.string.reboot_edl)
     val edlConfirmText = stringResource(id = R.string.reboot_edl_confirm)
     var pendingRebootReason by remember { mutableStateOf<String?>(null) }
-    val rebootConfirmDialog = rememberConfirmDialog(onConfirm = {
-        pendingRebootReason?.let { reboot(it) }
-    })
+    val rebootConfirmDialog = rememberConfirmDialog(
+        onConfirm = {
+            pendingRebootReason?.let { reboot(it) }
+            pendingRebootReason = null
+        },
+        onDismiss = {
+            pendingRebootReason = null
+        }
+    )
     // ========== 新增结束 ==========
 
     TopAppBar(title = {
