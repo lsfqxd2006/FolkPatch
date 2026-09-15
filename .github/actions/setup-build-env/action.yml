@@ -18,7 +18,7 @@ runs:
     # 3. Android SDK – v4 已支持 Node 24
     - uses: android-actions/setup-android@v4
       with:
-        packages: 'platform-tools platforms;android-37 build-tools;36.1.0 ndk;30.0.15729638'
+        packages: 'platform-tools build-tools;36.1.0'
 
     # 4. Gradle – 升级到 v5，优化缓存（移除 cache-cleanup: always，提升命中率）
     - uses: gradle/actions/setup-gradle@v5
