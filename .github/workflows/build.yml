@@ -2,10 +2,10 @@ name: Build FolkPatch
 
 on:
   push:
-    branches: [ main, swiptest ]
+    branches: [ main, SwipOriKpTest ]
     paths: [ 'app/**', 'fpd/**', '.github/workflows/build.yml' ]
   pull_request:
-    branches: [ main, swiptest ]
+    branches: [ main, SwipOriKpTest ]
     paths: [ 'app/**', 'fpd/**', '.github/workflows/build.yml' ]
   workflow_dispatch:
     inputs:
