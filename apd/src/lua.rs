@@ -433,9 +433,9 @@ pub fn bind_plugin_api(lua: &Lua) -> LuaResult<()> {
     Ok(())
 }
 
-pub fn exec_stage_lua(stage: &str, wait: bool, superkey: &str) -> Result<()> {
+pub fn exec_stage_lua(stage: &str, wait: bool) -> Result<()> {
     let stage_safe = stage.replace('-', "_");
-    run_lua(superkey, &stage_safe, true, wait).map_err(|e| anyhow::anyhow!("{}", e))?;
+    run_lua("", &stage_safe, true, wait).map_err(|e| anyhow::anyhow!("{}", e))?;
     Ok(())
 }
 
@@ -621,7 +621,7 @@ pub fn run_lua(id: &str, function: &str, on_each_module: bool, _wait: bool) -> m
         for pair in modules.pairs::<String, mlua::Table>() {
             let (_, module_table) = pair?;
             if let Ok(func_obj) = module_table.get::<mlua::Function>(function) {
-                func_obj.call::<()>(id)?;
+                func_obj.call::<()>(())?;
             }
         }
     } else {

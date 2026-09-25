@@ -15,6 +15,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.topjohnwu.superuser.CallbackList
 import me.bmax.apatch.ui.CrashHandleActivity
+import me.bmax.apatch.util.APatchKeyHelper
 import me.bmax.apatch.util.APatchCli
 import me.bmax.apatch.util.verifyAppSignature
 import me.bmax.apatch.ui.theme.MusicConfig
@@ -253,78 +254,103 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
 
 
         var superKey: String = ""
-            set(value) {
-                field = value
-                _kpStateInitializedLiveData.postValue(false)
-                val ready = Natives.nativeReady(value)
-                _kpStateLiveData.value =
-                    if (ready) State.KERNELPATCH_INSTALLED else State.UNKNOWN_STATE
-                _apStateLiveData.value =
-                    if (ready) State.ANDROIDPATCH_NOT_INSTALLED else State.UNKNOWN_STATE
-                Log.d(TAG, "state: " + _kpStateLiveData.value)
-                if (!ready) {
-                    _kpStateInitializedLiveData.postValue(true)
-                    return
-                }
+            private set
 
-                thread {
-                    try {
-                        val rc = Natives.su(0, null)
-                        if (!rc) {
-                            Log.e(TAG, "Native.su failed")
-                            return@thread
+        fun rememberCustomSuperKey(value: String) {
+            if (value != "su") {
+                APatchKeyHelper.writeSPSuperKey(value)
+            }
+        }
+
+        fun setSuperKeyAndRefresh(value: String) {
+            superKey = value
+            _kpStateInitializedLiveData.postValue(false)
+            val ready = Natives.nativeReady(value)
+            _kpStateLiveData.value =
+                if (ready) State.KERNELPATCH_INSTALLED else State.UNKNOWN_STATE
+            _apStateLiveData.value =
+                if (ready) State.ANDROIDPATCH_NOT_INSTALLED else State.UNKNOWN_STATE
+            Log.d(TAG, "state: " + _kpStateLiveData.value)
+            if (!ready) {
+                _kpStateInitializedLiveData.postValue(true)
+                return
+            }
+
+            thread {
+                try {
+                    val rc = Natives.su(0, null)
+                    if (!rc) {
+                        Log.e(TAG, "Native.su failed")
+                        return@thread
+                    }
+
+                    APatchCli.refresh()
+
+                    val buildV = Version.getKpImg()
+                    val installedV = Version.installedKPTime()
+
+                    Log.d(TAG, "kp installed version: ${installedV}, build version: $buildV")
+
+                    val isBlocked = apApp.isKernelPatchUpdateBlocked()
+
+                    if (buildV != installedV) {
+                        if (isBlocked) {
+                            _kpStateLiveData.postValue(State.KERNELPATCH_INSTALLED)
+                        } else {
+                            _kpStateLiveData.postValue(State.KERNELPATCH_NEED_UPDATE)
                         }
+                    }
+                    Log.d(TAG, "kp state: " + _kpStateLiveData.value)
 
-                        APatchCli.refresh()
+                    if (File(NEED_REBOOT_FILE).exists()) {
+                        _kpStateLiveData.postValue(State.KERNELPATCH_NEED_REBOOT)
+                    }
+                    Log.d(TAG, "kp state: " + _kpStateLiveData.value)
 
-                        val buildV = Version.getKpImg()
-                        val installedV = Version.installedKPTime()
+                    val bundledHash = Version.getBundledApdSha256()
+                    val installedHash = Version.getInstalledApdSha256()
+                    Log.d(TAG, "bundled apd sha256: $bundledHash, installed apd sha256: $installedHash")
 
-                        Log.d(TAG, "kp installed version: ${installedV}, build version: $buildV")
+                    val isApBlocked = apApp.isAndroidPatchUpdateBlocked()
 
-                        val isBlocked = apApp.isKernelPatchUpdateBlocked()
-
-                        if (buildV != installedV) {
-                            if (isBlocked) {
-                                _kpStateLiveData.postValue(State.KERNELPATCH_INSTALLED)
-                            } else {
-                                _kpStateLiveData.postValue(State.KERNELPATCH_NEED_UPDATE)
-                            }
-                        }
-                        Log.d(TAG, "kp state: " + _kpStateLiveData.value)
-
-                        if (File(NEED_REBOOT_FILE).exists()) {
-                            _kpStateLiveData.postValue(State.KERNELPATCH_NEED_REBOOT)
-                        }
-                        Log.d(TAG, "kp state: " + _kpStateLiveData.value)
-
-                        val bundledHash = Version.getBundledApdSha256()
-                        val installedHash = Version.getInstalledApdSha256()
-                        Log.d(TAG, "bundled apd sha256: $bundledHash, installed apd sha256: $installedHash")
-
-                        val isApBlocked = apApp.isAndroidPatchUpdateBlocked()
-
-                        if (installedHash.isNotEmpty()) {
-                            if (bundledHash == installedHash) {
+                    if (installedHash.isNotEmpty()) {
+                        if (bundledHash == installedHash) {
+                            _apStateLiveData.postValue(State.ANDROIDPATCH_INSTALLED)
+                        } else {
+                            if (isApBlocked) {
                                 _apStateLiveData.postValue(State.ANDROIDPATCH_INSTALLED)
                             } else {
-                                if (isApBlocked) {
-                                    _apStateLiveData.postValue(State.ANDROIDPATCH_INSTALLED)
-                                } else {
-                                    _apStateLiveData.postValue(State.ANDROIDPATCH_NEED_UPDATE)
-                                }
+                                _apStateLiveData.postValue(State.ANDROIDPATCH_NEED_UPDATE)
                             }
-                        } else {
-                            _apStateLiveData.postValue(State.ANDROIDPATCH_NOT_INSTALLED)
                         }
-                        Log.d(TAG, "ap state: " + _apStateLiveData.value)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to refresh patch state", e)
-                    } finally {
-                        _kpStateInitializedLiveData.postValue(true)
+                    } else {
+                        _apStateLiveData.postValue(State.ANDROIDPATCH_NOT_INSTALLED)
                     }
+                    Log.d(TAG, "ap state: " + _apStateLiveData.value)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to refresh patch state", e)
+                } finally {
+                    _kpStateInitializedLiveData.postValue(true)
                 }
             }
+        }
+
+        private fun resolveSuperKey(): String {
+            APatchKeyHelper.setSharedPreferences(sharedPreferences)
+            val savedKey = APatchKeyHelper.readSPSuperKey()
+
+            if (Natives.nativeReady("su")) {
+                Log.i(TAG, "signature auth ready")
+                return "su"
+            }
+
+            if (!savedKey.isNullOrEmpty() && Natives.nativeReady(savedKey)) {
+                Log.i(TAG, "using stored SuperKey for legacy kernel")
+                return savedKey
+            }
+
+            return "su"
+        }
 
         private fun bypassHiddenApiRestrictions() {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
@@ -414,6 +440,8 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
         }
         
         me.bmax.apatch.util.LauncherIconUtils.applySaved(this)
+        APatchKeyHelper.setSharedPreferences(sharedPreferences)
+        setSuperKeyAndRefresh(resolveSuperKey())
 
         Log.d(TAG, "Initializing OkHttpClient...")
         okhttpClient =
@@ -425,7 +453,7 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
                 .addInterceptor { block ->
                     block.proceed(
                         block.request().newBuilder()
-                            .header("User-Agent", "APatch/${BuildConfig.VERSION_CODE}")
+                            .header("User-Agent", "FolkPatch/${BuildConfig.VERSION_CODE}")
                             .header("Accept-Language", Locale.getDefault().toLanguageTag()).build()
                     )
                 }.build()

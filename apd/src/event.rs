@@ -25,12 +25,6 @@ use crate::{
 };
 
 pub fn report_kernel(superkey: Option<String>, event: &str, state: &str) {
-    let rc = supercall::report_kernel_event(&superkey, event, state);
-    if rc == 0 {
-        return;
-    }
-    warn!("direct kernel event {event}/{state} failed: {rc}; falling back to SUPERCMD");
-
     let args = [
         superkey.unwrap_or("su".to_string()),
         "event".to_string(),
@@ -191,12 +185,7 @@ fn exec_fpd_umount() {
 }
 
 pub fn on_post_data_fs(superkey: Option<String>) -> Result<()> {
-    let key_len = superkey.as_ref().map(|s| s.len()).unwrap_or(0);
-    let key_preview = superkey.as_ref().map(|s| {
-        if s.len() > 4 { &s[..2] } else { s }
-    }).unwrap_or("<None>");
-    info!("[diag:post_fs_data] ENTER superkey_present={} key_len={} preview='{}..'", superkey.is_some(), key_len, key_preview);
-
+    info!("post-fs-data");
     utils::umask(0);
     report_kernel(superkey.clone(), "post-fs-data", "before");
 
@@ -304,7 +293,7 @@ pub fn on_post_data_fs(superkey: Option<String>) -> Result<()> {
     if let Err(e) = module::exec_stage_script("post-fs-data", true) {
         warn!("exec post-fs-data scripts failed: {}", e);
     }
-    if let Err(e) = lua::exec_stage_lua("post-fs-data", true, superkey.as_deref().unwrap_or("")) {
+    if let Err(e) = lua::exec_stage_lua("post-fs-data", true) {
         warn!("Failed to exec post-fs-data lua: {}", e);
     }
     if let Err(e) = lua::exec_plugin_stage("post-fs-data") {
@@ -358,7 +347,7 @@ fn run_stage(stage: &str, superkey: Option<String>, block: bool) {
     if let Err(e) = module::exec_stage_script(stage, block) {
         warn!("Failed to exec {stage} scripts: {e}");
     }
-    if let Err(e) = lua::exec_stage_lua(stage, block, superkey.as_deref().unwrap_or("")) {
+    if let Err(e) = lua::exec_stage_lua(stage, block) {
         warn!("Failed to exec {stage} lua: {e}");
     }
     if let Err(e) = lua::exec_plugin_stage(stage) {
@@ -367,9 +356,7 @@ fn run_stage(stage: &str, superkey: Option<String>, block: bool) {
 }
 
 pub fn on_services(superkey: Option<String>) -> Result<()> {
-    let key_len = superkey.as_ref().map(|s| s.len()).unwrap_or(0);
-    info!("[diag:services] ENTER superkey_present={} key_len={}", superkey.is_some(), key_len);
-
+    info!("services");
     supercall::apply_sucompat(&superkey);
 
     if Path::new(defs::UTS_SPOOF_RETRY_FILE).exists() {
@@ -405,9 +392,7 @@ fn run_uid_monitor() {
 }
 
 pub fn on_boot_completed(superkey: Option<String>) -> Result<()> {
-    let key_len = superkey.as_ref().map(|s| s.len()).unwrap_or(0);
-    info!("[diag:boot_completed] ENTER superkey_present={} key_len={}", superkey.is_some(), key_len);
-
+    info!("boot-completed");
     supercall::apply_sucompat(&superkey);
 
     // Clear UTS spoof boot safety flag — boot completed successfully
@@ -435,15 +420,12 @@ pub fn on_boot_completed(superkey: Option<String>) -> Result<()> {
 }
 
 pub fn on_manager_boot_completed(superkey: Option<String>) -> Result<()> {
-    let key_len_before = superkey.as_ref().map(|s| s.len()).unwrap_or(0);
-    info!("[diag:manager_boot] ENTER superkey_present={} key_len_before={}", superkey.is_some(), key_len_before);
+    info!("manager boot fallback");
 
     let superkey = superkey.or_else(|| {
-        info!("Manager boot fallback invoked without explicit superkey, defaulting to trusted-manager key 'su'");
+        info!("Manager boot fallback invoked without explicit authentication key");
         Some("su".to_string())
     });
-
-    info!("[diag:manager_boot] superkey_present={} key_len_after={}", superkey.is_some(), superkey.as_ref().map(|s| s.len()).unwrap_or(0));
 
     supercall::apply_sucompat(&superkey);
 
