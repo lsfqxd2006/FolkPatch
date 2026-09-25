@@ -156,6 +156,7 @@
     <string name="patch_item_skey">登仙秘钥</string>
     <string name="patch_custom_superkey">自拟登仙秘钥</string>
     <string name="patch_custom_superkey_summary">道友仍可设秘钥以御内核，此器已获仙印认可</string>
+    <string name="patch_custom_superkey_optional">可择；此器已获仙印认可，通常无须另拟秘钥</string>
     <string name="patch_item_set_skey_label">登仙秘钥须凝炼八至六十三道符文，含天数字文，毋杂邪魔异符。</string>
     <string name="patch_confirm_superkey">再次凝炼登仙秘钥</string>
     <string name="patch_skey_mismatch">两次登仙秘钥不合</string>

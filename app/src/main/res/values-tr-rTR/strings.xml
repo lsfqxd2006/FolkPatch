@@ -176,6 +176,7 @@
     <string name="patch_item_skey">SuperKey</string>
     <string name="patch_custom_superkey">Özel SuperKey</string>
     <string name="patch_custom_superkey_summary">Hâlâ root ve kernel yönetimi için SuperKey kullanabilirsiniz, yönetici çekirdek tarafından yerleşik imza ile yetkilendirilmiştir</string>
+    <string name="patch_custom_superkey_optional">İsteğe bağlı; imzalı yönetici normalde özel anahtar gerektirmez</string>
     <string name="patch_item_set_skey_label">SuperKey 8-63 karakter uzunluğunda olmalı; rakam ve harf içermeli, özel karakter içermemelidir.</string>
     <string name="patch_confirm_superkey">SuperKey Onayla</string>
     <string name="patch_skey_mismatch">SuperKey eşleşmiyor</string>
