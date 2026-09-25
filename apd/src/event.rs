@@ -9,9 +9,7 @@ use notify::{
 use signal_hook::{consts::signal::*, iterator::Signals};
 use std::process::Stdio;
 use std::{
-    env,
-    ffi::CStr,
-    fs,
+    env, fs,
     os::unix::{fs::PermissionsExt, process::CommandExt},
     path::{Path, PathBuf},
     process::Command,
@@ -34,10 +32,8 @@ fn migrate_file(old: &str, new: &str) -> Result<()> {
     if let Some(parent) = Path::new(new).parent() {
         fs::create_dir_all(parent)?;
     }
-    if !Path::new(new).exists() {
-        if fs::rename(old_path, new).is_err() {
-            fs::copy(old_path, new)?;
-        }
+    if !Path::new(new).exists() && fs::rename(old_path, new).is_err() {
+        fs::copy(old_path, new)?;
     }
     if Path::new(new).exists() {
         let _ = fs::remove_file(old_path);
@@ -137,6 +133,23 @@ fn uts_is_active() -> bool {
         && (version.is_empty() || current_version == version)
 }
 
+fn property_policy_unresolved(
+    current: impl IntoIterator<Item = Option<String>>,
+    expected: impl IntoIterator<Item = &'static str>,
+) -> bool {
+    let mut supported = 0usize;
+    let mut mismatched = 0usize;
+    for (current, expected) in current.into_iter().zip(expected) {
+        if let Some(current) = current {
+            supported += 1;
+            if current != expected {
+                mismatched += 1;
+            }
+        }
+    }
+    supported > 0 && mismatched > 0
+}
+
 fn runtime_policy_unresolved(superkey: &Option<String>) -> usize {
     let mut unresolved = 0;
 
@@ -160,16 +173,9 @@ fn runtime_policy_unresolved(superkey: &Option<String>) -> usize {
             ("ro.boot.flash.locked", "1"),
             ("ro.boot.veritymode", "enforcing"),
         ];
-        let unsupported = expected
-            .iter()
-            .filter(|(key, _)| crate::utils::getprop(key).is_none())
-            .count();
-        let mismatched = expected
-            .iter()
-            .filter_map(|(key, value)| crate::utils::getprop(key).map(|current| (current, *value)))
-            .filter(|(current, value)| current != value)
-            .count();
-        if !Path::new(fpd_path()).exists() || (unsupported == 0 && mismatched > 0) {
+        let current = expected.iter().map(|(key, _)| crate::utils::getprop(key));
+        let expected_values = expected.iter().map(|(_, value)| *value);
+        if !Path::new(fpd_path()).exists() || property_policy_unresolved(current, expected_values) {
             unresolved += 1;
         }
     }
@@ -344,17 +350,16 @@ fn exec_fpd_umount() {
         warn!("fpd binary not found, please install it manually");
         return;
     }
-    let result = unsafe {
-        Command::new(fpd)
-            .arg("-umount")
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .pre_exec(|| {
-                let _ = utils::switch_mnt_ns(1);
-                Ok(())
-            })
-            .output()
-    };
+    let mut command = Command::new(fpd);
+    command
+        .arg("-umount")
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    if let Err(error) = utils::command_in_mnt_ns(&mut command, 1) {
+        warn!("runtime mount namespace unavailable: {error}");
+        return;
+    }
+    let result = command.output();
     match result {
         Ok(output) => {
             let stdout = String::from_utf8_lossy(&output.stdout);
@@ -569,23 +574,16 @@ pub fn on_services(superkey: Option<String>) -> Result<()> {
 fn run_uid_monitor() {
     info!("Trigger run_uid_monitor!");
 
-    let mut command = &mut Command::new("/data/adb/apd");
-    {
-        command = command.process_group(0);
-        command = unsafe {
-            command.pre_exec(|| {
-                // ignore the error?
-                switch_cgroups();
-                Ok(())
-            })
-        };
+    let mut command = Command::new("/data/adb/apd");
+    utils::background_command(&mut command);
+    match command.arg("uid-listener").spawn() {
+        Ok(mut child) => {
+            thread::spawn(move || {
+                let _ = child.wait();
+            });
+        }
+        Err(error) => warn!("Cannot start UID listener: {error}"),
     }
-    command = command.arg("uid-listener");
-
-    command
-        .spawn()
-        .map(|_| ())
-        .expect("[run_uid_monitor] Failed to run uid monitor");
 }
 
 pub fn on_boot_completed(superkey: Option<String>) -> Result<()> {
@@ -677,13 +675,30 @@ pub fn on_manager_boot_completed(superkey: Option<String>) -> Result<()> {
 }
 
 pub fn start_uid_listener() -> Result<()> {
+    use std::os::{fd::AsRawFd, unix::fs::OpenOptionsExt};
+    let listener_lock = fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .mode(0o600)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+        .open("/data/adb/ap/uid-listener.lock")?;
+    if unsafe { libc::flock(listener_lock.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
+        let error = std::io::Error::last_os_error();
+        if error.raw_os_error() == Some(libc::EWOULDBLOCK) {
+            info!("UID listener already running; duplicate invocation ignored");
+            return Ok(());
+        }
+        return Err(error.into());
+    }
+
     info!("start_uid_listener triggered!");
     println!("[start_uid_listener] Registering...");
 
     // create inotify instance
     const SYS_PACKAGES_LIST_TMP: &str = "/data/system/packages.list.tmp";
     let sys_packages_list_tmp = PathBuf::from(&SYS_PACKAGES_LIST_TMP);
-    let dir: PathBuf = sys_packages_list_tmp.parent().unwrap().into();
+    let dir = PathBuf::from("/data/system");
 
     let (tx, rx) = std::sync::mpsc::channel();
     let tx_clone = tx.clone();
@@ -692,11 +707,17 @@ pub fn start_uid_listener() -> Result<()> {
     {
         let mutex_clone = mutex.clone();
         thread::spawn(move || {
-            let mut signals = Signals::new([SIGTERM, SIGINT, SIGPWR]).unwrap();
-            if let Some(sig) = signals.forever().next() {
+            let Ok(mut signals) = Signals::new([SIGTERM, SIGINT, SIGPWR]) else {
+                warn!("Cannot register UID listener shutdown signals");
+                return;
+            };
+            for sig in signals.forever() {
                 log::warn!("[shutdown] Caught signal {sig}, refreshing package list...");
                 let skey = c"su";
                 refresh_ap_package_list(skey, &mutex_clone);
+                if sig == SIGTERM || sig == SIGINT {
+                    std::process::exit(0);
+                }
             }
         });
     }
@@ -710,7 +731,7 @@ pub fn start_uid_listener() -> Result<()> {
             }) => {
                 if paths.contains(&sys_packages_list_tmp) {
                     info!("[uid_monitor] System packages list changed, sending to tx...");
-                    tx_clone.send(false).unwrap()
+                    let _ = tx_clone.send(false);
                 }
             }
             Err(err) => warn!("inotify error: {err}"),
@@ -721,12 +742,8 @@ pub fn start_uid_listener() -> Result<()> {
 
     watcher.watch(dir.as_ref(), RecursiveMode::NonRecursive)?;
 
-    {
-        let skey = CStr::from_bytes_with_nul(b"su\0")
-            .expect("[start_uid_listener] CStr::from_bytes_with_nul failed");
-        info!("[uid_monitor] Performing initial refresh on startup...");
-        refresh_ap_package_list(&skey, &mutex);
-    }
+    // Register first, so changes during the initial refresh remain queued.
+    refresh_ap_package_list(c"su", &mutex);
 
     let mut debounce = false;
     while let Ok(delayed) = rx.recv() {
@@ -788,4 +805,36 @@ pub fn soft_reboot(superkey: Option<String>) -> Result<()> {
     on_services(superkey)?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unsupported_properties_do_not_mask_supported_mismatches() {
+        let expected = ["locked", "green", "1", "enforcing"];
+
+        assert!(!property_policy_unresolved(
+            [None, None, None, None],
+            expected
+        ));
+        assert!(!property_policy_unresolved(
+            [
+                Some("locked".into()),
+                Some("green".into()),
+                Some("1".into()),
+                Some("enforcing".into()),
+            ],
+            expected
+        ));
+        assert!(property_policy_unresolved(
+            [Some("unlocked".into()), None, None, None,],
+            expected
+        ));
+        assert!(property_policy_unresolved(
+            [Some("locked".into()), Some("orange".into()), None, None,],
+            expected
+        ));
+    }
 }

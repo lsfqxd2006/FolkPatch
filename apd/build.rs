@@ -20,9 +20,9 @@ fn get_kp_version() -> (u32, u32, u32) {
 fn get_git_version() -> Result<(u32, String), std::io::Error> {
     // Try to get version code from environment variable first
     let version_code: u32 = if let Ok(env_version_code) = env::var("APATCH_VERSION_CODE") {
-        env_version_code.parse().map_err(|_| {
-            std::io::Error::new(std::io::ErrorKind::Other, "Failed to parse {version_code}")
-        })?
+        env_version_code
+            .parse()
+            .map_err(|_| std::io::Error::other("Failed to parse APATCH_VERSION_CODE"))?
     } else {
         // Fallback to git-based calculation
         let output = Command::new("git")
@@ -31,9 +31,10 @@ fn get_git_version() -> Result<(u32, String), std::io::Error> {
 
         let output = output.stdout;
         let git_count = String::from_utf8(output).expect("Failed to read git count stdout");
-        let git_count: u32 = git_count.trim().parse().map_err(|_| {
-            std::io::Error::new(std::io::ErrorKind::Other, "Failed to parse git count")
-        })?;
+        let git_count: u32 = git_count
+            .trim()
+            .parse()
+            .map_err(|_| std::io::Error::other("Failed to parse git count"))?;
         std::cmp::max(11000 + 200 + git_count, 10762) // For historical reasons and ensure minimum version
     };
 
