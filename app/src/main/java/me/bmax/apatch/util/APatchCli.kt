@@ -806,18 +806,63 @@ fun setMagicMountEnabled(enable: Boolean) {
         }
 }
 
+private fun migrateFeatureFile(current: String, legacy: String): Boolean {
+    val parent = File(current).parent
+    val shell = getRootShell()
+    val commands = mutableListOf<String>()
+    if (parent != null) {
+        commands += "mkdir -p '$parent'"
+    }
+    commands += "if [ ! -e '$current' ] && [ -e '$legacy' ]; then mv '$legacy' '$current' 2>/dev/null || cp -af '$legacy' '$current'; fi"
+    commands += "if [ -e '$current' ]; then rm -f '$legacy'; fi"
+    shell.newJob().add(*commands.toTypedArray()).exec()
+    val file = SuFile(current)
+    file.shell = shell
+    return file.exists()
+}
+
+private fun featureFileExists(current: String, legacy: String): Boolean {
+    return migrateFeatureFile(current, legacy)
+}
+
+private fun readFeatureText(current: String, legacy: String): String {
+    migrateFeatureFile(current, legacy)
+    return ShellUtils.fastCmd(
+        getRootShell(),
+        "cat '$current' 2>/dev/null",
+    ) ?: ""
+}
+
+private fun removeFeatureFile(current: String, legacy: String) {
+    getRootShell().newJob().add("rm -f '$current' '$legacy'").exec()
+}
+
 fun isHideServiceEnabled(): Boolean {
-    val hideService = SuFile(APApplication.HIDE_SERVICE_FILE)
-    hideService.shell = getRootShell()
-    return hideService.exists()
+    return featureFileExists(
+        APApplication.HIDE_SERVICE_FILE,
+        APApplication.LEGACY_HIDE_SERVICE_FILE,
+    )
 }
 
 fun setHideServiceEnabled(enable: Boolean) {
     val shell = getRootShell()
-    shell.newJob().add("${if (enable) "touch" else "rm -rf"} ${APApplication.HIDE_SERVICE_FILE}")
+    if (enable) {
+        migrateFeatureFile(
+            APApplication.HIDE_SERVICE_FILE,
+            APApplication.LEGACY_HIDE_SERVICE_FILE,
+        )
+    } else {
+        removeFeatureFile(
+            APApplication.HIDE_SERVICE_FILE,
+            APApplication.LEGACY_HIDE_SERVICE_FILE,
+        )
+    }
+    if (enable) {
+        shell.newJob().add("touch '${APApplication.HIDE_SERVICE_FILE}'")
         .submit { result ->
             Log.i(TAG, "setHideServiceEnabled result: ${result.isSuccess} [${result.out}]")
         }
+    }
     // 如果启用，异步执行一次 Hide 二进制（避免阻塞 UI 线程）
     if (enable) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -827,15 +872,25 @@ fun setHideServiceEnabled(enable: Boolean) {
 }
 
 fun isUtsSpoofEnabled(): Boolean {
-    val flagFile = SuFile(APApplication.UTS_SPOOF_ENABLE_FILE)
-    flagFile.shell = getRootShell()
-    return flagFile.exists()
+    return featureFileExists(
+        APApplication.UTS_SPOOF_ENABLE_FILE,
+        APApplication.LEGACY_UTS_SPOOF_ENABLE_FILE,
+    )
 }
 
 fun setUtsSpoofEnabled(enable: Boolean) {
-    val shell = getRootShell()
-    shell.newJob().add("${if (enable) "touch" else "rm -f"} ${APApplication.UTS_SPOOF_ENABLE_FILE}")
-        .exec()
+    if (enable) {
+        migrateFeatureFile(
+            APApplication.UTS_SPOOF_ENABLE_FILE,
+            APApplication.LEGACY_UTS_SPOOF_ENABLE_FILE,
+        )
+        getRootShell().newJob().add("touch '${APApplication.UTS_SPOOF_ENABLE_FILE}'").exec()
+    } else {
+        removeFeatureFile(
+            APApplication.UTS_SPOOF_ENABLE_FILE,
+            APApplication.LEGACY_UTS_SPOOF_ENABLE_FILE,
+        )
+    }
 }
 
 fun writeUtsSpoofConfig(release: String, version: String) {
@@ -843,39 +898,60 @@ fun writeUtsSpoofConfig(release: String, version: String) {
     val escapedRelease = release.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "'\\''")
     val escapedVersion = version.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "'\\''")
     val json = "{\"release\":\"$escapedRelease\",\"version\":\"$escapedVersion\"}"
-    shell.newJob().add("echo '$json' > ${APApplication.UTS_SPOOF_CONFIG_FILE}")
+    shell.newJob().add("echo '$json' > '${APApplication.UTS_SPOOF_CONFIG_FILE}'")
         .exec()
+    removeFeatureFile(
+        APApplication.UTS_SPOOF_CONFIG_FILE,
+        APApplication.LEGACY_UTS_SPOOF_CONFIG_FILE,
+    )
 }
 
 fun removeUtsSpoofConfig() {
-    val shell = getRootShell()
-    shell.newJob().add("rm -f ${APApplication.UTS_SPOOF_CONFIG_FILE}").exec()
+    removeFeatureFile(
+        APApplication.UTS_SPOOF_CONFIG_FILE,
+        APApplication.LEGACY_UTS_SPOOF_CONFIG_FILE,
+    )
 }
 
 fun isPathHideEnabled(): Boolean {
-    val flagFile = SuFile(APApplication.PATHHIDE_ENABLE_FILE)
-    flagFile.shell = getRootShell()
-    return flagFile.exists()
+    return featureFileExists(
+        APApplication.PATHHIDE_ENABLE_FILE,
+        APApplication.LEGACY_PATHHIDE_ENABLE_FILE,
+    )
 }
 
 fun setPathHideEnabled(enable: Boolean) {
-    val shell = getRootShell()
-    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
-    shell.newJob().add("${if (enable) "touch" else "rm -f"} ${APApplication.PATHHIDE_ENABLE_FILE}")
-        .exec()
+    if (enable) {
+        migrateFeatureFile(
+            APApplication.PATHHIDE_ENABLE_FILE,
+            APApplication.LEGACY_PATHHIDE_ENABLE_FILE,
+        )
+        getRootShell().newJob().add("touch '${APApplication.PATHHIDE_ENABLE_FILE}'").exec()
+    } else {
+        removeFeatureFile(
+            APApplication.PATHHIDE_ENABLE_FILE,
+            APApplication.LEGACY_PATHHIDE_ENABLE_FILE,
+        )
+    }
 }
 
 fun writePathHidePaths(paths: String) {
     val shell = getRootShell()
-    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
+    shell.newJob().add("mkdir -p '${APApplication.PATHHIDE_DIR}'").exec()
     val escapedPaths = normalizePathHidePaths(paths).replace("'", "'\\''")
-    shell.newJob().add("echo -n '$escapedPaths' > ${APApplication.PATHHIDE_PATHS_FILE}")
+    shell.newJob().add("echo -n '$escapedPaths' > '${APApplication.PATHHIDE_PATHS_FILE}'")
         .exec()
+    removeFeatureFile(
+        APApplication.PATHHIDE_PATHS_FILE,
+        APApplication.LEGACY_PATHHIDE_PATHS_FILE,
+    )
 }
 
 fun readPathHidePaths(): String {
-    val shell = getRootShell()
-    val raw = ShellUtils.fastCmd(shell, "cat ${APApplication.PATHHIDE_PATHS_FILE} 2>/dev/null") ?: ""
+    val raw = readFeatureText(
+        APApplication.PATHHIDE_PATHS_FILE,
+        APApplication.LEGACY_PATHHIDE_PATHS_FILE,
+    )
     return normalizePathHidePaths(raw)
 }
 
@@ -902,74 +978,112 @@ private fun normalizePathHidePath(path: String): String? {
 
 fun writePathHideUids(uids: String) {
     val shell = getRootShell()
-    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
+    shell.newJob().add("mkdir -p '${APApplication.PATHHIDE_DIR}'").exec()
     val escapedUids = uids.replace("'", "'\\''")
-    shell.newJob().add("echo -n '$escapedUids' > ${APApplication.PATHHIDE_UIDS_FILE}")
+    shell.newJob().add("echo -n '$escapedUids' > '${APApplication.PATHHIDE_UIDS_FILE}'")
         .exec()
+    removeFeatureFile(
+        APApplication.PATHHIDE_UIDS_FILE,
+        APApplication.LEGACY_PATHHIDE_UIDS_FILE,
+    )
 }
 
 fun readPathHideUids(): String {
-    val shell = getRootShell()
-    return ShellUtils.fastCmd(shell, "cat ${APApplication.PATHHIDE_UIDS_FILE} 2>/dev/null") ?: ""
+    return readFeatureText(
+        APApplication.PATHHIDE_UIDS_FILE,
+        APApplication.LEGACY_PATHHIDE_UIDS_FILE,
+    )
 }
 
 fun isPathHideUidModeEnabled(): Boolean {
-    val file = SuFile(APApplication.PATHHIDE_UID_MODE_FILE)
-    file.shell = getRootShell()
-    return file.exists()
+    return featureFileExists(
+        APApplication.PATHHIDE_UID_MODE_FILE,
+        APApplication.LEGACY_PATHHIDE_UID_MODE_FILE,
+    )
 }
 
 fun isPathHideFilterSystemEnabled(): Boolean {
-    val file = SuFile(APApplication.PATHHIDE_FILTER_SYSTEM_FILE)
-    file.shell = getRootShell()
-    return file.exists()
+    return featureFileExists(
+        APApplication.PATHHIDE_FILTER_SYSTEM_FILE,
+        APApplication.LEGACY_PATHHIDE_FILTER_SYSTEM_FILE,
+    )
 }
 
 fun setPathHideUidMode(enable: Boolean) {
-    val shell = getRootShell()
-    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
-    shell.newJob().add("${if (enable) "touch" else "rm -f"} ${APApplication.PATHHIDE_UID_MODE_FILE}")
-        .exec()
+    if (enable) {
+        migrateFeatureFile(
+            APApplication.PATHHIDE_UID_MODE_FILE,
+            APApplication.LEGACY_PATHHIDE_UID_MODE_FILE,
+        )
+        getRootShell().newJob().add("touch '${APApplication.PATHHIDE_UID_MODE_FILE}'").exec()
+    } else {
+        removeFeatureFile(
+            APApplication.PATHHIDE_UID_MODE_FILE,
+            APApplication.LEGACY_PATHHIDE_UID_MODE_FILE,
+        )
+    }
 }
 
 fun setPathHideFilterSystem(enable: Boolean) {
-    val shell = getRootShell()
-    shell.newJob().add("mkdir -p ${APApplication.PATHHIDE_DIR}").exec()
-    shell.newJob().add("${if (enable) "touch" else "rm -f"} ${APApplication.PATHHIDE_FILTER_SYSTEM_FILE}")
-        .exec()
+    if (enable) {
+        migrateFeatureFile(
+            APApplication.PATHHIDE_FILTER_SYSTEM_FILE,
+            APApplication.LEGACY_PATHHIDE_FILTER_SYSTEM_FILE,
+        )
+        getRootShell().newJob().add("touch '${APApplication.PATHHIDE_FILTER_SYSTEM_FILE}'").exec()
+    } else {
+        removeFeatureFile(
+            APApplication.PATHHIDE_FILTER_SYSTEM_FILE,
+            APApplication.LEGACY_PATHHIDE_FILTER_SYSTEM_FILE,
+        )
+    }
 }
 
 fun setNetIsolateEnabled(enable: Boolean) {
-    val shell = getRootShell()
-    shell.newJob().add("mkdir -p ${APApplication.NETISOLATE_DIR}").exec()
-    shell.newJob().add("${if (enable) "touch" else "rm -f"} ${APApplication.NETISOLATE_ENABLE_FILE}")
-        .exec()
+    if (enable) {
+        migrateFeatureFile(
+            APApplication.NETISOLATE_ENABLE_FILE,
+            APApplication.LEGACY_NETISOLATE_ENABLE_FILE,
+        )
+        getRootShell().newJob().add("touch '${APApplication.NETISOLATE_ENABLE_FILE}'").exec()
+    } else {
+        removeFeatureFile(
+            APApplication.NETISOLATE_ENABLE_FILE,
+            APApplication.LEGACY_NETISOLATE_ENABLE_FILE,
+        )
+    }
 }
 
 fun writeNetIsolateUids(uids: String) {
     val shell = getRootShell()
-    shell.newJob().add("mkdir -p ${APApplication.NETISOLATE_DIR}").exec()
+    shell.newJob().add("mkdir -p '${APApplication.NETISOLATE_DIR}'").exec()
     val escapedUids = uids.replace("'", "'\\''")
-    shell.newJob().add("echo -n '$escapedUids' > ${APApplication.NETISOLATE_UIDS_FILE}").exec()
+    shell.newJob().add("echo -n '$escapedUids' > '${APApplication.NETISOLATE_UIDS_FILE}'").exec()
+    removeFeatureFile(
+        APApplication.NETISOLATE_UIDS_FILE,
+        APApplication.LEGACY_NETISOLATE_UIDS_FILE,
+    )
 }
 
 fun isNetIsolateEnabled(): Boolean {
-    val flagFile = SuFile(APApplication.NETISOLATE_ENABLE_FILE)
-    flagFile.shell = getRootShell()
-    return flagFile.exists()
+    return featureFileExists(
+        APApplication.NETISOLATE_ENABLE_FILE,
+        APApplication.LEGACY_NETISOLATE_ENABLE_FILE,
+    )
 }
 
 fun readNetIsolateUids(): String {
-    val shell = getRootShell()
-    return ShellUtils.fastCmd(shell, "cat ${APApplication.NETISOLATE_UIDS_FILE} 2>/dev/null") ?: ""
+    return readFeatureText(
+        APApplication.NETISOLATE_UIDS_FILE,
+        APApplication.LEGACY_NETISOLATE_UIDS_FILE,
+    )
 }
 
 fun executeHideBinary(): Boolean {
     val shell = getRootShell()
     val context = apApp.applicationContext
 
-    // 确保 fp/bin 目录存在
-    shell.newJob().add("mkdir -p /data/adb/fp/bin").exec()
+    shell.newJob().add("mkdir -p '${File(APApplication.HIDE_BINARY_PATH).parent}'").exec()
 
     // 从 assets 复制 fpd 二进制文件到可执行目录
     try {
@@ -985,6 +1099,8 @@ fun executeHideBinary(): Boolean {
             "cp ${tempFile.absolutePath} ${APApplication.HIDE_BINARY_PATH}",
             "chmod 755 ${APApplication.HIDE_BINARY_PATH}",
             "restorecon ${APApplication.HIDE_BINARY_PATH}",
+            "rm -f ${APApplication.LEGACY_FPD_PATH}",
+            "rmdir /data/adb/fp/bin /data/adb/fp 2>/dev/null || true",
             "${APApplication.HIDE_BINARY_PATH} -hide"
         )
 
@@ -1025,8 +1141,7 @@ fun executeUmountBinary(): Boolean {
     val shell = getRootShell()
     val context = apApp.applicationContext
 
-    // 确保 fp/bin 目录存在
-    shell.newJob().add("mkdir -p /data/adb/fp/bin").exec()
+    shell.newJob().add("mkdir -p '${File(APApplication.UMOUNT_BINARY_PATH).parent}'").exec()
 
     try {
         val fpdAsset = context.assets.open("Service/fpd")
@@ -1040,6 +1155,8 @@ fun executeUmountBinary(): Boolean {
             "cp ${tempFile.absolutePath} ${APApplication.UMOUNT_BINARY_PATH}",
             "chmod 755 ${APApplication.UMOUNT_BINARY_PATH}",
             "restorecon ${APApplication.UMOUNT_BINARY_PATH}",
+            "rm -f ${APApplication.LEGACY_FPD_PATH}",
+            "rmdir /data/adb/fp/bin /data/adb/fp 2>/dev/null || true",
             "${APApplication.UMOUNT_BINARY_PATH} -umount"
         )
 

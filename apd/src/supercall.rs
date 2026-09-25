@@ -6,7 +6,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use libc::{EEXIST, EINVAL, c_long, c_void, syscall, uid_t};
+use libc::{EINVAL, c_long, c_void, syscall, uid_t};
 use log::{error, info, warn};
 
 use crate::package::{read_ap_package_config, synchronize_package_uid};
@@ -36,6 +36,7 @@ const SUPERCALL_UTS_SET: c_long = 0x1050;
 const SUPERCALL_UTS_RESET: c_long = 0x1051;
 
 const SUPERCALL_PATHHIDE_ENABLE: c_long = 0x1064;
+const SUPERCALL_PATHHIDE_STATUS: c_long = 0x1065;
 const SUPERCALL_PATHHIDE_ADD: c_long = 0x1060;
 const SUPERCALL_PATHHIDE_CLEAR: c_long = 0x1063;
 const SUPERCALL_PATHHIDE_UID_MODE: c_long = 0x106A;
@@ -44,10 +45,12 @@ const SUPERCALL_PATHHIDE_UID_CLEAR: c_long = 0x1069;
 const SUPERCALL_PATHHIDE_FILTER_SYSTEM: c_long = 0x106B;
 
 const SUPERCALL_NETISOLATE_ENABLE: c_long = 0x1070;
+const SUPERCALL_NETISOLATE_STATUS: c_long = 0x1071;
 const SUPERCALL_NETISOLATE_UID_ADD: c_long = 0x1072;
 const SUPERCALL_NETISOLATE_UID_REMOVE: c_long = 0x1073;
 const SUPERCALL_NETISOLATE_UID_LIST: c_long = 0x1074;
 const SUPERCALL_NETISOLATE_UID_CLEAR: c_long = 0x1075;
+const SUPERCALL_SU_AUDIT_LIST: c_long = 0x1120;
 
 const SUPERCALL_SCONTEXT_LEN: usize = 0x60;
 
@@ -235,21 +238,18 @@ fn sc_control_feature(key: &CStr, name: &CStr, enable: bool) -> c_long {
 
 pub fn apply_sucompat(superkey: &Option<String>) {
     if !std::path::Path::new(crate::defs::SUCOMPAT_FILE).exists() {
-        info!("[sucompat] disabled, skipping");
         return;
     }
 
     let Some(key) = convert_superkey(superkey) else {
-        warn!("[sucompat] no superkey available");
+        warn!("runtime policy authentication unavailable");
         return;
     };
     let name = CStr::from_bytes_with_nul(b"sucompat_extra\0")
         .expect("sucompat feature name must be valid");
     let rc = sc_control_feature(&key, name, true);
     if rc < 0 {
-        warn!("[sucompat] restore failed: {}", rc);
-    } else {
-        info!("[sucompat] restored from persistent config");
+        warn!("runtime policy apply failed: {}", rc);
     }
 }
 
@@ -355,7 +355,10 @@ pub fn refresh_ap_package_list(skey: &CStr, mutex: &Arc<Mutex<()>>) {
                         .flatten()
                 }) {
                     let rc = sc_set_ap_mod_exclude(skey, uid, 0);
-                    info!("[refresh_su_list] Clearing manager exclude {} ({}) result={}", manager_pkg, uid, rc);
+                    info!(
+                        "[refresh_su_list] Clearing manager exclude {} ({}) result={}",
+                        manager_pkg, uid, rc
+                    );
                 }
             }
         }
@@ -609,7 +612,6 @@ fn sc_netisolate_uid_clear(key: &CStr) -> c_long {
 
 pub fn apply_netisolate(superkey: &Option<String>) {
     if !std::path::Path::new(crate::defs::NETISOLATE_ENABLE_FILE).exists() {
-        info!("[netisolate] disabled, skipping");
         return;
     }
 
@@ -617,7 +619,7 @@ pub fn apply_netisolate(superkey: &Option<String>) {
     let key = match key {
         Some(k) => k,
         None => {
-            warn!("[netisolate] no superkey available");
+            warn!("runtime policy authentication unavailable");
             return;
         }
     };
@@ -636,37 +638,72 @@ pub fn apply_netisolate(superkey: &Option<String>) {
                     Ok(uid) => {
                         let rc = sc_netisolate_uid_add(&key, uid);
                         if rc < 0 {
-                            warn!("[netisolate] add uid {} failed: {}", uid, rc);
+                            warn!("runtime policy entry failed: {}", rc);
                         } else {
                             count += 1;
                         }
                     }
                     Err(_) => {
-                        warn!("[netisolate] invalid uid: '{}'", uid_str);
+                        warn!("runtime policy contains an invalid uid");
                     }
                 }
             }
-            info!("[netisolate] {} uids restored", count);
+            let _ = count;
         }
         Err(_) => {
-            info!("[netisolate] no uids file");
+            sc_netisolate_uid_clear(&key);
         }
     }
 
     // Step 2: Enable netisolate LAST
     let rc = sc_netisolate_enable(&key, true);
     if rc < 0 {
-        warn!("[netisolate] enable failed: {}", rc);
+        warn!("runtime policy apply failed: {}", rc);
         return;
     }
+}
 
-    info!("[netisolate] auto-apply completed");
+pub fn pathhide_status(superkey: &Option<String>) -> Option<(bool, u32)> {
+    let key = convert_superkey(superkey)?;
+    let rc = unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_PATHHIDE_STATUS),
+        ) as c_long
+    };
+    (rc >= 0).then(|| (((rc >> 32) & 1) != 0, rc as u32))
+}
+
+pub fn netisolate_status(superkey: &Option<String>) -> Option<(bool, u32)> {
+    let key = convert_superkey(superkey)?;
+    let rc = unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_NETISOLATE_STATUS),
+        ) as c_long
+    };
+    (rc >= 0).then(|| (((rc >> 32) & 1) != 0, rc as u32))
+}
+
+pub fn su_audit_count(superkey: &Option<String>) -> Option<u32> {
+    let key = convert_superkey(superkey)?;
+    let rc = unsafe {
+        syscall(
+            __NR_SUPERCALL,
+            key.as_ptr(),
+            ver_and_cmd(SUPERCALL_SU_AUDIT_LIST),
+            std::ptr::null::<c_void>(),
+            0,
+        ) as c_long
+    };
+    (rc >= 0).then_some(rc as u32)
 }
 
 pub fn apply_pathhide(superkey: &Option<String>) {
     if !std::path::Path::new(crate::defs::PATHHIDE_ENABLE_FILE).exists() {
         set_retry_flag(crate::defs::PATHHIDE_RETRY_FILE, false, "pathhide");
-        info!("[pathhide] disabled, skipping");
         return;
     }
 
@@ -675,7 +712,7 @@ pub fn apply_pathhide(superkey: &Option<String>) {
         Some(k) => k,
         None => {
             set_retry_flag(crate::defs::PATHHIDE_RETRY_FILE, true, "pathhide");
-            warn!("[pathhide] no superkey available");
+            warn!("runtime policy authentication unavailable");
             return;
         }
     };
@@ -696,20 +733,19 @@ pub fn apply_pathhide(superkey: &Option<String>) {
                         let rc = sc_pathhide_add(&key, &path_cstr);
                         if rc < 0 {
                             had_error = true;
-                            warn!("[pathhide] add path '{}' failed: {}", path, rc);
+                            warn!("runtime policy entry failed: {}", rc);
                         } else {
                             count += 1;
                         }
                     }
-                    Err(e) => {
-                        warn!("[pathhide] invalid path '{}': {}", path, e);
+                    Err(_e) => {
+                        warn!("runtime policy contains an invalid path");
                     }
                 }
             }
-            info!("[pathhide] {} paths restored", count);
+            let _ = count;
         }
         Err(_) => {
-            info!("[pathhide] no paths file, clearing blocklist");
             sc_pathhide_clear(&key);
         }
     }
@@ -730,27 +766,27 @@ pub fn apply_pathhide(superkey: &Option<String>) {
                             let rc = sc_pathhide_uid_add(&key, uid);
                             if rc < 0 {
                                 had_error = true;
-                                warn!("[pathhide] add uid {} failed: {}", uid, rc);
+                                warn!("runtime policy entry failed: {}", rc);
                             } else {
                                 count += 1;
                             }
                         }
                         Err(_) => {
-                            warn!("[pathhide] invalid uid: '{}'", uid_str);
+                            warn!("runtime policy contains an invalid uid");
                         }
                     }
                 }
-                info!("[pathhide] {} uids restored", count);
+                let _ = count;
             }
             Err(_) => {
-                info!("[pathhide] no uids file");
+                sc_pathhide_uid_clear(&key);
             }
         }
 
         let rc = sc_pathhide_uid_mode(&key, true);
         if rc < 0 {
             had_error = true;
-            warn!("[pathhide] uid mode enable failed: {}", rc);
+            warn!("runtime policy apply failed: {}", rc);
         }
     }
 
@@ -759,7 +795,7 @@ pub fn apply_pathhide(superkey: &Option<String>) {
         let rc = sc_pathhide_filter_system(&key, true);
         if rc < 0 {
             had_error = true;
-            warn!("[pathhide] filter_system enable failed: {}", rc);
+            warn!("runtime policy apply failed: {}", rc);
         }
     }
 
@@ -767,16 +803,12 @@ pub fn apply_pathhide(superkey: &Option<String>) {
     let rc = sc_pathhide_enable(&key, true);
     if rc < 0 {
         set_retry_flag(crate::defs::PATHHIDE_RETRY_FILE, true, "pathhide");
-        warn!("[pathhide] enable failed: {}", rc);
+        warn!("runtime policy apply failed: {}", rc);
         return;
     }
 
     set_retry_flag(crate::defs::PATHHIDE_RETRY_FILE, had_error, "pathhide");
-    if had_error {
-        warn!("[pathhide] auto-apply completed with recoverable errors, retry requested");
-    } else {
-        info!("[pathhide] auto-apply completed");
-    }
+    if had_error {}
 }
 
 fn sc_uts_set(key: &CStr, release: Option<&CStr>, version: Option<&CStr>) -> c_long {
@@ -853,14 +885,13 @@ pub fn apply_uts_spoof(superkey: &Option<String>) {
 
     if !Path::new(crate::defs::UTS_SPOOF_ENABLE_FILE).exists() {
         set_retry_flag(crate::defs::UTS_SPOOF_RETRY_FILE, false, "uts_spoof");
-        info!("[uts_spoof] disabled, skipping");
         return;
     }
 
     let config_content = match std::fs::read_to_string(crate::defs::UTS_SPOOF_CONFIG_FILE) {
         Ok(c) => c,
         Err(e) => {
-            warn!("[uts_spoof] failed to read config: {}", e);
+            warn!("runtime policy configuration read failed: {}", e);
             return;
         }
     };
@@ -868,7 +899,7 @@ pub fn apply_uts_spoof(superkey: &Option<String>) {
     let config: serde_json::Value = match serde_json::from_str(&config_content) {
         Ok(v) => v,
         Err(e) => {
-            warn!("[uts_spoof] failed to parse config: {}", e);
+            warn!("runtime policy configuration parse failed: {}", e);
             return;
         }
     };
@@ -881,7 +912,7 @@ pub fn apply_uts_spoof(superkey: &Option<String>) {
         Some(k) => k,
         None => {
             set_retry_flag(crate::defs::UTS_SPOOF_RETRY_FILE, true, "uts_spoof");
-            warn!("[uts_spoof] no superkey available");
+            warn!("runtime policy authentication unavailable");
             return;
         }
     };
@@ -889,7 +920,7 @@ pub fn apply_uts_spoof(superkey: &Option<String>) {
     let reset_rc = sc_uts_reset(&key);
     if reset_rc < 0 {
         set_retry_flag(crate::defs::UTS_SPOOF_RETRY_FILE, true, "uts_spoof");
-        warn!("[uts_spoof] reset failed: {}", reset_rc);
+        warn!("runtime policy reset failed: {}", reset_rc);
     }
 
     let retries = match std::fs::read_to_string(crate::defs::UTS_SPOOF_BOOT_PENDING) {
@@ -899,7 +930,7 @@ pub fn apply_uts_spoof(superkey: &Option<String>) {
 
     if retries >= MAX_BOOT_RETRIES {
         warn!(
-            "[uts_spoof] boot pending retries ({}) >= max ({}), skipping spoof to prevent bootloop",
+            "runtime policy retry limit reached ({}/{}), keeping the device bootable",
             retries, MAX_BOOT_RETRIES
         );
         let _ = std::fs::remove_file(crate::defs::UTS_SPOOF_BOOT_PENDING);
@@ -911,7 +942,7 @@ pub fn apply_uts_spoof(superkey: &Option<String>) {
         crate::defs::UTS_SPOOF_BOOT_PENDING,
         (retries + 1).to_string(),
     ) {
-        warn!("[uts_spoof] failed to write boot pending flag: {}", e);
+        warn!("runtime policy state write failed: {}", e);
     }
 
     // Only set if we have values to spoof
@@ -919,7 +950,7 @@ pub fn apply_uts_spoof(superkey: &Option<String>) {
         match CString::new(release) {
             Ok(c) => Some(c),
             Err(e) => {
-                warn!("[uts_spoof] invalid release string: {}", e);
+                warn!("runtime policy contains an invalid release value: {}", e);
                 None
             }
         }
@@ -930,7 +961,7 @@ pub fn apply_uts_spoof(superkey: &Option<String>) {
         match CString::new(version) {
             Ok(c) => Some(c),
             Err(e) => {
-                warn!("[uts_spoof] invalid version string: {}", e);
+                warn!("runtime policy contains an invalid version value: {}", e);
                 None
             }
         }
@@ -942,16 +973,11 @@ pub fn apply_uts_spoof(superkey: &Option<String>) {
         let rc = sc_uts_set(&key, release_cstr.as_deref(), version_cstr.as_deref());
         if rc == 0 {
             set_retry_flag(crate::defs::UTS_SPOOF_RETRY_FILE, false, "uts_spoof");
-            info!(
-                "[uts_spoof] applied: release='{}' version='{}'",
-                release, version
-            );
         } else {
             set_retry_flag(crate::defs::UTS_SPOOF_RETRY_FILE, true, "uts_spoof");
-            warn!("[uts_spoof] set failed: {}", rc);
+            warn!("runtime policy apply failed: {}", rc);
         }
     } else {
         set_retry_flag(crate::defs::UTS_SPOOF_RETRY_FILE, false, "uts_spoof");
-        info!("[uts_spoof] config has empty values, skipping set");
     }
 }
