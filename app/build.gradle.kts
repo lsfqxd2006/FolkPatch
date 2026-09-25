@@ -401,7 +401,7 @@ tasks.register<Exec>("cargoBuild") {
     args("ndk", "-t", "arm64-v8a", "build", "--release")
     workingDir("${project.rootDir}/apd")
     environment("APATCH_VERSION_CODE", "${managerVersionCode}")
-    environment("APATCH_VERSION_NAME", "${managerVersionCode}-Matsuzaka-yuki")
+    environment("APATCH_VERSION_NAME", managerVersionName)
 }
 
 tasks.register<Copy>("buildApd") {

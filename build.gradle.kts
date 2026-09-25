@@ -25,16 +25,30 @@ fun Project.exec(command: String, default: String): String {
     }
 }
 
-fun getGitCommitCount(): Int {
-    return exec("git rev-list --count HEAD", "0").toInt()
+fun getVersionProperties(): java.util.Properties {
+    val properties = java.util.Properties()
+    File(rootDir, "version.properties").inputStream().use(properties::load)
+    return properties
 }
 
-fun getGitDescribe(): String {
-    return exec("git rev-parse --verify --short HEAD", "unknown")
+fun getVersionProperty(name: String): String {
+    return getVersionProperties().getProperty(name)
+        ?: error("$name not found in version.properties")
+}
+
+fun getGitCommitCount(): Int {
+    val count = exec("git rev-list --count HEAD", "")
+    return count.toIntOrNull()?.takeIf { it > 0 }
+        ?: error("Failed to determine git commit count; GitHub checkout must use fetch-depth: 0")
 }
 
 fun getVersionCode(): Int {
-    return 115036
+    val code = getVersionProperty("managerVersionEpoch").toInt() + getGitCommitCount()
+    val floor = getVersionProperty("managerVersionFloor").toInt()
+    require(code > floor) {
+        "Computed versionCode $code is not greater than managerVersionFloor=$floor"
+    }
+    return code
 }
 
 fun getbranch(): String {
@@ -42,12 +56,14 @@ fun getbranch(): String {
 }
 
 fun getVersionName(): String {
-    return "5.0"
+    return getVersionProperty("managerVersionName")
 }
 
 tasks.register("printVersion") {
     doLast {
         println("Version code: $managerVersionCode")
         println("Version name: $managerVersionName")
+        println("Commit count: ${getGitCommitCount()}")
+        println("Version floor: ${getVersionProperty("managerVersionFloor")}")
     }
 }
