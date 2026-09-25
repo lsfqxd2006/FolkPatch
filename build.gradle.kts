@@ -56,7 +56,9 @@ fun getbranch(): String {
 }
 
 fun getVersionName(): String {
-    return getVersionProperty("managerVersionName")
+    val name = exec("git rev-parse --verify --short HEAD", "")
+    return name.takeIf { it.isNotEmpty() }
+        ?: error("Failed to determine git commit for versionName")
 }
 
 tasks.register("printVersion") {

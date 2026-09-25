@@ -30,6 +30,22 @@ fn get_version_property(name: &str) -> Result<String, std::io::Error> {
         .ok_or_else(|| std::io::Error::other(format!("{name} not found in version.properties")))
 }
 
+fn get_git_version_name() -> Result<String, std::io::Error> {
+    let output = Command::new("git")
+        .args(["rev-parse", "--verify", "--short", "HEAD"])
+        .output()?;
+    let name = String::from_utf8(output.stdout)
+        .map_err(|_| std::io::Error::other("Failed to read git version name"))?
+        .trim()
+        .to_owned();
+    if name.is_empty() {
+        return Err(std::io::Error::other(
+            "Failed to determine git version name",
+        ));
+    }
+    Ok(name)
+}
+
 fn get_git_version() -> Result<(u32, String), std::io::Error> {
     let floor: u32 = get_version_property("managerVersionFloor")?
         .parse()
@@ -63,7 +79,7 @@ fn get_git_version() -> Result<(u32, String), std::io::Error> {
 
     let version_name = match env::var("APATCH_VERSION_NAME") {
         Ok(value) => value,
-        Err(_) => get_version_property("managerVersionName")?,
+        Err(_) => get_git_version_name()?,
     };
     Ok((version_code, version_name))
 }
