@@ -56,6 +56,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -70,11 +71,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -225,7 +228,8 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
                     !viewModel.patching &&
                     !viewModel.patchdone
                 ) {
-                    PatchSuperKeyToggleCard(
+                    PatchSuperKeySection(
+                        viewModel = viewModel,
                         checked = needKey,
                         onCheckedChange = { checked ->
                             needKey = checked
@@ -237,14 +241,6 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
                                 .apply()
                         },
                     )
-
-                    AnimatedVisibility(
-                        visible = needKey,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut(),
-                    ) {
-                        SetSuperKeyView(viewModel)
-                    }
                 }
 
                 if (viewModel.useCustomKPImg && !viewModel.patching && !viewModel.patchdone) {
@@ -553,7 +549,8 @@ private fun KernelPatchImageView(kpImgInfo: KPModel.KPImgInfo) {
 }
 
 @Composable
-private fun PatchSuperKeyToggleCard(
+private fun PatchSuperKeySection(
+    viewModel: PatchesViewModel,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
@@ -562,7 +559,7 @@ private fun PatchSuperKeyToggleCard(
             SwitchItem(
                 icon = Icons.Default.Key,
                 title = stringResource(R.string.patch_custom_superkey),
-                summary = stringResource(R.string.patch_custom_superkey_summary),
+                summary = stringResource(R.string.patch_custom_superkey_optional),
                 checked = checked,
                 onCheckedChange = onCheckedChange,
             )
@@ -571,9 +568,12 @@ private fun PatchSuperKeyToggleCard(
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut(),
             ) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp)
-                )
+                Column {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp)
+                    )
+                    SetSuperKeyView(viewModel)
+                }
             }
         }
     }
@@ -588,95 +588,102 @@ private fun SetSuperKeyView(viewModel: PatchesViewModel) {
     val invalid = superKey.isNotEmpty() && !viewModel.checkSuperKeyValidation(superKey)
     val mismatch = superKeyConfirm.isNotEmpty() && superKey != superKeyConfirm
 
-    ExpressiveCard(flat = true) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.patch_item_skey),
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            if (invalid) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.patch_item_set_skey_label),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = superKey,
-                onValueChange = { value ->
-                    superKey = value
-                    viewModel.superkey =
-                        if (
-                            viewModel.checkSuperKeyValidation(value) &&
-                            (superKeyConfirm.isEmpty() || superKeyConfirm == value)
-                        ) value else ""
-                },
-                label = { Text(stringResource(R.string.patch_set_superkey)) },
-                singleLine = true,
-                visualTransformation = if (keyVisible) {
-                    VisualTransformation.None
-                } else {
-                    PasswordVisualTransformation()
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                trailingIcon = {
-                    IconButton(onClick = { keyVisible = !keyVisible }) {
-                        Icon(
-                            imageVector = if (keyVisible) Icons.Default.Visibility
-                            else Icons.Default.VisibilityOff,
-                            contentDescription = null,
-                        )
-                    }
-                },
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = superKeyConfirm,
-                onValueChange = { value ->
-                    superKeyConfirm = value
-                    viewModel.superkey =
-                        if (
-                            viewModel.checkSuperKeyValidation(superKey) &&
-                            superKey == value
-                        ) superKey else ""
-                },
-                label = { Text(stringResource(R.string.patch_confirm_superkey)) },
-                singleLine = true,
-                visualTransformation = if (confirmVisible) {
-                    VisualTransformation.None
-                } else {
-                    PasswordVisualTransformation()
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                trailingIcon = {
-                    IconButton(onClick = { confirmVisible = !confirmVisible }) {
-                        Icon(
-                            imageVector = if (confirmVisible) Icons.Default.Visibility
-                            else Icons.Default.VisibilityOff,
-                            contentDescription = null,
-                        )
-                    }
-                },
-            )
-            if (mismatch) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.patch_skey_mismatch),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-        }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.patch_item_set_skey_label),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = superKey,
+            onValueChange = { value ->
+                superKey = value
+                viewModel.superkey =
+                    if (
+                        viewModel.checkSuperKeyValidation(value) &&
+                        (superKeyConfirm.isEmpty() || superKeyConfirm == value)
+                    ) value else ""
+            },
+            label = { Text(stringResource(R.string.patch_set_superkey)) },
+            singleLine = true,
+            isError = invalid,
+            shape = RoundedCornerShape(16.dp),
+            visualTransformation = if (keyVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Next,
+            ),
+            colors = superKeyFieldColors(),
+            trailingIcon = {
+                IconButton(onClick = { keyVisible = !keyVisible }) {
+                    Icon(
+                        imageVector = if (keyVisible) Icons.Default.Visibility
+                        else Icons.Default.VisibilityOff,
+                        contentDescription = null,
+                    )
+                }
+            },
+        )
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = superKeyConfirm,
+            onValueChange = { value ->
+                superKeyConfirm = value
+                viewModel.superkey =
+                    if (
+                        viewModel.checkSuperKeyValidation(superKey) &&
+                        superKey == value
+                    ) superKey else ""
+            },
+            label = { Text(stringResource(R.string.patch_confirm_superkey)) },
+            singleLine = true,
+            isError = mismatch,
+            supportingText = if (mismatch) {
+                { Text(stringResource(R.string.patch_skey_mismatch)) }
+            } else null,
+            shape = RoundedCornerShape(16.dp),
+            visualTransformation = if (confirmVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done,
+            ),
+            colors = superKeyFieldColors(),
+            trailingIcon = {
+                IconButton(onClick = { confirmVisible = !confirmVisible }) {
+                    Icon(
+                        imageVector = if (confirmVisible) Icons.Default.Visibility
+                        else Icons.Default.VisibilityOff,
+                        contentDescription = null,
+                    )
+                }
+            },
+        )
     }
 }
+
+@Composable
+private fun superKeyFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+    errorContainerColor = MaterialTheme.colorScheme.errorContainer,
+    focusedBorderColor = MaterialTheme.colorScheme.primary,
+    unfocusedBorderColor = Color.Transparent,
+    errorBorderColor = MaterialTheme.colorScheme.error,
+)
 
 @Composable
 private fun CustomKPImgView(viewModel: PatchesViewModel) {
