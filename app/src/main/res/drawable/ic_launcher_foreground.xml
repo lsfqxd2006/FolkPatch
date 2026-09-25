@@ -10,10 +10,10 @@
         android:scaleX="0.774229886"
         android:scaleY="0.774229886">
         <path
-            android:fillColor="#FF000000"
+            android:fillColor="@color/ic_launcher_foreground"
             android:pathData="M44,30 H79 L75,41 H53 L49,51 H36 Z" />
         <path
-            android:fillColor="#FF000000"
+            android:fillColor="@color/ic_launcher_foreground"
             android:pathData="M35,56 L69,48 L65,60 L46,65 L42,77 H28 Z" />
     </group>
 </vector>
