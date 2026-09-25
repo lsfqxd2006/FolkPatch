@@ -837,6 +837,24 @@ private fun removeFeatureFile(current: String, legacy: String) {
     getRootShell().newJob().add("rm -f '$current' '$legacy'").exec()
 }
 
+private fun writeFeatureText(current: String, legacy: String, content: String): Boolean {
+    val shell = getRootShell()
+    val parent = File(current).parent
+    val escapedContent = content.replace("'", "'\\''")
+    val commands = mutableListOf<String>()
+    if (parent != null) {
+        commands += "mkdir -p '$parent'"
+    }
+    commands += "printf '%s' '$escapedContent' > '$current'"
+    commands += "test -e '$current'"
+    commands += "rm -f '$legacy'"
+    val result = shell.newJob().add(*commands.toTypedArray()).exec()
+    if (!result.isSuccess) {
+        Log.e(TAG, "Failed to write feature config '$current': ${result.out}")
+    }
+    return result.isSuccess
+}
+
 fun isHideServiceEnabled(): Boolean {
     return featureFileExists(
         APApplication.HIDE_SERVICE_FILE,
@@ -894,15 +912,13 @@ fun setUtsSpoofEnabled(enable: Boolean) {
 }
 
 fun writeUtsSpoofConfig(release: String, version: String) {
-    val shell = getRootShell()
-    val escapedRelease = release.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "'\\''")
-    val escapedVersion = version.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "'\\''")
+    val escapedRelease = release.replace("\\", "\\\\").replace("\"", "\\\"")
+    val escapedVersion = version.replace("\\", "\\\\").replace("\"", "\\\"")
     val json = "{\"release\":\"$escapedRelease\",\"version\":\"$escapedVersion\"}"
-    shell.newJob().add("echo '$json' > '${APApplication.UTS_SPOOF_CONFIG_FILE}'")
-        .exec()
-    removeFeatureFile(
+    writeFeatureText(
         APApplication.UTS_SPOOF_CONFIG_FILE,
         APApplication.LEGACY_UTS_SPOOF_CONFIG_FILE,
+        json,
     )
 }
 
@@ -936,14 +952,10 @@ fun setPathHideEnabled(enable: Boolean) {
 }
 
 fun writePathHidePaths(paths: String) {
-    val shell = getRootShell()
-    shell.newJob().add("mkdir -p '${APApplication.PATHHIDE_DIR}'").exec()
-    val escapedPaths = normalizePathHidePaths(paths).replace("'", "'\\''")
-    shell.newJob().add("echo -n '$escapedPaths' > '${APApplication.PATHHIDE_PATHS_FILE}'")
-        .exec()
-    removeFeatureFile(
+    writeFeatureText(
         APApplication.PATHHIDE_PATHS_FILE,
         APApplication.LEGACY_PATHHIDE_PATHS_FILE,
+        normalizePathHidePaths(paths),
     )
 }
 
@@ -977,14 +989,10 @@ private fun normalizePathHidePath(path: String): String? {
 }
 
 fun writePathHideUids(uids: String) {
-    val shell = getRootShell()
-    shell.newJob().add("mkdir -p '${APApplication.PATHHIDE_DIR}'").exec()
-    val escapedUids = uids.replace("'", "'\\''")
-    shell.newJob().add("echo -n '$escapedUids' > '${APApplication.PATHHIDE_UIDS_FILE}'")
-        .exec()
-    removeFeatureFile(
+    writeFeatureText(
         APApplication.PATHHIDE_UIDS_FILE,
         APApplication.LEGACY_PATHHIDE_UIDS_FILE,
+        uids,
     )
 }
 
@@ -1055,13 +1063,10 @@ fun setNetIsolateEnabled(enable: Boolean) {
 }
 
 fun writeNetIsolateUids(uids: String) {
-    val shell = getRootShell()
-    shell.newJob().add("mkdir -p '${APApplication.NETISOLATE_DIR}'").exec()
-    val escapedUids = uids.replace("'", "'\\''")
-    shell.newJob().add("echo -n '$escapedUids' > '${APApplication.NETISOLATE_UIDS_FILE}'").exec()
-    removeFeatureFile(
+    writeFeatureText(
         APApplication.NETISOLATE_UIDS_FILE,
         APApplication.LEGACY_NETISOLATE_UIDS_FILE,
+        uids,
     )
 }
 
