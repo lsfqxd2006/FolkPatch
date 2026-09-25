@@ -242,7 +242,7 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator, highlightKey: Strin
         }
     }
 
-    // 周期轮询 Shizuku 运行状态（pingBinder 无 root 开销，失败时回退 root 检查）
+    // 周期轮询 Shizuku Binder 状态；进程存在但 Binder 未就绪时不应显示为运行中。
     LaunchedEffect(kPatchReady, aPatchReady) {
         if (!(kPatchReady && aPatchReady)) return@LaunchedEffect
         while (true) {
@@ -586,9 +586,11 @@ fun FunctionSettingsScreen(navigator: DestinationsNavigator, highlightKey: Strin
                         } else {
                             scope.launch(Dispatchers.IO) {
                                 val success = ShizukuServiceManager.stop()
-                                ShizukuServiceManager.setEnabled(false)
+                                if (success) {
+                                    ShizukuServiceManager.setEnabled(false)
+                                }
                                 withContext(Dispatchers.Main) {
-                                    isShizukuEnabled = false
+                                    isShizukuEnabled = !success
                                     snackBarHost.showSnackbar(
                                         context.getString(
                                             if (success) R.string.settings_shizuku_stopped

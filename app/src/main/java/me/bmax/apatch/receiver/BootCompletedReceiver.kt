@@ -79,7 +79,7 @@ class BootCompletedReceiver : BroadcastReceiver() {
             }
 
             Log.i(TAG, "Shizuku auto-start begin")
-            for (attempt in 1..4) {
+            for (attempt in 1..2) {
                 if (attempt > 1) {
                     Thread.sleep(10_000L)
                 }
