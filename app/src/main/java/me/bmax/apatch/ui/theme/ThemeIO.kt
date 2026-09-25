@@ -79,7 +79,8 @@ internal object ThemeIO {
                     backgroundNightDim = BackgroundConfig.customBackgroundNightDim,
                     isFontEnabled = FontConfig.isCustomFontEnabled,
                     customColor = prefs.getString("custom_color", "indigo") ?: "indigo",
-                    homeLayoutStyle = prefs.getString("home_layout_style", "dashboard_ui") ?: "dashboard_ui",
+                    homeLayoutStyle = prefs.getString("home_layout_style", APApplication.HOME_LAYOUT_STYLE_DEFAULT)
+                        ?: APApplication.HOME_LAYOUT_STYLE_DEFAULT,
                     statsTopLayout = prefs.getString("stats_top_layout", "list") ?: "list",
                     nightModeEnabled = prefs.getBoolean("night_mode_enabled", true),
                     nightModeFollowSys = prefs.getBoolean("night_mode_follow_sys", false),
@@ -560,7 +561,7 @@ internal object ThemeIO {
                 val backgroundNightDim = json.optDouble("backgroundNightDim", backgroundDim.toDouble()).toFloat()
                 val isFontEnabled = json.optBoolean("isFontEnabled", false)
                 val customColor = json.optString("customColor", "indigo")
-                val homeLayoutStyle = json.optString("homeLayoutStyle", "sign")
+                val homeLayoutStyle = json.optString("homeLayoutStyle", APApplication.HOME_LAYOUT_STYLE_DEFAULT)
                 val statsTopLayout = json.optString("statsTopLayout", "list")
                 val nightModeEnabled = json.optBoolean("nightModeEnabled", true)
                 val nightModeFollowSys = json.optBoolean("nightModeFollowSys", true)
@@ -1064,7 +1065,7 @@ internal object ThemeIO {
                     .putBoolean("night_mode_follow_sys", true)
                     .putBoolean("use_system_color_theme", true)
                     .putString("custom_color", "indigo")
-                    .putString("home_layout_style", "dashboard_ui")
+                    .putString("home_layout_style", APApplication.HOME_LAYOUT_STYLE_DEFAULT)
                     .putString("stats_top_layout", "list")
                     .putString("color_generation_mode", "classic")
                     .putString("color_standard", "MD3_2021")

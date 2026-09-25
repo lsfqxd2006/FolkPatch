@@ -163,6 +163,7 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
         const val PREF_UTS_SPOOF_ENABLED = "uts_spoof_enabled"
         const val PREF_UTS_SPOOF_RELEASE = "uts_spoof_release"
         const val PREF_UTS_SPOOF_VERSION = "uts_spoof_version"
+        const val HOME_LAYOUT_STYLE_DEFAULT = "focus"
         private const val SHOW_BACKUP_WARN = "show_backup_warning"
         private const val CRASH_COUNT_KEY = "fp_crash_count"
         private const val CRASH_TIMESTAMP_KEY = "fp_crash_timestamp"
@@ -450,7 +451,7 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
                 .putBoolean("night_mode_follow_sys", true)
                 .putBoolean("use_system_color_theme", true)
                 .putString("custom_color", "indigo")
-                .putString("home_layout_style", "dashboard_ui")
+                .putString("home_layout_style", HOME_LAYOUT_STYLE_DEFAULT)
                 .apply()
             // 首次安装部署内置仪表盘卡片壁纸
             me.bmax.apatch.ui.theme.BackgroundManager.provisionDefaultDashboardCardBg(this)
