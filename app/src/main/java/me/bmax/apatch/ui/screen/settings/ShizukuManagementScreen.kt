@@ -73,6 +73,11 @@ private data class ShizukuApp(
     val shellOnly: Boolean,
 )
 
+private data class ShizukuLoadResult(
+    val serverIsRoot: Boolean,
+    val apps: List<ShizukuApp>,
+)
+
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,43 +85,66 @@ fun ShizukuManagementScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
     var loading by remember { mutableStateOf(true) }
     var available by remember { mutableStateOf(true) }
+    var loadFailed by remember { mutableStateOf(false) }
     var serverIsRoot by remember { mutableStateOf(false) }
     var apps by remember { mutableStateOf(emptyList<ShizukuApp>()) }
 
     suspend fun loadApps() {
         loading = true
-        val result = withContext(Dispatchers.IO) {
-            // 服务可能刚从设置页启动、binder 尚未完全就绪，短暂等待后再判定。
-            var ready = ShizukuServiceManager.isServerRunning()
-            var waited = 0
-            while (!ready && waited < 3000) {
-                Thread.sleep(200L)
-                waited += 200
-                ready = ShizukuServiceManager.isServerRunning()
+        try {
+            val result = withContext(Dispatchers.IO) {
+                // 服务可能刚从设置页启动、binder 尚未完全就绪，短暂等待后再判定。
+                var ready = ShizukuServiceManager.isServerRunning()
+                var waited = 0
+                while (!ready && waited < 3000) {
+                    Thread.sleep(200L)
+                    waited += 200
+                    ready = ShizukuServiceManager.isServerRunning()
+                }
+                if (!ready) {
+                    null
+                } else {
+                    val packageInfos = ShizukuServiceManager.getApplications() ?: return@withContext null
+                    val rootServer = ShizukuServiceManager.isRootServer()
+                    val loadedApps = packageInfos
+                        .mapNotNull { packageInfo ->
+                            val uid = packageInfo.applicationInfo?.uid ?: return@mapNotNull null
+                            ShizukuApp(
+                                packageInfo = packageInfo,
+                                uid = uid,
+                                allowed = ShizukuServiceManager.isAllowed(uid),
+                                shellOnly = ShizukuServiceManager.getShellOnly(uid),
+                            )
+                        }
+                        .distinctBy { it.uid }
+                        .sortedBy { app ->
+                            runCatching {
+                                app.packageInfo.applicationInfo
+                                    ?.loadLabel(context.packageManager)
+                                    ?.toString()
+                                    ?.lowercase()
+                                    .orEmpty()
+                            }.getOrDefault("")
+                        }
+                    ShizukuLoadResult(rootServer, loadedApps)
+                }
             }
-            if (!ready) {
-                null
+            available = result != null
+            loadFailed = false
+            if (result != null) {
+                serverIsRoot = result.serverIsRoot
+                apps = result.apps
             } else {
-                serverIsRoot = ShizukuServiceManager.isRootServer()
-                ShizukuServiceManager.getApplications()
-                    .mapNotNull { packageInfo ->
-                        val uid = packageInfo.applicationInfo?.uid ?: return@mapNotNull null
-                        ShizukuApp(
-                            packageInfo = packageInfo,
-                            uid = uid,
-                            allowed = ShizukuServiceManager.isAllowed(uid),
-                            shellOnly = ShizukuServiceManager.getShellOnly(uid),
-                        )
-                    }
-                    .distinctBy { it.uid }
-                    .sortedBy { app ->
-                        app.packageInfo.applicationInfo?.loadLabel(context.packageManager).toString().lowercase()
-                    }
+                apps = emptyList()
             }
+        } catch (t: Throwable) {
+            Log.e("ShizukuMgr", "loadApps failed", t)
+            available = false
+            loadFailed = true
+            apps = emptyList()
+        } finally {
+            loading = false
         }
-        available = result != null
-        apps = result.orEmpty()
-        loading = false
     }
 
     LaunchedEffect(Unit) { loadApps() }
@@ -151,6 +179,20 @@ fun ShizukuManagementScreen(navigator: DestinationsNavigator) {
                 modifier = Modifier.fillMaxSize().padding(padding),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) { CircularProgressIndicator(modifier = Modifier.padding(32.dp)) }
+            loadFailed -> Column(
+                modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = stringResource(R.string.shizuku_management_load_failed),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(16.dp))
+                Button(onClick = { scope.launch { loadApps() } }) {
+                    Text(stringResource(R.string.retry))
+                }
+            }
             !available -> Column(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -186,7 +228,8 @@ fun ShizukuManagementScreen(navigator: DestinationsNavigator) {
                 items(apps, key = { it.uid }) { app ->
                     val info = app.packageInfo.applicationInfo ?: return@items
                     val label = remember(app.packageInfo.packageName) {
-                        info.loadLabel(context.packageManager).toString()
+                        runCatching { info.loadLabel(context.packageManager).toString() }
+                            .getOrDefault(app.packageInfo.packageName)
                     }
                     SplicedColumnGroup(flat = true) {
                         item(key = "header") {

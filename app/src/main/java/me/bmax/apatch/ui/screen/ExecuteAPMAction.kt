@@ -61,8 +61,10 @@ fun ExecuteAPMActionScreen(navigator: DestinationsNavigator, moduleId: String) {
     val scrollState = rememberScrollState()
     var actionResult: Boolean
 
+    val clearScreenSequence = "\u001B[H\u001B[J"
+
     fun appendLog(line: String) {
-        fullLogBuffer.append(line).append("\n")
+        fullLogBuffer.append(line.removePrefix(clearScreenSequence)).append("\n")
     }
 
     /**
@@ -72,9 +74,9 @@ fun ExecuteAPMActionScreen(navigator: DestinationsNavigator, moduleId: String) {
      * The full, untruncated log is kept in [fullLogBuffer] for saving to a file.
      */
     fun appendDisplay(line: String) {
-        if (line.startsWith("\u001B[H\u001B[J")) { // clear command
+        if (line.startsWith(clearScreenSequence)) { // clear command
             displayBuffer.setLength(0)
-            displayBuffer.append(line.substring(6))
+            displayBuffer.append(line.removePrefix(clearScreenSequence))
         } else {
             displayBuffer.append(line)
             val len = displayBuffer.length

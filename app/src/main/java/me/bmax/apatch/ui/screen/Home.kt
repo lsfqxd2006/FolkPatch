@@ -179,11 +179,11 @@ fun HomeScreen(navigator: DestinationsNavigator) {
         }
     }
 
-    var homeLayout by remember { mutableStateOf(APApplication.sharedPreferences.getString("home_layout_style", "dashboard_ui")) }
+    var homeLayout by remember { mutableStateOf(APApplication.sharedPreferences.getString("home_layout_style", APApplication.HOME_LAYOUT_STYLE_DEFAULT)) }
     var showListInfoIcons by remember { mutableStateOf(APApplication.sharedPreferences.getBoolean("list_info_show_icons", false)) }
     val homeRefreshObserver by refreshTheme.observeAsState(false)
     if (homeRefreshObserver) {
-        homeLayout = APApplication.sharedPreferences.getString("home_layout_style", "dashboard_ui")
+        homeLayout = APApplication.sharedPreferences.getString("home_layout_style", APApplication.HOME_LAYOUT_STYLE_DEFAULT)
         showListInfoIcons = APApplication.sharedPreferences.getBoolean("list_info_show_icons", false)
     }
 

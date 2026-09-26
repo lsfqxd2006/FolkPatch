@@ -73,8 +73,13 @@ mv kernel kernel.ori
 
 echo "- Patching kernel"
 
+# "su" is only the placeholder for signed-manager/UID authorization.
+# Writing -S su would embed the fixed SHA-256("su") fingerprint in every image.
+KPT_ARGS=""
+[ "$SUPERKEY" != "su" ] && KPT_ARGS="-S $SUPERKEY"
+
 set -x
-./kptools -p -i kernel.ori -S "$SUPERKEY" -k kpimg -o kernel "$@"
+./kptools -p -i kernel.ori $KPT_ARGS -k kpimg -o kernel "$@"
 patch_rc=$?
 set +x
 
