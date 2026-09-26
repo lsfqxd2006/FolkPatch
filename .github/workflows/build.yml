@@ -2,7 +2,7 @@ name: Build FolkPatch
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, swipmain ]
     paths:
       - 'app/**'
       - 'apd/**'
@@ -14,7 +14,7 @@ on:
       - 'version.properties'
       - '.github/workflows/build.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, swipmain ]
     paths:
       - 'app/**'
       - 'apd/**'
