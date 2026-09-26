@@ -10,14 +10,12 @@ import android.os.Process
 import android.util.Log
 import me.bmax.apatch.util.ui.showToast
 import androidx.core.content.edit
-import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.topjohnwu.superuser.CallbackList
 import me.bmax.apatch.ui.CrashHandleActivity
 import me.bmax.apatch.util.APatchKeyHelper
 import me.bmax.apatch.util.APatchCli
-import me.bmax.apatch.util.verifyAppSignature
 import me.bmax.apatch.ui.theme.MusicConfig
 import me.bmax.apatch.util.MusicManager
 import me.bmax.apatch.util.Version
@@ -431,17 +429,6 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler, ImageLoade
                 exitProcess(0)
             }, 5000)
             return
-        }
-
-        if (!BuildConfig.DEBUG && !verifyAppSignature("qeultwLrVftfSxpnKnEzoWp7yuqUnN5DyBLvJsd96BI=")) {
-            while (true) {
-                val intent = Intent(Intent.ACTION_DELETE)
-                intent.data = "package:$packageName".toUri()
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-                startActivity(intent)
-                exitProcess(0)
-            }
         }
 
         if (!sharedPreferences.contains("app_initialized")) {
