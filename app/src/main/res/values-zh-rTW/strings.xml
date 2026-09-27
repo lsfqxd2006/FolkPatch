@@ -406,11 +406,7 @@
     <string name="mode_select_page_select_file">選取要修補的「Boot 映像檔」</string>
     <string name="restore_select_file">選擇要還原的 Boot 映像檔</string>
     <string name="mode_select_page_install_inactive_slot">安裝至非使用中的插槽 (OTA 後)</string>
-    <string name="mode_select_page_install_inactive_slot_warning">重新啟動後，您的裝置將**強制**於目前非使用中的插槽啟動！
-
-注意請僅在 OTA 後重啟設備之前使用。
-
- 繼續？</string>
+    <string name="mode_select_page_install_inactive_slot_warning">重新啟動後，您的裝置將**強制**於目前非使用中的插槽啟動！\n僅在 OTA 後重啟設備之前使用。\n是否繼續？</string>
     <string name="mode_select_page_select_kpimg">使用本地修補檔案 (KPimg)</string>
     <string name="mode_select_page_init_boot_warning_title">選擇了錯誤的映像檔</string>
     <string name="mode_select_page_init_boot_warning_message">所選檔案似乎是 init_boot 或 vendor_boot 映像檔。
