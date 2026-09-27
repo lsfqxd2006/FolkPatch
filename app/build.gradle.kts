@@ -79,10 +79,10 @@ android {
             storePassword = keystoreProperties.getProperty("KEYSTORE_PASSWORD") ?: "android"
             keyAlias = keystoreProperties.getProperty("KEY_ALIAS") ?: "androiddebugkey"
             keyPassword = keystoreProperties.getProperty("KEY_PASSWORD") ?: "android"
-            enableV1Signing = true
+            enableV1Signing = false
             enableV2Signing = true
-            enableV3Signing = true
-            enableV4Signing = true
+            enableV3Signing = false
+            enableV4Signing = false
         }
     }
 
@@ -402,7 +402,7 @@ tasks.register<Exec>("cargoBuild") {
     args("ndk", "-t", "arm64-v8a", "build", "--release")
     workingDir("${project.rootDir}/apd")
     environment("APATCH_VERSION_CODE", "${managerVersionCode}")
-    environment("APATCH_VERSION_NAME", "${managerVersionCode}-Matsuzaka-yuki")
+    environment("APATCH_VERSION_NAME", managerVersionName)
 }
 
 tasks.register<Copy>("buildApd") {

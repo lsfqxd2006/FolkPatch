@@ -181,6 +181,7 @@
     <string name="patch_item_skey">SuperKey</string>
     <string name="patch_custom_superkey">Custom SuperKey</string>
     <string name="patch_custom_superkey_summary">still can use superkey manager root, now we are verify manager signature by kernel</string>
+    <string name="patch_custom_superkey_optional">Optional; the signed manager normally needs no custom key</string>
     <string name="patch_item_set_skey_label">The SuperKey should be 8-63 characters long and include numbers and letters, but no special characters.</string>
     <string name="patch_confirm_superkey">Confirm SuperKey</string>
     <string name="patch_skey_mismatch">SuperKey does not match</string>

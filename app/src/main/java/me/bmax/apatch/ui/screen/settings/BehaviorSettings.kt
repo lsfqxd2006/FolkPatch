@@ -52,11 +52,11 @@ fun BehaviorSettingsContent(
 ) {
     val prefs = APApplication.sharedPreferences
 
-    var currentStyle by remember { mutableStateOf(prefs.getString("home_layout_style", "dashboard_ui")) }
+    var currentStyle by remember { mutableStateOf(prefs.getString("home_layout_style", APApplication.HOME_LAYOUT_STYLE_DEFAULT)) }
     DisposableEffect(Unit) {
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
             if (key == "home_layout_style") {
-                currentStyle = sharedPreferences.getString("home_layout_style", "dashboard_ui")
+                currentStyle = sharedPreferences.getString("home_layout_style", APApplication.HOME_LAYOUT_STYLE_DEFAULT)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)

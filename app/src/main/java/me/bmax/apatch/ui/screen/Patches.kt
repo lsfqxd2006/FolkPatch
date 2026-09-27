@@ -8,7 +8,12 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,11 +34,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -42,9 +51,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -59,10 +71,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
@@ -74,6 +91,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
 import me.bmax.apatch.ui.component.SwitchItem
@@ -115,6 +133,11 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
     val logScrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     val viewModel = viewModel<PatchesViewModel>()
+    var needKey by remember {
+        mutableStateOf(
+            APApplication.sharedPreferences.getBoolean("patch_custom_superkey_enabled", false)
+        )
+    }
     LaunchedEffect(mode) {
         viewModel.prepare(mode)
     }
@@ -196,6 +219,28 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
 
                 if (viewModel.kimgInfo.banner.isNotEmpty()) {
                     KernelImageView(viewModel.kimgInfo)
+                }
+
+                if (
+                    mode != PatchesViewModel.PatchMode.UNPATCH &&
+                    mode != PatchesViewModel.PatchMode.RESTORE &&
+                    viewModel.kimgInfo.banner.isNotEmpty() &&
+                    !viewModel.patching &&
+                    !viewModel.patchdone
+                ) {
+                    PatchSuperKeySection(
+                        viewModel = viewModel,
+                        checked = needKey,
+                        onCheckedChange = { checked ->
+                            needKey = checked
+                            if (!checked) {
+                                viewModel.superkey = ""
+                            }
+                            APApplication.sharedPreferences.edit()
+                                .putBoolean("patch_custom_superkey_enabled", checked)
+                                .apply()
+                        },
+                    )
                 }
 
                 if (viewModel.useCustomKPImg && !viewModel.patching && !viewModel.patchdone) {
@@ -281,7 +326,11 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            val canStart = !viewModel.running && !viewModel.patching && !viewModel.patchdone &&
+            val keyReady = mode == PatchesViewModel.PatchMode.UNPATCH ||
+                !needKey ||
+                (viewModel.superkey.isNotEmpty() &&
+                    viewModel.checkSuperKeyValidation(viewModel.superkey))
+            val canStart = keyReady && !viewModel.running && !viewModel.patching && !viewModel.patchdone &&
                 viewModel.kimgInfo.banner.isNotEmpty() &&
                 mode != PatchesViewModel.PatchMode.RESTORE
             if (canStart) {
@@ -300,7 +349,7 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
                     if (mode == PatchesViewModel.PatchMode.UNPATCH) {
                         viewModel.doUnpatch()
                     } else {
-                        viewModel.doPatch(mode, false)
+                        viewModel.doPatch(mode, needKey)
                     }
                 }
             }
@@ -498,6 +547,143 @@ private fun KernelPatchImageView(kpImgInfo: KPModel.KPImgInfo) {
         }
     }
 }
+
+@Composable
+private fun PatchSuperKeySection(
+    viewModel: PatchesViewModel,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    ExpressiveCard(flat = true) {
+        Column {
+            SwitchItem(
+                icon = Icons.Default.Key,
+                title = stringResource(R.string.patch_custom_superkey),
+                summary = stringResource(R.string.patch_custom_superkey_optional),
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+            )
+            AnimatedVisibility(
+                visible = checked,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut(),
+            ) {
+                Column {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp)
+                    )
+                    SetSuperKeyView(viewModel)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SetSuperKeyView(viewModel: PatchesViewModel) {
+    var superKey by remember { mutableStateOf(viewModel.superkey) }
+    var superKeyConfirm by remember { mutableStateOf("") }
+    var keyVisible by remember { mutableStateOf(false) }
+    var confirmVisible by remember { mutableStateOf(false) }
+    val invalid = superKey.isNotEmpty() && !viewModel.checkSuperKeyValidation(superKey)
+    val mismatch = superKeyConfirm.isNotEmpty() && superKey != superKeyConfirm
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.patch_item_set_skey_label),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = superKey,
+            onValueChange = { value ->
+                superKey = value
+                viewModel.superkey =
+                    if (
+                        viewModel.checkSuperKeyValidation(value) &&
+                        (superKeyConfirm.isEmpty() || superKeyConfirm == value)
+                    ) value else ""
+            },
+            label = { Text(stringResource(R.string.patch_set_superkey)) },
+            singleLine = true,
+            isError = invalid,
+            shape = RoundedCornerShape(16.dp),
+            visualTransformation = if (keyVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Next,
+            ),
+            colors = superKeyFieldColors(),
+            trailingIcon = {
+                IconButton(onClick = { keyVisible = !keyVisible }) {
+                    Icon(
+                        imageVector = if (keyVisible) Icons.Default.Visibility
+                        else Icons.Default.VisibilityOff,
+                        contentDescription = null,
+                    )
+                }
+            },
+        )
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = superKeyConfirm,
+            onValueChange = { value ->
+                superKeyConfirm = value
+                viewModel.superkey =
+                    if (
+                        viewModel.checkSuperKeyValidation(superKey) &&
+                        superKey == value
+                    ) superKey else ""
+            },
+            label = { Text(stringResource(R.string.patch_confirm_superkey)) },
+            singleLine = true,
+            isError = mismatch,
+            supportingText = if (mismatch) {
+                { Text(stringResource(R.string.patch_skey_mismatch)) }
+            } else null,
+            shape = RoundedCornerShape(16.dp),
+            visualTransformation = if (confirmVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done,
+            ),
+            colors = superKeyFieldColors(),
+            trailingIcon = {
+                IconButton(onClick = { confirmVisible = !confirmVisible }) {
+                    Icon(
+                        imageVector = if (confirmVisible) Icons.Default.Visibility
+                        else Icons.Default.VisibilityOff,
+                        contentDescription = null,
+                    )
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun superKeyFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+    errorContainerColor = MaterialTheme.colorScheme.errorContainer,
+    focusedBorderColor = MaterialTheme.colorScheme.primary,
+    unfocusedBorderColor = Color.Transparent,
+    errorBorderColor = MaterialTheme.colorScheme.error,
+)
 
 @Composable
 private fun CustomKPImgView(viewModel: PatchesViewModel) {

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -75,9 +77,12 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 shape = CircleShape
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.about),
+                    painter = painterResource(id = R.drawable.ic_launcher_monochrome),
                     contentDescription = stringResource(R.string.app_name),
-                    modifier = Modifier.scale(0.7f)
+                    colorFilter = ColorFilter.tint(colorResource(id = R.color.about_icon_foreground)),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .scale(1.45f)
                 )
             }
 

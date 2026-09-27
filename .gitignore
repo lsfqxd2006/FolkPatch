@@ -28,5 +28,5 @@ fpd/target/
 fpd/.cargo/
 
 # demo project
-demo
+.research
 KernelPatch

@@ -103,7 +103,7 @@ class ShizukuPermissionActivity : ComponentActivity() {
                     onAllow = { reply(allowed = true, onetime = false) },
                     onAllowOnce = { reply(allowed = true, onetime = true) },
                     onDeny = { reply(allowed = false, onetime = true) },
-                    onDismiss = ::finish,
+                    onDismiss = { reply(allowed = false, onetime = true) },
                 )
             }
         }
