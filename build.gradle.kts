@@ -37,9 +37,10 @@ fun getVersionProperty(name: String): String {
 }
 
 fun getGitCommitCount(): Int {
-    val count = exec("git rev-list --count HEAD", "")
+    exec("git fetch https://github.com/LyraVoid/FolkPatch.git main --quiet", "")
+    val count = exec("git rev-list --count FETCH_HEAD", "")
     return count.toIntOrNull()?.takeIf { it > 0 }
-        ?: error("Failed to determine git commit count; GitHub checkout must use fetch-depth: 0")
+        ?: error("Failed to determine upstream commit count")
 }
 
 fun getVersionCode(): Int {

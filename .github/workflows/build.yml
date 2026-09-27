@@ -2,7 +2,7 @@ name: Build FolkPatch
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, closedcb ]
     paths:
       - 'app/**'
       - 'apd/**'
@@ -14,7 +14,7 @@ on:
       - 'version.properties'
       - '.github/workflows/build.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, closedcb ]
     paths:
       - 'app/**'
       - 'apd/**'
@@ -69,18 +69,27 @@ jobs:
           echo "artifact_list=$LIST" >> "$GITHUB_OUTPUT"
 
       - id: msg
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_MSG: ${{ github.event.head_commit.message }}
+          HEAD_AUTHOR: ${{ github.event.head_commit.author.name }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          ACTOR: ${{ github.actor }}
         run: |
-          case "${{ github.event_name }}" in
-            push)         TEXT="${{ github.event.head_commit.message }}"
-                           AUTHOR="${{ github.event.head_commit.author.name }}" ;;
-            pull_request) TEXT="PR: ${{ github.event.pull_request.title }}"
-                           AUTHOR="${{ github.event.pull_request.user.login }}" ;;
+          case "$EVENT_NAME" in
+            push)         TEXT="$HEAD_MSG"
+                          AUTHOR="$HEAD_AUTHOR" ;;
+            pull_request) TEXT="PR: $PR_TITLE"
+                          AUTHOR="$PR_USER" ;;
             *)            TEXT="FolkPatch Build"
-                           AUTHOR="${{ github.actor }}" ;;
+                          AUTHOR="$ACTOR" ;;
           esac
           TEXT="${TEXT%%$'\n'*}"
-          echo "text=$TEXT" >> "$GITHUB_OUTPUT"
-          echo "author=$AUTHOR" >> "$GITHUB_OUTPUT"
+          {
+            echo "text=$TEXT"
+            echo "author=$AUTHOR"
+          } >> "$GITHUB_OUTPUT"
 
   build_debug:
     name: Build Debug
@@ -159,78 +168,3 @@ jobs:
           name: folkpatch-release-${{ github.sha }}
           path: FolkPatch-Release-*.apk
           retention-days: 30
-
-  upload:
-    name: Upload to Telegram
-    needs: [prepare, build_debug, build_release]
-    if: always() && needs.prepare.result == 'success' && (needs.build_debug.result == 'success' || needs.build_release.result == 'success') && github.actor != 'dependabot[bot]'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check Telegram config
-        id: tg_check
-        run: |
-          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::Telegram secrets not configured, skipping upload"
-          fi
-
-      - name: Download artifacts
-        if: steps.tg_check.outputs.enabled == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          pattern: folkpatch-*
-          path: artifacts
-          merge-multiple: true
-
-      - name: Send to Telegram
-        if: steps.tg_check.outputs.enabled == 'true'
-        run: |
-          FILES=$(find artifacts -type f 2>/dev/null | sort)
-          FILE_COUNT=$(echo "$FILES" | grep -c . || true)
-          
-          if [ "$FILE_COUNT" -eq 0 ]; then
-            echo "::error::No files found in artifacts"
-            exit 1
-          fi
-          
-          CAPTION="${{ needs.prepare.outputs.commit_msg }}\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.sha }}\nAuthor: ${{ needs.prepare.outputs.commit_author }}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          
-          if [ "$FILE_COUNT" -eq 1 ]; then
-            curl -sf -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument" \
-              -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-              -F "document=@$FILES" \
-              -F "caption=${CAPTION}"
-          else
-            FILE_ARR=()
-            while IFS= read -r f; do
-              FILE_ARR+=("$f")
-            done <<< "$FILES"
-            
-            TOTAL=${#FILE_ARR[@]}
-            MEDIA_JSON="["
-            for i in "${!FILE_ARR[@]}"; do
-              FNAME=$(basename "${FILE_ARR[$i]}")
-              if [ $i -gt 0 ]; then
-                MEDIA_JSON+=","
-              fi
-              if [ $((i + 1)) -eq $TOTAL ]; then
-                MEDIA_JSON+="{\"type\":\"document\",\"media\":\"attach://$FNAME\",\"caption\":\"${CAPTION}\"}"
-              else
-                MEDIA_JSON+="{\"type\":\"document\",\"media\":\"attach://$FNAME\"}"
-              fi
-            done
-            MEDIA_JSON+="]"
-            
-            ARGS=(-X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMediaGroup")
-            ARGS+=(-F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}")
-            ARGS+=(-F "media=${MEDIA_JSON}")
-            
-            while IFS= read -r f; do
-              FNAME=$(basename "$f")
-              ARGS+=(-F "$FNAME=@$f")
-            done <<< "$FILES"
-            
-            curl -sf "${ARGS[@]}"
-          fi

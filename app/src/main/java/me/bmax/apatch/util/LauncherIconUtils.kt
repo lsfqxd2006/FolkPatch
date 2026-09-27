@@ -7,10 +7,13 @@ import me.bmax.apatch.APApplication
 
 object LauncherIconUtils {
     private const val MAIN_ACTIVITY = ".ui.MainActivityDefault"
+    private const val ALIAS_ACTIVITY = ".ui.MainActivityAlias"
     private const val ALIAS_ACTIVITY_SU = ".ui.MainActivityAliasSu"
+    private const val ALIAS_ACTIVITY_ALT_SU = ".ui.MainActivityAliasAltSu"
 
     fun updateLauncherState(context: Context) {
         val prefs = APApplication.sharedPreferences
+        val useAlt = prefs.getBoolean("use_alt_icon", false)
         val appName = prefs.getString("desktop_app_name", "FolkPatch")
         val isSu = appName == "FPatch"
 
@@ -18,15 +21,19 @@ object LauncherIconUtils {
         val basePackage = APApplication::class.java.`package`?.name ?: "me.bmax.apatch"
         
         val mainComponent = ComponentName(context.packageName, basePackage + MAIN_ACTIVITY)
+        val aliasComponent = ComponentName(context.packageName, basePackage + ALIAS_ACTIVITY)
         val aliasSuComponent = ComponentName(context.packageName, basePackage + ALIAS_ACTIVITY_SU)
+        val aliasAltSuComponent = ComponentName(context.packageName, basePackage + ALIAS_ACTIVITY_ALT_SU)
 
 
         val targetComponent = when {
-            isSu -> aliasSuComponent
+            useAlt && isSu -> aliasAltSuComponent
+            useAlt && !isSu -> aliasComponent
+            !useAlt && isSu -> aliasSuComponent
             else -> mainComponent
         }
 
-        val allComponents = listOf(mainComponent, aliasSuComponent)
+        val allComponents = listOf(mainComponent, aliasComponent, aliasSuComponent, aliasAltSuComponent)
 
         try {
             // Enable target
@@ -50,6 +57,9 @@ object LauncherIconUtils {
     }
 
     // Deprecated but kept for compatibility if needed, redirects to updateLauncherState
+    fun toggleLauncherIcon(context: Context, useAlt: Boolean) {
+        updateLauncherState(context)
+    }
 
     fun applySaved(context: Context) {
         updateLauncherState(context)

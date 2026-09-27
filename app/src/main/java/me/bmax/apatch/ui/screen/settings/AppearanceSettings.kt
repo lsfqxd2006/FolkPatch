@@ -2198,3 +2198,4 @@ fun AppearanceSettingsContent(
         )
     }
 }
+
