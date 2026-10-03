@@ -79,6 +79,7 @@ import me.bmax.apatch.ui.navigation.LocalScrollState
 import me.bmax.apatch.ui.navigation.LocalBottomBarVisible
 import me.bmax.apatch.ui.navigation.LocalIsFloatingNavMode
 import me.bmax.apatch.ui.navigation.ScrollState
+import me.bmax.apatch.ui.navigation.swipeToSwitchTab
 import me.bmax.apatch.ui.navigation.rememberScrollConnection
 import me.bmax.apatch.ui.navigation.createNavTransitions
 import me.bmax.apatch.util.ui.navBarLiquefiable
@@ -511,7 +512,13 @@ APatchThemeWithBackground(
                             }
                         }
                         DestinationsNavHost(
-                            modifier = Modifier.weight(1f).then(baseContentModifier),
+                                        modifier = Modifier.weight(1f)
+                                            .then(baseContentModifier)
+                                            .swipeToSwitchTab(
+                                                navController = navController,
+                                                onSwipeStart = { resetBottomBarFully() },
+                                                onSwipeComplete = { resetBottomBarFully() }
+                                            ),
                             navGraph = NavGraphs.root,
                             navController = navController,
                             engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
@@ -531,7 +538,13 @@ APatchThemeWithBackground(
                     LocalIsFloatingNavMode provides isFloatingMode
                 ) {
                     DestinationsNavHost(
-                        modifier = Modifier.fillMaxSize().then(baseContentModifier),
+                                    modifier = Modifier.fillMaxSize()
+                                        .then(baseContentModifier)
+                                        .swipeToSwitchTab(
+                                            navController = navController,
+                                            onSwipeStart = { resetBottomBarFully() },
+                                            onSwipeComplete = { resetBottomBarFully() }
+                                        ),
                         navGraph = NavGraphs.root,
                         navController = navController,
                         engine = rememberNavHostEngine(navHostContentAlignment = Alignment.TopCenter),
