@@ -173,13 +173,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         }
     }
 
-    var showDevDialog by rememberSaveable { mutableStateOf(false) }
-    DeveloperInfo(
-        showDialog = showDevDialog
-    ) {
-        showDevDialog = false
-    }
-
     val cleanStorageDialogState = remember { mutableStateOf(false) }
 
     // The icon grid holds our secondary entries - the settings categories. The
@@ -271,9 +264,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 actions = {
                     IconButton(onClick = dropUnlessResumed { navigator.navigate(SettingsSearchScreenDestination) }) {
                         Icon(Icons.Outlined.Search, contentDescription = stringResource(R.string.settings_search_title))
-                    }
-                    IconButton(onClick = { showDevDialog = true }) {
-                        Icon(Icons.Outlined.Info, contentDescription = stringResource(R.string.about))
                     }
                 }
             )
