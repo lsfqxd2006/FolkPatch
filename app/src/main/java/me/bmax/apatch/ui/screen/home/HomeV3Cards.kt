@@ -141,7 +141,7 @@ fun AppCard(
         )
         InfoRow(
             label = stringResource(R.string.home_info_device_model),
-            value = Build.MODEL
+            value = getDeviceInfo()
         )
         InfoRow(
             label = stringResource(R.string.home_info_running_mode),
