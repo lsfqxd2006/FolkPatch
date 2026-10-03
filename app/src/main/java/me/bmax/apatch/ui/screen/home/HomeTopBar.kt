@@ -68,6 +68,7 @@ import me.bmax.apatch.ui.theme.BackgroundConfig
 import me.bmax.apatch.ui.theme.MusicConfig
 import me.bmax.apatch.util.MusicManager
 import me.bmax.apatch.util.reboot
+import me.bmax.apatch.ui.component.folk.folkDefaultAppBarColors
 
 private data class RebootOption(
     @param:StringRes val titleRes: Int,
@@ -218,7 +219,9 @@ fun HomeTopBar(
         }
     )
 
-    TopAppBar(title = {
+    TopAppBar(
+        colors = folkDefaultAppBarColors(),
+        title = {
         if (useAdvancedTitleStyle) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
