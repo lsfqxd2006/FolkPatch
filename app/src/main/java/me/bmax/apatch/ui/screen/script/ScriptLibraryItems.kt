@@ -16,6 +16,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Add
@@ -53,6 +54,10 @@ import me.bmax.apatch.util.ModuleShortcut
 import me.bmax.apatch.util.scriptBannerStorage
 import me.bmax.apatch.util.ui.showToast
 import java.io.File
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.LocalIndication
 
 private val scriptBannerSemaphore = Semaphore(4)
 
@@ -194,11 +199,24 @@ fun ScriptItem(
         }
     }
 
-    val cardShape = RoundedCornerShape(20.dp)
+    val cardInteractionSource = remember { MutableInteractionSource() }
+    val pressed by cardInteractionSource.collectIsPressedAsState()
+    val cardCorner by animateDpAsState(
+        targetValue = when {
+            expanded && foldCard -> 28.dp
+            pressed -> 24.dp
+            else -> 20.dp
+        },
+        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+        label = "scriptCardCorner",
+    )
+    val cardShape = ContinuousCornerShape(cardCorner)
     val clickModifier = Modifier
         .fillMaxWidth()
-        .animateContentSize()
+        .animateContentSize(animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec())
         .combinedClickable(
+            interactionSource = cardInteractionSource,
+            indication = LocalIndication.current,
             onClick = { if (foldCard) onExpandToggle() else onRun() },
             onLongClick = { showBannerDialog = true }
         )
@@ -271,8 +289,8 @@ fun ScriptItem(
                 Spacer(modifier = Modifier.height(16.dp))
                 AnimatedVisibility(
                     visible = !foldCard || expanded,
-                    enter = fadeIn() + expandVertically(),
-                    exit = shrinkVertically() + fadeOut()
+                    enter = fadeIn(MaterialTheme.motionScheme.defaultEffectsSpec()) + expandVertically(MaterialTheme.motionScheme.defaultSpatialSpec()),
+                    exit = shrinkVertically(MaterialTheme.motionScheme.fastSpatialSpec()) + fadeOut(MaterialTheme.motionScheme.fastEffectsSpec())
                 ) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilledTonalButton(

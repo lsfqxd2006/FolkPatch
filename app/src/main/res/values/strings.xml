@@ -1040,6 +1040,16 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="profile_nickname_label">Nickname</string>
     <string name="profile_signature_label">Signature</string>
     <string name="profile_choose_avatar">Choose avatar</string>
+    <string name="profile_avatar_default">Default avatar</string>
+    <string name="profile_avatar_custom">Custom avatar</string>
+    <string name="profile_avatar_opacity">Avatar opacity</string>
+    <string name="profile_avatar_source_title">Choose avatar source</string>
+    <string name="profile_avatar_source_local">Choose from device</string>
+    <string name="profile_avatar_source_qq">QQ avatar</string>
+    <string name="profile_avatar_source_gravatar">Gravatar</string>
+    <string name="profile_avatar_qq_hint">QQ number</string>
+    <string name="profile_avatar_gravatar_hint">Email</string>
+    <string name="profile_avatar_fetch_failed">Couldn\'t fetch the avatar</string>
     <string name="profile_crop_avatar">Crop avatar</string>
     <string name="profile_restore_default">Restore defaults</string>
     <string name="settings_section_general_interface">Interface &amp; Motion</string>
@@ -1367,6 +1377,8 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="script_library_log_save_failed">Failed to save log: %s</string>
     <string name="settings_predictive_back">Predictive Back Gesture</string>
     <string name="settings_predictive_back_summary">Enable the Android 14+ predictive back gesture animation</string>
+    <string name="settings_expressive_motion">Expressive motion</string>
+    <string name="settings_expressive_motion_summary">Use the Material 3 Expressive motion curves</string>
 
     <string name="app_title_superroot">SuperRoot</string>
     <string name="backup_failed">Backup failed: %s</string>
@@ -1446,4 +1458,15 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="jailbreak">Jailbreak</string>
     <string name="jailbreak_triggered">Jailbreak triggered. Wait for root, then soft reboot.</string>
     <string name="reboot_soft">Soft reboot</string>
+    <string name="settings_faq">FAQ</string>
+    <string name="settings_bug_feedback">Bug report</string>
+    <string name="settings_clear_cache">Clear cache</string>
+    <string name="settings_disclaimer">Disclaimer</string>
+    <string name="settings_disclaimer_message">Rooting your device may carry risks from system updates, third-party modules, or other external causes. You are responsible for any resulting damage or loss. Please continue only if you understand the risks.</string>
+    <string name="theme_store_subtitle">Discover and apply community themes</string>
+    <string name="script_library_subtitle">Run and manage local scripts</string>
+    <string name="plugin_subtitle">Extend what FolkPatch can do</string>
+    <string name="my_themes_subtitle">Themes you have saved</string>
+    <string name="apm_api_marketplace_subtitle">Browse community-shared APIs</string>
+    <string name="theme_download_paused">Paused</string>
 </resources>

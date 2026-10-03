@@ -4,7 +4,7 @@ import me.bmax.apatch.util.ui.showToast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
@@ -26,12 +26,16 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.bmax.apatch.R
-import me.bmax.apatch.ui.component.AppLoadingIndicator
+import me.bmax.apatch.ui.component.folk.FolkLoadingIndicator
 import me.bmax.apatch.ui.component.folk.FolkScaffold
 import me.bmax.apatch.ui.component.folk.FolkTitleStyle
 import me.bmax.apatch.ui.model.ApiMarketplaceItem
 import me.bmax.apatch.ui.theme.BackgroundConfig
 import me.bmax.apatch.ui.viewmodel.ApiMarketplaceViewModel
+import me.bmax.apatch.ui.component.folk.FolkStateView
+import me.bmax.apatch.ui.component.folk.FolkStateTone
+import androidx.compose.material.icons.outlined.Api
+import androidx.compose.material.icons.outlined.Warning
 
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,7 +92,8 @@ fun ApiMarketplaceScreen(
 
     FolkScaffold(
         title = stringResource(R.string.apm_api_marketplace_title),
-        titleStyle = FolkTitleStyle.Inline,
+        titleStyle = FolkTitleStyle.Flexible,
+        subtitle = stringResource(R.string.apm_api_marketplace_subtitle),
         onBack = { navigator.popBackStack() },
         snackbarHostState = snackbarHostState,
     ) { paddingValues ->
@@ -100,42 +105,30 @@ fun ApiMarketplaceScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    AppLoadingIndicator(
+                    FolkLoadingIndicator(
                         text = stringResource(R.string.loading_apis)
                     )
                 }
             }
             viewModel.errorMessage != null -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = viewModel.errorMessage ?: "Unknown error",
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                    Button(onClick = { viewModel.retry() }) {
-                        Text(stringResource(R.string.retry))
-                    }
-                }
+                FolkStateView(
+                    title = viewModel.errorMessage ?: "Unknown error",
+                    modifier = Modifier.padding(paddingValues),
+                    icon = Icons.Outlined.Warning,
+                    tone = FolkStateTone.Critical,
+                    action = {
+                        Button(onClick = { viewModel.retry() }) {
+                            Text(stringResource(R.string.retry))
+                        }
+                    },
+                )
             }
             viewModel.items.isEmpty() -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.apm_api_empty),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                FolkStateView(
+                    title = stringResource(R.string.apm_api_empty),
+                    modifier = Modifier.padding(paddingValues),
+                    icon = Icons.Outlined.Api,
+                )
             }
             else -> {
                 LazyColumn(
@@ -179,7 +172,7 @@ private fun ApiMarketplaceItemCard(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = ContinuousCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp
     ) {

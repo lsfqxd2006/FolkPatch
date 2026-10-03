@@ -3,6 +3,7 @@ package me.bmax.apatch.ui.screen.misc
 import android.content.Intent
 import android.content.ActivityNotFoundException
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -90,10 +91,12 @@ import me.bmax.apatch.util.getBugreportFile
 import me.bmax.apatch.util.ui.NavigationBarsSpacer
 import java.io.File
 import java.io.FileOutputStream
+import com.ramcosta.composedestinations.generated.destinations.PluginScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.FaqScreenDestination
 
 private const val FEEDBACK_URL = "https://github.com/LyraVoid/FolkPatch/issues/new/choose"
 
-private const val PROFILE_AVATAR_FILE = "profile_avatar"
+internal const val PROFILE_AVATAR_FILE = "profile_avatar"
 
 /**
  * Copies the picked image into app storage and returns a cache-busted URI.
@@ -143,9 +146,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     var profileNickname by remember { mutableStateOf(prefs.getString("profile_nickname", "").orEmpty()) }
     var profileSignature by remember { mutableStateOf(prefs.getString("profile_signature", "").orEmpty()) }
     var profileAvatar by remember { mutableStateOf(prefs.getString("profile_avatar", "").orEmpty()) }
+    var profileAvatarOpacity by remember { mutableStateOf(prefs.getFloat("profile_avatar_opacity", 1f)) }
     var showProfileEditor by rememberSaveable { mutableStateOf(false) }
     var pendingAvatarUri by remember { mutableStateOf<Uri?>(null) }
     var showCropChoice by remember { mutableStateOf(false) }
+    var showAvatarSource by remember { mutableStateOf(false) }
+    var avatarSourceInput by remember { mutableStateOf<AvatarSource?>(null) }
 
     fun applyAvatar(uri: Uri) {
         scope.launch {
@@ -174,6 +180,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     }
 
     val cleanStorageDialogState = remember { mutableStateOf(false) }
+    val disclaimerDialogState = remember { mutableStateOf(false) }
 
     // The icon grid holds our secondary entries - the settings categories. The
     // bottom bar already covers Home / KPModule / SuperUser / APModule / Settings,
@@ -265,6 +272,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     IconButton(onClick = dropUnlessResumed { navigator.navigate(SettingsSearchScreenDestination) }) {
                         Icon(Icons.Outlined.Search, contentDescription = stringResource(R.string.settings_search_title))
                     }
+                    IconButton(onClick = dropUnlessResumed { navigator.navigate(PluginScreenDestination) }) {
+                        Icon(Icons.Outlined.Extension, contentDescription = stringResource(R.string.plugin_title))
+                    }
                 }
             )
         },
@@ -281,6 +291,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     signature = profileSignature,
                     deviceName = getDeviceInfo().trim(),
                     avatarUri = profileAvatar,
+                    avatarOpacity = profileAvatarOpacity,
                     onAvatarClick = { showProfileEditor = true },
                 )
             }
@@ -293,6 +304,34 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             item(key = "utility_rows") {
                 Spacer(Modifier.height(16.dp))
                 FolkSettingsGroup(shape = RoundedCornerShape(12.dp)) {
+                    item(key = "utility_faq") {
+                        FolkNavigationPreference(
+                            icon = Icons.Outlined.HelpOutline,
+                            title = stringResource(R.string.settings_faq),
+                            onClick = { navigator.navigate(FaqScreenDestination) },
+                        )
+                    }
+                    item(key = "utility_feedback") {
+                        FolkNavigationPreference(
+                            icon = Icons.Outlined.BugReport,
+                            title = stringResource(R.string.settings_bug_feedback),
+                            onClick = { uriHandler.openUri(FEEDBACK_URL) },
+                        )
+                    }
+                    item(key = "utility_clean_storage") {
+                        FolkNavigationPreference(
+                            icon = Icons.Outlined.CleaningServices,
+                            title = stringResource(R.string.settings_clear_cache),
+                            onClick = { cleanStorageDialogState.value = true },
+                        )
+                    }
+                    item(key = "utility_disclaimer") {
+                        FolkNavigationPreference(
+                            icon = Icons.Outlined.Policy,
+                            title = stringResource(R.string.settings_disclaimer),
+                            onClick = { disclaimerDialogState.value = true },
+                        )
+                    }
                     item(key = "utility_send_log") {
                         FolkNavigationPreference(
                             icon = Icons.Outlined.Description,
@@ -318,20 +357,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             },
                         )
                     }
-                    item(key = "utility_feedback") {
-                        FolkNavigationPreference(
-                            icon = Icons.Outlined.BugReport,
-                            title = stringResource(R.string.home_more_menu_feedback_or_suggestion),
-                            onClick = { uriHandler.openUri(FEEDBACK_URL) },
-                        )
-                    }
-                    item(key = "utility_clean_storage") {
-                        FolkNavigationPreference(
-                            icon = Icons.Outlined.CleaningServices,
-                            title = stringResource(R.string.settings_clean_storage),
-                            onClick = { cleanStorageDialogState.value = true },
-                        )
-                    }
                     item(key = "utility_about") {
                         FolkNavigationPreference(
                             icon = Icons.Outlined.Info,
@@ -350,7 +375,11 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     }
 
     if (cleanStorageDialogState.value) {
-        CleanStorageDialog(cleanStorageDialogState)
+        CleanStorageDialog(cleanStorageDialogState, R.string.settings_clear_cache)
+    }
+
+    if (disclaimerDialogState.value) {
+        SettingsDisclaimerDialog(disclaimerDialogState)
     }
 
     val pendingCrop = pendingAvatarUri
@@ -393,16 +422,23 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             nickname = profileNickname.ifBlank { "FolkPatch" },
             signature = profileSignature,
             avatarUri = profileAvatar,
-            onPickAvatar = { pickAvatarLauncher.launch("image/*") },
+            avatarOpacity = profileAvatarOpacity,
+            onPickAvatar = { showAvatarSource = true },
+            onUseDefaultAvatar = {
+                profileAvatar = ""
+                runCatching { File(context.filesDir, PROFILE_AVATAR_FILE).delete() }
+                prefs.edit { remove("profile_avatar") }
+            },
+            onAvatarOpacityChange = { value ->
+                profileAvatarOpacity = value
+                prefs.edit { putFloat("profile_avatar_opacity", value) }
+            },
             onRestoreDefault = {
                 profileNickname = ""
                 profileSignature = ""
-                profileAvatar = ""
-                runCatching { File(context.filesDir, PROFILE_AVATAR_FILE).delete() }
                 prefs.edit {
                     remove("profile_nickname")
                     remove("profile_signature")
-                    remove("profile_avatar")
                 }
             },
             onDismiss = { showProfileEditor = false },
@@ -414,6 +450,45 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     if (sign.isBlank()) remove("profile_signature") else putString("profile_signature", sign)
                 }
                 showProfileEditor = false
+            },
+        )
+    }
+
+    AvatarSourceDialog(
+        showDialog = showAvatarSource,
+        onDismiss = { showAvatarSource = false },
+        onSelect = { source ->
+            showAvatarSource = false
+            when (source) {
+                AvatarSource.Local -> pickAvatarLauncher.launch("image/*")
+                AvatarSource.Qq, AvatarSource.Gravatar -> avatarSourceInput = source
+            }
+        },
+    )
+
+    avatarSourceInput?.let { source ->
+        AvatarIdDialog(
+            title = stringResource(
+                if (source == AvatarSource.Qq) R.string.profile_avatar_source_qq
+                else R.string.profile_avatar_source_gravatar
+            ),
+            label = stringResource(
+                if (source == AvatarSource.Qq) R.string.profile_avatar_qq_hint
+                else R.string.profile_avatar_gravatar_hint
+            ),
+            onDismiss = { avatarSourceInput = null },
+            onConfirm = { value ->
+                avatarSourceInput = null
+                val url = if (source == AvatarSource.Qq) qqAvatarUrl(value) else gravatarUrl(value)
+                scope.launch {
+                    val stored = downloadProfileAvatar(context, url)
+                    if (stored != null) {
+                        profileAvatar = stored
+                        prefs.edit { putString("profile_avatar", stored) }
+                    } else {
+                        Toast.makeText(context, R.string.profile_avatar_fetch_failed, Toast.LENGTH_SHORT).show()
+                    }
+                }
             },
         )
     }

@@ -962,6 +962,16 @@ KernelPatch 需要修补 boot 镜像。
     <string name="profile_nickname_label">昵称</string>
     <string name="profile_signature_label">签名</string>
     <string name="profile_choose_avatar">选择头像</string>
+    <string name="profile_avatar_default">默认头像</string>
+    <string name="profile_avatar_custom">自定义头像</string>
+    <string name="profile_avatar_opacity">头像透明度</string>
+    <string name="profile_avatar_source_title">选择头像来源</string>
+    <string name="profile_avatar_source_local">从本地选择</string>
+    <string name="profile_avatar_source_qq">QQ 头像</string>
+    <string name="profile_avatar_source_gravatar">Gravatar</string>
+    <string name="profile_avatar_qq_hint">QQ 号</string>
+    <string name="profile_avatar_gravatar_hint">邮箱</string>
+    <string name="profile_avatar_fetch_failed">获取头像失败</string>
     <string name="profile_crop_avatar">裁剪头像</string>
     <string name="profile_restore_default">恢复默认</string>
     <string name="settings_section_general_interface">界面与动效</string>
@@ -1296,6 +1306,8 @@ KernelPatch 需要修补 boot 镜像。
     <string name="umount_config_save_failed">配置保存失败</string>
     <string name="settings_predictive_back">预测性返回手势</string>
     <string name="settings_predictive_back_summary">启用 Android 14+ 的预测性返回手势动画</string>
+    <string name="settings_expressive_motion">实验性动效</string>
+    <string name="settings_expressive_motion_summary">使用 Material 3 Expressive 的运动曲线</string>
 
     <string name="home_device_status_battery_charging">充电中</string>
     <string name="home_device_status_cpu_temp">CPU 温度</string>
@@ -1395,4 +1407,15 @@ KernelPatch 需要修补 boot 镜像。
     <string name="jailbreak">越狱</string>
     <string name="jailbreak_triggered">越狱已触发，等待获取 ROOT 后软重启。</string>
     <string name="reboot_soft">软重启</string>
+    <string name="settings_faq">常见问题</string>
+    <string name="settings_bug_feedback">Bug 反馈</string>
+    <string name="settings_clear_cache">清除缓存文件</string>
+    <string name="settings_disclaimer">免责声明</string>
+    <string name="settings_disclaimer_message">对设备进行 Root 后，系统更新、第三方模块或其它外部因素可能造成不可预期的风险与损失，需要你自行承担。请在充分了解风险后再继续使用。</string>
+    <string name="theme_store_subtitle">发现并应用社区主题</string>
+    <string name="script_library_subtitle">运行与管理本机脚本</string>
+    <string name="plugin_subtitle">扩展 FolkPatch 的能力</string>
+    <string name="my_themes_subtitle">你保存的主题</string>
+    <string name="apm_api_marketplace_subtitle">浏览社区分享的 API</string>
+    <string name="theme_download_paused">已暂停</string>
 </resources>

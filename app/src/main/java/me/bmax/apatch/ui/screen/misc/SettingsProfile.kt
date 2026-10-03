@@ -3,6 +3,7 @@ package me.bmax.apatch.ui.screen.misc
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,14 +18,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.AddPhotoAlternate
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -37,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -51,13 +55,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.folk.folkGroupColor
+import kotlin.math.roundToInt
+import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 
 /** Square size the avatar is decoded at, in pixels. */
 private const val PROFILE_AVATAR_PX = 256
 
 /**
- * Local profile editor: pick an avatar, set a nickname and a short signature,
- * or fall back to the defaults. No account, no network.
+ * Local profile editor: choose between the default avatar and a custom image,
+ * and set a nickname and a short signature. "Restore defaults" resets only the
+ * text, so the avatar can be restored on its own. No account, no network.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,13 +72,16 @@ fun ProfileEditSheet(
     nickname: String,
     signature: String,
     avatarUri: String,
+    avatarOpacity: Float,
     onPickAvatar: () -> Unit,
+    onUseDefaultAvatar: () -> Unit,
+    onAvatarOpacityChange: (Float) -> Unit,
     onRestoreDefault: () -> Unit,
     onDismiss: () -> Unit,
     onSave: (String, String) -> Unit,
 ) {
-    var name by remember { mutableStateOf(nickname) }
-    var sign by remember { mutableStateOf(signature) }
+    var name by remember(nickname) { mutableStateOf(nickname) }
+    var sign by remember(signature) { mutableStateOf(signature) }
     val context = LocalContext.current
     val avatarBitmap = remember(avatarUri) {
         if (avatarUri.isBlank()) {
@@ -107,13 +117,30 @@ fun ProfileEditSheet(
 
             Spacer(Modifier.height(18.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-                    contentAlignment = Alignment.Center,
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                AvatarOptionTile(
+                    label = stringResource(R.string.profile_avatar_default),
+                    selected = avatarUri.isBlank(),
+                    onClick = onUseDefaultAvatar,
+                    opacity = avatarOpacity,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(58.dp),
+                    )
+                }
+                AvatarOptionTile(
+                    label = stringResource(R.string.profile_avatar_custom),
+                    selected = avatarUri.isNotBlank(),
+                    onClick = onPickAvatar,
+                    opacity = avatarOpacity,
+                    modifier = Modifier.weight(1f),
                 ) {
                     if (avatarBitmap != null) {
                         Image(
@@ -124,23 +151,41 @@ fun ProfileEditSheet(
                         )
                     } else {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            imageVector = Icons.Outlined.AddPhotoAlternate,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(82.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(28.dp),
                         )
                     }
-                }
-                Spacer(Modifier.width(14.dp))
-                FilledTonalButton(
-                    onClick = onPickAvatar,
-                    shape = RoundedCornerShape(14.dp),
-                ) {
-                    Text(stringResource(R.string.profile_choose_avatar))
                 }
             }
 
             Spacer(Modifier.height(18.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.profile_avatar_opacity),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = "${(avatarOpacity * 100).roundToInt()}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            Slider(
+                value = avatarOpacity,
+                onValueChange = onAvatarOpacityChange,
+                valueRange = 0.1f..1f,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(Modifier.height(8.dp))
 
             ProfileTextField(
                 value = name,
@@ -203,7 +248,7 @@ fun ProfileTextField(
         label = { Text(label) },
         singleLine = singleLine,
         minLines = minLines,
-        shape = RoundedCornerShape(16.dp),
+        shape = ContinuousCornerShape(16.dp),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -232,6 +277,7 @@ fun ProfileHeader(
     signature: String,
     deviceName: String,
     avatarUri: String,
+    avatarOpacity: Float,
     onAvatarClick: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -256,6 +302,9 @@ fun ProfileHeader(
             Box(
                 modifier = Modifier
                     .size(68.dp)
+                    // Alpha before clip/background so the whole avatar - circle
+                    // fill included - fades together and the wallpaper shows through.
+                    .alpha(avatarOpacity)
                     // Plain circle, no shadow and no coloured ring.
                     .clip(CircleShape)
                     .background(folkGroupColor().copy(alpha = 1f))
@@ -294,28 +343,16 @@ fun ProfileHeader(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.height(5.dp))
-                // The device stands in for the email other apps put here.
+                // A signature overwrites the device model on the same line; the
+                // device stands in for the email other apps put here.
                 Text(
-                    text = deviceName,
+                    text = signature.ifBlank { deviceName },
                     style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-        }
-
-        // The signature sits below the whole block.
-        // Nothing is rendered when the user has not written one.
-        if (signature.isNotBlank()) {
-            Spacer(Modifier.height(18.dp))
-            Text(
-                text = signature,
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
         }
     }
 }

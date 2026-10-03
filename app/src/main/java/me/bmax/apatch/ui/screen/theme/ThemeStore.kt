@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 import me.bmax.apatch.ui.component.folk.FolkAlertDialog
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
-import me.bmax.apatch.ui.component.AppLoadingIndicator
+import me.bmax.apatch.ui.component.folk.FolkLoadingIndicator
 import me.bmax.apatch.ui.component.folk.FolkScaffold
 import me.bmax.apatch.ui.component.folk.FolkTitleStyle
 import me.bmax.apatch.ui.viewmodel.ThemeStoreViewModel
@@ -180,7 +180,11 @@ fun ThemeStoreScreen(
                 downloadProgress = null
             },
             onPause = {
-                // TODO: 实现暂停功能
+                if (downloadProgress?.status == DownloadStatus.PAUSED) {
+                    viewModel.startDownload(downloadingTheme!!)
+                } else {
+                    viewModel.pauseDownload(downloadingTheme!!.id)
+                }
             }
         )
     }
@@ -331,7 +335,7 @@ fun ThemeStoreScreen(
         FolkAlertDialog(
             onDismissRequest = { showFilterSheet = false },
             width = 320.dp,
-            shape = RoundedCornerShape(28.dp),
+            shape = ContinuousCornerShape(28.dp),
             blurBehind = false,
         ) {
             ThemeFilterSheetContent(
@@ -352,7 +356,8 @@ fun ThemeStoreScreen(
 
     FolkScaffold(
         title = stringResource(R.string.theme_store_title),
-        titleStyle = FolkTitleStyle.Inline,
+        titleStyle = if (isSearchActive) FolkTitleStyle.Inline else FolkTitleStyle.Flexible,
+        subtitle = stringResource(R.string.theme_store_subtitle),
         onBack = {
             if (isSearchActive) {
                 isSearchActive = false
@@ -410,7 +415,7 @@ fun ThemeStoreScreen(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
                 contentAlignment = Alignment.Center,
             ) {
-                AppLoadingIndicator(
+                FolkLoadingIndicator(
                     text = stringResource(R.string.loading_themes),
                 )
             }

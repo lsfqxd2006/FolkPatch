@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package me.bmax.apatch.ui.screen.patches
 
 import android.app.Activity
@@ -21,7 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.shape.RoundedCornerShape
+import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -64,6 +65,8 @@ import me.bmax.apatch.ui.component.SwitchItem
 import me.bmax.apatch.ui.viewmodel.KPModel
 import me.bmax.apatch.ui.viewmodel.PatchesViewModel
 import me.bmax.apatch.util.Version
+import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.foundation.layout.size
 
 @Composable
 fun StartButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
@@ -71,6 +74,9 @@ fun StartButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit
         modifier = modifier,
         onClick = onClick,
         shape = MaterialTheme.shapes.large,
+        // Material 3 Expressive's medium size: the primary action reads as the
+        // biggest touch target on the page.
+        contentPadding = ButtonDefaults.MediumContentPadding,
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary
@@ -89,7 +95,7 @@ fun ExtraConfigDialog(kpmInfo: KPModel.KPMInfo, onDismiss: () -> Unit) {
     FolkAlertDialog(
         onDismissRequest = onDismiss,
         width = 310.dp,
-        shape = RoundedCornerShape(30.dp),
+        shape = ContinuousCornerShape(30.dp),
         blurBehind = false,
     ) {
         Column(modifier = Modifier.padding(PaddingValues(all = 24.dp))) {
@@ -308,7 +314,7 @@ fun SetSuperKeyView(viewModel: PatchesViewModel) {
             label = { Text(stringResource(R.string.patch_set_superkey)) },
             singleLine = true,
             isError = invalid,
-            shape = RoundedCornerShape(16.dp),
+            shape = ContinuousCornerShape(16.dp),
             visualTransformation = if (keyVisible) {
                 VisualTransformation.None
             } else {
@@ -346,7 +352,7 @@ fun SetSuperKeyView(viewModel: PatchesViewModel) {
             supportingText = if (mismatch) {
                 { Text(stringResource(R.string.patch_skey_mismatch)) }
             } else null,
-            shape = RoundedCornerShape(16.dp),
+            shape = ContinuousCornerShape(16.dp),
             visualTransformation = if (confirmVisible) {
                 VisualTransformation.None
             } else {
@@ -512,17 +518,27 @@ fun SelectFileButton(
 fun ErrorView(error: String) {
     if (error.isEmpty()) return
     ExpressiveCard(flat = true) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = stringResource(id = R.string.patch_item_error),
-                style = MaterialTheme.typography.bodyLarge
+            Icon(
+                imageVector = Icons.Outlined.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(20.dp),
             )
-            Text(text = error, style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(id = R.string.patch_item_error),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                Text(text = error, style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }

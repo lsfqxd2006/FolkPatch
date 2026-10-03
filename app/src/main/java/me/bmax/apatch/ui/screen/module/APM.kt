@@ -9,7 +9,6 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,7 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.foundation.layout.offset
@@ -276,7 +275,7 @@ fun APModuleScreen(navigator: DestinationsNavigator) {
             val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
             val animatedOffset by animateDpAsState(
                 targetValue = if (isFloatingMode && bottomBarVisible && !isLandscape) (-88).dp else 0.dp,
-                animationSpec = tween(durationMillis = 300),
+                animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
                 label = "fabOffset"
             )
 
@@ -294,7 +293,7 @@ fun APModuleScreen(navigator: DestinationsNavigator) {
                         ) {
                             Crossfade(
                                 targetState = fabExpanded,
-                                animationSpec = tween(durationMillis = 200),
+                                animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
                                 label = "fabIconCrossfade"
                             ) { isExpanded ->
                                 if (isExpanded) {
@@ -412,7 +411,7 @@ fun APModuleScreen(navigator: DestinationsNavigator) {
                 showFirstTimeDialog = false
             },
             width = 350.dp,
-            shape = RoundedCornerShape(20.dp),
+            shape = ContinuousCornerShape(20.dp),
             blurBehind = false,
             dialogProperties = DialogProperties(dismissOnClickOutside = false, dismissOnBackPress = false),
         ) {

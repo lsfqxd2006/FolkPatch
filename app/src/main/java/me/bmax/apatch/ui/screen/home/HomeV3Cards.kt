@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
@@ -316,6 +315,7 @@ fun StorageRow(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun StatusCircle(
     value: String,
@@ -336,28 +336,37 @@ fun StatusCircle(
             contentAlignment = Alignment.Center,
             modifier = Modifier.size(80.dp)
         ) {
-            CircularProgressIndicator(
-                progress = { 1f },
-                modifier = Modifier.fillMaxSize(),
-                color = effectiveColor.copy(alpha = 0.2f),
-                strokeWidth = 8.dp,
-            )
-            CircularProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.fillMaxSize(),
-                color = effectiveColor,
-                strokeWidth = 8.dp,
-            )
+            if (progress > 0f) {
+                CircularWavyProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxSize(),
+                    color = effectiveColor,
+                    trackColor = effectiveColor.copy(alpha = 0.2f),
+                    // Keep the standard wave height; a longer wavelength gives
+                    // fewer, broader ripples, which reads calmer.
+                    amplitude = { 1f },
+                    wavelength = 24.dp,
+                )
+            } else {
+                // An empty gauge still shows a muted wavy ring, so a 0% value
+                // does not collapse to a plain circle next to the others.
+                CircularWavyProgressIndicator(
+                    progress = { 1f },
+                    modifier = Modifier.fillMaxSize(),
+                    color = effectiveColor.copy(alpha = 0.2f),
+                    amplitude = { 1f },
+                    wavelength = 24.dp,
+                )
+            }
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleLargeEmphasized,
                 color = if (isWallpaper) Color.White else MaterialTheme.colorScheme.onSurface
             )
         }
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyMediumEmphasized,
             color = labelColor
         )
     }
@@ -395,8 +404,7 @@ fun InfoRow(
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.bodyMediumEmphasized,
             color = valueColor
         )
     }

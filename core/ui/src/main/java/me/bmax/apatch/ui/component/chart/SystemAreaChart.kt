@@ -1,15 +1,13 @@
 package me.bmax.apatch.ui.component.chart
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun SystemLineChart(
+fun SystemAreaChart(
     title: String,
     dataPoints: List<Float>,
     unit: String = "%",
@@ -39,18 +37,13 @@ fun SystemLineChart(
     color: Color = MaterialTheme.colorScheme.primary
 ) {
     val colors = MaterialTheme.colorScheme
-
-    val lineColor = if (dataPoints.isNotEmpty() && dataPoints.last() > 80f) {
-        colors.error
-    } else {
-        color
-    }
-
     val currentValue = dataPoints.lastOrNull() ?: 0f
 
     val animatable = remember { Animatable(0f) }
     var prevPoints by remember { mutableStateOf<List<ChartPoint>>(emptyList()) }
     var currentPoints by remember { mutableStateOf<List<ChartPoint>>(emptyList()) }
+
+    val progressSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
 
     LaunchedEffect(dataPoints) {
         val newPoints = normalizePoints(dataPoints)
@@ -59,7 +52,7 @@ fun SystemLineChart(
         animatable.snapTo(0f)
         animatable.animateTo(
             1f,
-            animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+            animationSpec = progressSpec
         )
     }
 
@@ -68,17 +61,17 @@ fun SystemLineChart(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(160.dp)
+            .height(140.dp)
             .background(
                 color = colors.surface,
-                shape = RoundedCornerShape(16.dp)
+                shape = ContinuousCornerShape(16.dp)
             )
     ) {
         Text(
-            text = if (currentValue > 0f && currentValue.isFinite() && currentValue < Int.MAX_VALUE) "${currentValue.toInt()}$unit" else "--$unit",
+            text = "${currentValue.toInt()}$unit",
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontWeight = FontWeight.Bold,
-                color = lineColor
+                color = color
             ),
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -110,8 +103,8 @@ fun SystemLineChart(
                     path = fillPath,
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            lineColor.copy(alpha = 0.3f),
-                            lineColor.copy(alpha = 0.0f)
+                            color.copy(alpha = 0.3f),
+                            color.copy(alpha = 0.0f)
                         ),
                         startY = 0f,
                         endY = size.height
@@ -120,7 +113,7 @@ fun SystemLineChart(
 
                 drawPath(
                     path = linePath,
-                    color = lineColor,
+                    color = color,
                     style = Stroke(
                         width = 2.5f,
                         cap = StrokeCap.Round,

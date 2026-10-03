@@ -25,6 +25,7 @@ import me.bmax.apatch.ui.component.folk.FolkButtonDefaults
 import me.bmax.apatch.util.*
 import me.bmax.apatch.util.ui.showToast
 import java.io.File
+import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +41,7 @@ fun ResetSUPathDialog(showDialog: MutableState<Boolean>) {
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
         width = 310.dp,
-        shape = RoundedCornerShape(30.dp),
+        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(PaddingValues(all = 24.dp))) {
             Box(
@@ -108,18 +109,21 @@ private fun String.shellSingleQuoted(): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CleanStorageDialog(showDialog: MutableState<Boolean>) {
+fun CleanStorageDialog(
+    showDialog: MutableState<Boolean>,
+    titleRes: Int = R.string.settings_clean_storage,
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
         width = 310.dp,
-        shape = RoundedCornerShape(30.dp),
+        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(PaddingValues(all = 24.dp))) {
             Text(
-                text = stringResource(id = R.string.settings_clean_storage),
+                text = stringResource(id = titleRes),
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -168,7 +172,7 @@ fun FolkXAnimationSpeedDialog(showDialog: MutableState<Boolean>, onSpeedChanged:
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
         width = 310.dp,
-        shape = RoundedCornerShape(30.dp),
+        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(

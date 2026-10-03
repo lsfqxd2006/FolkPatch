@@ -10,7 +10,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
+import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.ui.draw.clip
 import com.topjohnwu.superuser.io.SuFile
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +55,8 @@ import me.bmax.apatch.util.clearLegacyFolkBanner
 import me.bmax.apatch.util.CustomModuleInfo
 import me.bmax.apatch.util.apmCustomModuleInfoStorage
 import me.bmax.apatch.ui.theme.BackgroundConfig
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 
 @Composable
 fun ModuleItem(
@@ -297,14 +299,23 @@ fun ModuleItem(
         MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f)
     }
 
-    val cardShape = RoundedCornerShape(20.dp)
-
     val cardInteractionSource = remember { MutableInteractionSource() }
     val haptics = LocalHapticFeedback.current
+    val cardPressed by cardInteractionSource.collectIsPressedAsState()
+    val cardCorner by animateDpAsState(
+        targetValue = when {
+            expanded -> 28.dp
+            cardPressed -> 24.dp
+            else -> 20.dp
+        },
+        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+        label = "moduleCardCorner",
+    )
+    val cardShape = ContinuousCornerShape(cardCorner)
 
     val clickModifier = Modifier
         .fillMaxWidth()
-        .animateContentSize()
+        .animateContentSize(animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec())
         .folkPressScale(cardInteractionSource)
         .combinedClickable(
             interactionSource = cardInteractionSource,

@@ -26,7 +26,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.LockOpen
@@ -152,7 +152,7 @@ fun HeroStatusCard(
             isUpdate -> MaterialTheme.colorScheme.secondary
             else -> MaterialTheme.colorScheme.errorContainer
         },
-        animationSpec = tween(500),
+        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
         label = "containerColor"
     )
 
@@ -164,7 +164,7 @@ fun HeroStatusCard(
             isUpdate -> MaterialTheme.colorScheme.onSecondary
             else -> MaterialTheme.colorScheme.onErrorContainer
         },
-        animationSpec = tween(500),
+        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
         label = "contentColor"
     )
 
@@ -194,7 +194,7 @@ fun HeroStatusCard(
                 .then(if (wallpaperEnabled) Modifier.pointerInput(Unit) {
                     detectTapGestures(onLongPress = { showBackgroundOptions = true })
                 } else Modifier),
-            shape = RoundedCornerShape(24.dp),
+            shape = ContinuousCornerShape(24.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.Transparent,
                 contentColor = contentColor
@@ -350,7 +350,7 @@ fun HeroStatusCard(
                         navigator.navigate(InstallModeSelectScreenDestination)
                     }
                 },
-            shape = RoundedCornerShape(20.dp),
+            shape = ContinuousCornerShape(20.dp),
             colors = CardDefaults.cardColors(
                 containerColor = finalContainerColor,
                 contentColor = MaterialTheme.colorScheme.onErrorContainer
