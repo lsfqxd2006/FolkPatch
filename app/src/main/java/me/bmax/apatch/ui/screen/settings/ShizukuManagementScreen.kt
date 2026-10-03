@@ -18,20 +18,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -61,10 +56,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.bmax.apatch.R
-import me.bmax.apatch.ui.component.SplicedColumnGroup
-import me.bmax.apatch.ui.component.ToggleSettingCard
-import me.bmax.apatch.ui.screen.LabelText
+import me.bmax.apatch.ui.component.folk.FolkScaffold
+import me.bmax.apatch.ui.component.folk.FolkTitleStyle
+import me.bmax.apatch.ui.screen.superuser.LabelText
 import me.bmax.apatch.util.ShizukuServiceManager
+import me.bmax.apatch.ui.component.folk.FolkSettingsGroup
+import me.bmax.apatch.ui.component.folk.FolkSwitchPreference
+import androidx.compose.material.icons.outlined.*
 
 private data class ShizukuApp(
     val packageInfo: PackageInfo,
@@ -79,7 +77,6 @@ private data class ShizukuLoadResult(
 )
 
 @Destination<RootGraph>
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShizukuManagementScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
@@ -151,28 +148,20 @@ fun ShizukuManagementScreen(navigator: DestinationsNavigator) {
 
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.shizuku_management_title)) },
-                navigationIcon = {
-                    IconButton(onClick = navigator::popBackStack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        navigator.navigate(ShizukuLogScreenDestination)
-                    }) {
-                        Icon(
-                            Icons.AutoMirrored.Outlined.Article,
-                            contentDescription = stringResource(R.string.shizuku_log_title),
-                        )
-                    }
-                },
-            )
+    FolkScaffold(
+        title = stringResource(R.string.shizuku_management_title),
+        titleStyle = FolkTitleStyle.Inline,
+        onBack = navigator::popBackStack,
+        actions = {
+            IconButton(onClick = {
+                navigator.navigate(ShizukuLogScreenDestination)
+            }) {
+                Icon(
+                    Icons.AutoMirrored.Outlined.Article,
+                    contentDescription = stringResource(R.string.shizuku_log_title),
+                )
+            }
         },
-        containerColor = Color.Transparent,
     ) { padding ->
         when {
             loading -> Column(
@@ -231,7 +220,12 @@ fun ShizukuManagementScreen(navigator: DestinationsNavigator) {
                         runCatching { info.loadLabel(context.packageManager).toString() }
                             .getOrDefault(app.packageInfo.packageName)
                     }
-                    SplicedColumnGroup(flat = true) {
+                    // One group per app: keep a gap between the cards (the
+                    // settings sub-pages get this from FolkSettingsSection).
+                    FolkSettingsGroup(
+                        flat = true,
+                        modifier = Modifier.padding(bottom = 10.dp),
+                    ) {
                         item(key = "header") {
                             ShizukuAppHeader(
                                 packageInfo = app.packageInfo,
@@ -249,11 +243,10 @@ fun ShizukuManagementScreen(navigator: DestinationsNavigator) {
                             )
                         }
                         item(key = "allow") {
-                            ToggleSettingCard(
-                                flat = true,
+                            FolkSwitchPreference(
                                 icon = Icons.Outlined.Shield,
                                 title = stringResource(R.string.shizuku_management_allowed_title),
-                                description = if (app.allowed) {
+                                summary = if (app.allowed) {
                                     stringResource(R.string.shizuku_management_granted)
                                 } else {
                                     stringResource(R.string.shizuku_management_denied)
@@ -272,11 +265,10 @@ fun ShizukuManagementScreen(navigator: DestinationsNavigator) {
                         }
                         if (serverIsRoot) {
                             item(key = "root") {
-                                ToggleSettingCard(
-                                    flat = true,
-                                    icon = Icons.Filled.Lock,
+                                FolkSwitchPreference(
+                                    icon = Icons.Outlined.Lock,
                                     title = stringResource(R.string.shizuku_management_root_access),
-                                    description = stringResource(R.string.shizuku_management_root_access_desc),
+                                    summary = stringResource(R.string.shizuku_management_root_access_desc),
                                     checked = !app.shellOnly,
                                     onCheckedChange = { root ->
                                         try {
