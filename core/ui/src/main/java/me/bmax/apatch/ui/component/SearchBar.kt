@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -18,8 +17,10 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -42,6 +44,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.bmax.apatch.ui.component.folk.folkDefaultAppBarColors
+import me.bmax.apatch.core.ui.R
+import androidx.compose.ui.res.stringResource
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 private const val TAG = "SearchBar"
 
@@ -99,23 +104,29 @@ fun SearchAppBar(
                 AnimatedVisibility(
                     modifier = Modifier.align(Alignment.CenterStart),
                     visible = !onSearch,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
+                    enter = fadeIn(MaterialTheme.motionScheme.defaultEffectsSpec()),
+                    exit = fadeOut(MaterialTheme.motionScheme.fastEffectsSpec()),
                     content = { title() }
                 )
 
                 AnimatedVisibility(
                     visible = onSearch,
-                    enter = fadeIn(),
-                    exit = fadeOut()
+                    enter = fadeIn(MaterialTheme.motionScheme.defaultEffectsSpec()),
+                    exit = fadeOut(MaterialTheme.motionScheme.fastEffectsSpec())
                 ) {
-                    OutlinedTextField(
+                    val searchFieldColors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                    )
+                    TextField(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(
                                 top = 2.dp,
                                 bottom = 2.dp,
-                                end = if (onBackClick != null) 0.dp else 14.dp
+                                end = if (onBackClick != null) 0.dp else 16.dp
                             )
                             .focusRequester(focusRequester)
                             .onFocusChanged { focusState ->
@@ -127,7 +138,12 @@ fun SearchAppBar(
                             textFieldValue = newValue
                             onSearchTextChange(newValue.text)
                         },
-                        shape = RoundedCornerShape(15.dp),
+                        shape = FolkShape.CornerFull,
+                        colors = searchFieldColors,
+                        leadingIcon = {
+                            Icon(Icons.Filled.Search, contentDescription = null)
+                        },
+                        placeholder = { Text(stringResource(R.string.core_action_search)) },
                         trailingIcon = {
                             IconButton(
                                 onClick = {
@@ -135,7 +151,7 @@ fun SearchAppBar(
                                     keyboardController?.hide()
                                     onClearClick()
                                 },
-                                content = { Icon(Icons.Filled.Close, "Clear search") }
+                                content = { Icon(Icons.Filled.Close, stringResource(R.string.core_action_clear)) }
                             )
                         },
                         maxLines = 1,
@@ -157,7 +173,7 @@ fun SearchAppBar(
             if (onBackClick != null) {
                 IconButton(
                     onClick = onBackClick,
-                    content = { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back") }
+                    content = { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.core_action_back)) }
                 )
             }
         },
@@ -171,7 +187,7 @@ fun SearchAppBar(
                     leadingActions?.invoke()
                     IconButton(
                         onClick = { onSearch = true },
-                        content = { Icon(Icons.Filled.Search, "Search") }
+                        content = { Icon(Icons.Filled.Search, stringResource(R.string.core_action_search)) }
                     )
                 }
             }

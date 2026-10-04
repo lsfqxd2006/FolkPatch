@@ -2,7 +2,6 @@ package me.bmax.apatch.ui.screen.settings.multimedia
 
 import android.content.Context
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,6 +15,7 @@ import me.bmax.apatch.ui.theme.SoundEffectConfig
 import me.bmax.apatch.ui.theme.VibrationConfig
 import me.bmax.apatch.util.SoundEffectManager
 import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,8 +45,6 @@ fun MultimediaDialogs(
     if (showSoundEffectSourceDialog.value) {
         FolkAlertDialog(
             onDismissRequest = { showSoundEffectSourceDialog.value = false },
-            width = 310.dp,
-            shape = ContinuousCornerShape(30.dp),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
@@ -56,7 +54,7 @@ fun MultimediaDialogs(
                 )
 
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = FolkShape.Corner12,
                     color = AlertDialogDefaults.containerColor,
                     tonalElevation = 2.dp
                 ) {
@@ -101,8 +99,6 @@ fun MultimediaDialogs(
     if (showSoundEffectPresetDialog.value) {
         FolkAlertDialog(
             onDismissRequest = { showSoundEffectPresetDialog.value = false },
-            width = 310.dp,
-            shape = ContinuousCornerShape(30.dp),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
@@ -112,7 +108,7 @@ fun MultimediaDialogs(
                 )
 
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = FolkShape.Corner12,
                     color = AlertDialogDefaults.containerColor,
                     tonalElevation = 2.dp,
                     modifier = Modifier.heightIn(max = 400.dp)
@@ -151,8 +147,6 @@ fun MultimediaDialogs(
     if (showSoundEffectScopeDialog.value) {
         FolkAlertDialog(
             onDismissRequest = { showSoundEffectScopeDialog.value = false },
-            width = 310.dp,
-            shape = ContinuousCornerShape(30.dp),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
@@ -162,7 +156,7 @@ fun MultimediaDialogs(
                 )
 
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = FolkShape.Corner12,
                     color = AlertDialogDefaults.containerColor,
                     tonalElevation = 2.dp
                 ) {
@@ -207,8 +201,6 @@ fun MultimediaDialogs(
     if (showStartupSourceDialog.value) {
         FolkAlertDialog(
             onDismissRequest = { showStartupSourceDialog.value = false },
-            width = 310.dp,
-            shape = ContinuousCornerShape(30.dp),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
@@ -218,7 +210,7 @@ fun MultimediaDialogs(
                 )
 
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = FolkShape.Corner12,
                     color = AlertDialogDefaults.containerColor,
                     tonalElevation = 2.dp
                 ) {
@@ -263,8 +255,6 @@ fun MultimediaDialogs(
     if (showStartupPresetDialog.value) {
         FolkAlertDialog(
             onDismissRequest = { showStartupPresetDialog.value = false },
-            width = 310.dp,
-            shape = ContinuousCornerShape(30.dp),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
@@ -274,7 +264,7 @@ fun MultimediaDialogs(
                 )
 
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = FolkShape.Corner12,
                     color = AlertDialogDefaults.containerColor,
                     tonalElevation = 2.dp,
                     modifier = Modifier.heightIn(max = 400.dp)
@@ -313,8 +303,6 @@ fun MultimediaDialogs(
     if (showVibrationScopeDialog.value) {
         FolkAlertDialog(
             onDismissRequest = { showVibrationScopeDialog.value = false },
-            width = 310.dp,
-            shape = ContinuousCornerShape(30.dp),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
@@ -324,7 +312,7 @@ fun MultimediaDialogs(
                 )
 
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = FolkShape.Corner12,
                     color = AlertDialogDefaults.containerColor,
                     tonalElevation = 2.dp
                 ) {

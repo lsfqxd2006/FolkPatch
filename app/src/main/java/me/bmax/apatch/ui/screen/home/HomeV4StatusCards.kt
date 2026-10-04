@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.Android
@@ -22,6 +20,7 @@ import androidx.compose.material.icons.outlined.Cached
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -59,6 +58,8 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.theme.BackgroundConfig
 import me.bmax.apatch.util.SystemInfoCollector
+import me.bmax.apatch.core.ui.R as CoreR
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @Composable
 fun HomeV4DeviceStatusCard(isWallpaperMode: Boolean, modifier: Modifier = Modifier) {
@@ -162,6 +163,7 @@ fun HomeV4StatusCircle(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeV4MagiskStyleCard(
     title: String,
@@ -191,8 +193,7 @@ fun HomeV4MagiskStyleCard(
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLargeEmphasized,
                     modifier = Modifier.weight(1f)
                 )
                 
@@ -200,7 +201,7 @@ fun HomeV4MagiskStyleCard(
                     Button(
                         onClick = onActionClick,
                         enabled = actionEnabled,
-                        contentPadding = PaddingValues(horizontal = 24.dp)
+                        contentPadding = ButtonDefaults.MediumContentPadding
                     ) {
                         Text(text = actionText)
                     }
@@ -273,6 +274,7 @@ fun VersionInfoColumn(
 /**
  * Android补丁状态卡片
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AndroidPatchCard(
     apState: APApplication.State,
@@ -291,7 +293,7 @@ fun AndroidPatchCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = ContinuousCornerShape(16.dp),
+        shape = FolkShape.Corner16,
         colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Row(
@@ -363,7 +365,8 @@ fun AndroidPatchCard(
                 },
                 enabled = apState != APApplication.State.ANDROIDPATCH_INSTALLING &&
                     apState != APApplication.State.ANDROIDPATCH_UNINSTALLING &&
-                    apState != APApplication.State.UNKNOWN_STATE
+                    apState != APApplication.State.UNKNOWN_STATE,
+                contentPadding = ButtonDefaults.MediumContentPadding
             ) {
                 when (apState) {
                     APApplication.State.ANDROIDPATCH_NOT_INSTALLED -> 
@@ -372,7 +375,7 @@ fun AndroidPatchCard(
                         Text(stringResource(R.string.home_kp_cando_update))
                     APApplication.State.ANDROIDPATCH_INSTALLING,
                     APApplication.State.ANDROIDPATCH_UNINSTALLING -> 
-                        Icon(Icons.Outlined.Cached, contentDescription = "busy")
+                        Icon(Icons.Outlined.Cached, contentDescription = stringResource(CoreR.string.core_state_busy))
                     else -> 
                         Text(stringResource(R.string.home_ap_cando_uninstall))
                 }

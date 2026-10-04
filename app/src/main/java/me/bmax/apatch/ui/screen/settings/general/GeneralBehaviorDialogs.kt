@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -21,6 +20,7 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.util.*
 import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,8 +45,6 @@ fun AppTitleChooseDialog(showDialog: MutableState<Boolean>, onTitleChanged: (Str
 
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         LazyColumn {
             items(titles.size, key = { it }) { index ->
@@ -79,8 +77,6 @@ fun CustomAppTitleDialog(showDialog: MutableState<Boolean>, snackBarHost: Snackb
 
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -130,8 +126,6 @@ fun DesktopAppNameChooseDialog(showDialog: MutableState<Boolean>, onNameChanged:
     val currentName = remember { prefs.getString("desktop_app_name", "FolkPatch") }
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         LazyColumn {
             item {
@@ -181,8 +175,6 @@ fun FolkXAnimationTypeDialog(showDialog: MutableState<Boolean>, onTypeChanged: (
 
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(
@@ -194,7 +186,7 @@ fun FolkXAnimationTypeDialog(showDialog: MutableState<Boolean>, onTypeChanged: (
             val currentType = remember { prefs.getString("folkx_animation_type", "linear") }
 
             Surface(
-                shape = RoundedCornerShape(12.dp),
+                shape = FolkShape.Corner12,
                 color = AlertDialogDefaults.containerColor,
                 tonalElevation = 2.dp
             ) {
@@ -242,8 +234,6 @@ fun AppListLoadingSchemeDialog(showDialog: MutableState<Boolean>, onSchemeChange
 
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(
@@ -255,7 +245,7 @@ fun AppListLoadingSchemeDialog(showDialog: MutableState<Boolean>, onSchemeChange
             val currentScheme = remember { prefs.getString("app_list_loading_scheme", "root_service") }
 
             Surface(
-                shape = RoundedCornerShape(12.dp),
+                shape = FolkShape.Corner12,
                 color = AlertDialogDefaults.containerColor,
                 tonalElevation = 2.dp
             ) {

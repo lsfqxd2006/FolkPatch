@@ -29,8 +29,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import me.bmax.apatch.R
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,7 +116,7 @@ fun LabelText(
         Text(
             text = label,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+            style = MaterialTheme.typography.labelSmall,
             color = contentColorFor(containerColor),
             fontWeight = FontWeight.Medium,
         )
@@ -158,7 +158,7 @@ fun SuperUserOptionsSheet(
             // Refresh
             Surface(
                 onClick = onRefresh,
-                shape = RoundedCornerShape(12.dp),
+                shape = FolkShape.Corner12,
                 color = Color.Transparent,
             ) {
                 Row(
@@ -177,7 +177,7 @@ fun SuperUserOptionsSheet(
             // Show/Hide System Apps
             Surface(
                 onClick = onToggleSystemApps,
-                shape = RoundedCornerShape(12.dp),
+                shape = FolkShape.Corner12,
                 color = Color.Transparent,
             ) {
                 Row(
@@ -200,7 +200,7 @@ fun SuperUserOptionsSheet(
             // Backup
             Surface(
                 onClick = onBackup,
-                shape = RoundedCornerShape(12.dp),
+                shape = FolkShape.Corner12,
                 color = Color.Transparent,
             ) {
                 Row(
@@ -219,7 +219,7 @@ fun SuperUserOptionsSheet(
             // Restore
             Surface(
                 onClick = onRestore,
-                shape = RoundedCornerShape(12.dp),
+                shape = FolkShape.Corner12,
                 color = Color.Transparent,
             ) {
                 Row(

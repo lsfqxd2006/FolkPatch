@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
@@ -32,6 +31,8 @@ import me.bmax.apatch.ui.component.folk.FolkTitleStyle
 import me.bmax.apatch.ui.viewmodel.ThemeStoreViewModel
 import me.bmax.apatch.util.DownloadProgress
 import me.bmax.apatch.util.DownloadStatus
+import me.bmax.apatch.core.ui.R as CoreR
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -335,7 +336,7 @@ fun ThemeStoreScreen(
         FolkAlertDialog(
             onDismissRequest = { showFilterSheet = false },
             width = 320.dp,
-            shape = ContinuousCornerShape(28.dp),
+            shape = FolkShape.Corner28,
             blurBehind = false,
         ) {
             ThemeFilterSheetContent(
@@ -390,22 +391,22 @@ fun ThemeStoreScreen(
             // "我的主题"按钮 — hidden in compat mode
             if (!isCompatMode) {
                 IconButton(onClick = { navigator.navigate(MyThemesScreenDestination) }) {
-                    Icon(Icons.Filled.ColorLens, contentDescription = "My Themes")
+                    Icon(Icons.Filled.ColorLens, contentDescription = stringResource(R.string.my_themes_title))
                 }
             }
             if (isSearchActive) {
                 if (viewModel.searchQuery.isNotEmpty()) {
                     IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                        Icon(Icons.Filled.Close, contentDescription = "Clear")
+                        Icon(Icons.Filled.Close, contentDescription = stringResource(CoreR.string.core_action_clear))
                     }
                 }
             } else {
                 IconButton(onClick = { isSearchActive = true }) {
-                    Icon(Icons.Filled.Search, contentDescription = "Search")
+                    Icon(Icons.Filled.Search, contentDescription = stringResource(CoreR.string.core_action_search))
                 }
             }
             IconButton(onClick = { showFilterSheet = true }) {
-                Icon(Icons.Filled.FilterList, contentDescription = "Filter")
+                Icon(Icons.Filled.FilterList, contentDescription = stringResource(CoreR.string.core_action_filter))
             }
         },
         snackbarHostState = snackbarHostState,

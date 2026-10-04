@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
-import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.automirrored.outlined.Help
@@ -21,13 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.Natives
@@ -40,6 +37,8 @@ import me.bmax.apatch.ui.component.copyableInfo
 import androidx.compose.material3.surfaceColorAtElevation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.bmax.apatch.core.ui.R as CoreR
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @Composable
 fun StatusCardCircle(
@@ -372,8 +371,7 @@ fun ModeLabelText(
         Text(
             text = label,
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-            style = TextStyle(
-                fontSize = 10.sp,
+            style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.SemiBold,
                 color = color,
             )
@@ -490,7 +488,7 @@ fun AStatusCardCircle(apState: APApplication.State) {
                             }
 
                             APApplication.State.ANDROIDPATCH_UNINSTALLING -> {
-                                Icon(Icons.Outlined.Cached, contentDescription = "busy")
+                                Icon(Icons.Outlined.Cached, contentDescription = stringResource(CoreR.string.core_state_busy))
                             }
 
                             APApplication.State.ANDROIDPATCH_NEED_UPDATE -> {
@@ -512,7 +510,7 @@ fun AStatusCardCircle(apState: APApplication.State) {
 fun TonalCard(
     modifier: Modifier = Modifier,
     containerColor: Color? = null,
-    shape: Shape = ContinuousCornerShape(20.dp),
+    shape: Shape = FolkShape.Corner20,
     content: @Composable () -> Unit
 ) {
     val finalContainerColor = containerColor ?: if (BackgroundConfig.isCustomBackgroundEnabled) {

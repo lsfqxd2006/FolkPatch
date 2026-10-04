@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,7 +52,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.dropUnlessResumed
@@ -93,6 +91,11 @@ import java.io.File
 import java.io.FileOutputStream
 import com.ramcosta.composedestinations.generated.destinations.PluginScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FaqScreenDestination
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.widthIn
+import me.bmax.apatch.ui.component.folk.FolkSettingsDimens
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 private const val FEEDBACK_URL = "https://github.com/LyraVoid/FolkPatch/issues/new/choose"
 
@@ -257,10 +260,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 title = {
                     Text(
                         text = stringResource(R.string.settings),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontSize = 22.sp,
-                            lineHeight = 28.sp,
-                        ),
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Medium,
                     )
                 },
@@ -280,96 +280,102 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         },
         containerColor = Color.Transparent,
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.TopCenter,
         ) {
-            item(key = "identity_header") {
-                ProfileHeader(
-                    nickname = profileNickname.ifBlank { "FolkPatch" },
-                    signature = profileSignature,
-                    deviceName = getDeviceInfo().trim(),
-                    avatarUri = profileAvatar,
-                    avatarOpacity = profileAvatarOpacity,
-                    onAvatarClick = { showProfileEditor = true },
-                )
-            }
+            LazyColumn(
+                modifier = Modifier
+                    .widthIn(max = FolkSettingsDimens.ContentMaxWidth)
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                item(key = "identity_header") {
+                    ProfileHeader(
+                        nickname = profileNickname.ifBlank { "FolkPatch" },
+                        signature = profileSignature,
+                        deviceName = getDeviceInfo().trim(),
+                        avatarUri = profileAvatar,
+                        avatarOpacity = profileAvatarOpacity,
+                        onAvatarClick = { showProfileEditor = true },
+                    )
+                }
 
-            item(key = "secondary_entries") {
-                Spacer(Modifier.height(20.dp))
-                SettingsIconGrid(entries = secondaryEntries)
-            }
+                item(key = "secondary_entries") {
+                    Spacer(Modifier.height(20.dp))
+                    SettingsIconGrid(entries = secondaryEntries)
+                }
 
-            item(key = "utility_rows") {
-                Spacer(Modifier.height(16.dp))
-                FolkSettingsGroup(shape = RoundedCornerShape(12.dp)) {
-                    item(key = "utility_faq") {
-                        FolkNavigationPreference(
-                            icon = Icons.Outlined.HelpOutline,
-                            title = stringResource(R.string.settings_faq),
-                            onClick = { navigator.navigate(FaqScreenDestination) },
-                        )
-                    }
-                    item(key = "utility_feedback") {
-                        FolkNavigationPreference(
-                            icon = Icons.Outlined.BugReport,
-                            title = stringResource(R.string.settings_bug_feedback),
-                            onClick = { uriHandler.openUri(FEEDBACK_URL) },
-                        )
-                    }
-                    item(key = "utility_clean_storage") {
-                        FolkNavigationPreference(
-                            icon = Icons.Outlined.CleaningServices,
-                            title = stringResource(R.string.settings_clear_cache),
-                            onClick = { cleanStorageDialogState.value = true },
-                        )
-                    }
-                    item(key = "utility_disclaimer") {
-                        FolkNavigationPreference(
-                            icon = Icons.Outlined.Policy,
-                            title = stringResource(R.string.settings_disclaimer),
-                            onClick = { disclaimerDialogState.value = true },
-                        )
-                    }
-                    item(key = "utility_send_log") {
-                        FolkNavigationPreference(
-                            icon = Icons.Outlined.Description,
-                            title = stringResource(R.string.send_log),
-                            onClick = {
-                                scope.launch {
-                                    val bugreport = loadingDialog.withLoading { getBugreportFile(context) }
-                                    val uri = FileProvider.getUriForFile(
-                                        context,
-                                        "${BuildConfig.APPLICATION_ID}.fileprovider",
-                                        bugreport,
-                                    )
-                                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                        putExtra(Intent.EXTRA_STREAM, uri)
-                                        type = "application/gzip"
-                                        clipData = android.content.ClipData.newRawUri(null, uri)
-                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                item(key = "utility_rows") {
+                    Spacer(Modifier.height(16.dp))
+                    FolkSettingsGroup(shape = FolkShape.Corner12) {
+                        item(key = "utility_faq") {
+                            FolkNavigationPreference(
+                                icon = Icons.Outlined.HelpOutline,
+                                title = stringResource(R.string.settings_faq),
+                                onClick = { navigator.navigate(FaqScreenDestination) },
+                            )
+                        }
+                        item(key = "utility_feedback") {
+                            FolkNavigationPreference(
+                                icon = Icons.Outlined.BugReport,
+                                title = stringResource(R.string.settings_bug_feedback),
+                                onClick = { uriHandler.openUri(FEEDBACK_URL) },
+                            )
+                        }
+                        item(key = "utility_clean_storage") {
+                            FolkNavigationPreference(
+                                icon = Icons.Outlined.CleaningServices,
+                                title = stringResource(R.string.settings_clear_cache),
+                                onClick = { cleanStorageDialogState.value = true },
+                            )
+                        }
+                        item(key = "utility_disclaimer") {
+                            FolkNavigationPreference(
+                                icon = Icons.Outlined.Policy,
+                                title = stringResource(R.string.settings_disclaimer),
+                                onClick = { disclaimerDialogState.value = true },
+                            )
+                        }
+                        item(key = "utility_send_log") {
+                            FolkNavigationPreference(
+                                icon = Icons.Outlined.Description,
+                                title = stringResource(R.string.send_log),
+                                onClick = {
+                                    scope.launch {
+                                        val bugreport = loadingDialog.withLoading { getBugreportFile(context) }
+                                        val uri = FileProvider.getUriForFile(
+                                            context,
+                                            "${BuildConfig.APPLICATION_ID}.fileprovider",
+                                            bugreport,
+                                        )
+                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                            putExtra(Intent.EXTRA_STREAM, uri)
+                                            type = "application/gzip"
+                                            clipData = android.content.ClipData.newRawUri(null, uri)
+                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        }
+                                        context.startActivity(
+                                            Intent.createChooser(shareIntent, context.getString(R.string.send_log))
+                                        )
                                     }
-                                    context.startActivity(
-                                        Intent.createChooser(shareIntent, context.getString(R.string.send_log))
-                                    )
-                                }
-                            },
-                        )
-                    }
-                    item(key = "utility_about") {
-                        FolkNavigationPreference(
-                            icon = Icons.Outlined.Info,
-                            title = stringResource(R.string.about),
-                            onClick = { navigator.navigate(AboutScreenDestination) },
-                        )
+                                },
+                            )
+                        }
+                        item(key = "utility_about") {
+                            FolkNavigationPreference(
+                                icon = Icons.Outlined.Info,
+                                title = stringResource(R.string.about),
+                                onClick = { navigator.navigate(AboutScreenDestination) },
+                            )
+                        }
                     }
                 }
-            }
 
-            item(key = "settings_bottom_spacer") {
-                Spacer(Modifier.height(16.dp))
-                NavigationBarsSpacer()
+                item(key = "settings_bottom_spacer") {
+                    Spacer(Modifier.height(16.dp))
+                    NavigationBarsSpacer()
+                }
             }
         }
     }
@@ -505,7 +511,7 @@ private fun SettingsIconGrid(entries: List<SecondaryEntry>) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = FolkShape.Corner12,
         color = folkGroupColor(),
         tonalElevation = 0.dp,
     ) {
@@ -536,9 +542,9 @@ private fun GridEntry(
     val haptics = LocalHapticFeedback.current
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(FolkShape.Corner12)
             .folkPressScale(interactionSource)
-            .clickable(
+            .clickable(role = Role.Button, 
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = {
@@ -558,7 +564,7 @@ private fun GridEntry(
         Spacer(Modifier.height(10.dp))
         Text(
             text = entry.label,
-            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp),
+            style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,

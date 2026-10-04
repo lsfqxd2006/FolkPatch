@@ -3,7 +3,6 @@ package me.bmax.apatch.ui.screen.settings.appearance
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -28,6 +27,8 @@ import me.bmax.apatch.ui.theme.ThemeManager
 import me.bmax.apatch.util.ui.APDialogBlurBehindUtils
 import me.bmax.apatch.util.ui.showToast
 import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
+import me.bmax.apatch.core.ui.R as CoreR
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +51,7 @@ fun ThemeExportDialog(
                 .fillMaxWidth(0.92f)
                 .widthIn(max = 440.dp)
                 .wrapContentHeight(),
-            shape = ContinuousCornerShape(28.dp),
+            shape = FolkShape.Corner28,
             tonalElevation = AlertDialogDefaults.TonalElevation,
             color = AlertDialogDefaults.containerColor,
         ) {
@@ -71,7 +72,7 @@ fun ThemeExportDialog(
                         onValueChange = { name = it },
                         label = { Text(stringResource(R.string.theme_name)) },
                         singleLine = true,
-                        shape = ContinuousCornerShape(16.dp),
+                        shape = FolkShape.Corner16,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(
@@ -94,8 +95,8 @@ fun ThemeExportDialog(
                                     .weight(1f)
                                     .height(56.dp),
                                 shape = when (index) {
-                                    0 -> RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
-                                    else -> RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
+                                    0 -> ContinuousCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+                                    else -> ContinuousCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                                 },
                                 color = if (selected) {
                                     MaterialTheme.colorScheme.secondaryContainer
@@ -144,7 +145,7 @@ fun ThemeExportDialog(
                         onValueChange = { version = it },
                         label = { Text(stringResource(R.string.theme_version)) },
                         singleLine = true,
-                        shape = ContinuousCornerShape(16.dp),
+                        shape = FolkShape.Corner16,
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
@@ -152,14 +153,14 @@ fun ThemeExportDialog(
                         onValueChange = { author = it },
                         label = { Text(stringResource(R.string.theme_author)) },
                         singleLine = true,
-                        shape = ContinuousCornerShape(16.dp),
+                        shape = FolkShape.Corner16,
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
                         value = description,
                         onValueChange = { description = it },
                         label = { Text(stringResource(R.string.theme_description)) },
-                        shape = ContinuousCornerShape(16.dp),
+                        shape = FolkShape.Corner16,
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 3,
                         maxLines = 5
@@ -205,7 +206,7 @@ fun ThemeImportDialog(
                 .fillMaxWidth(0.92f)
                 .widthIn(max = 440.dp)
                 .wrapContentHeight(),
-            shape = ContinuousCornerShape(28.dp),
+            shape = FolkShape.Corner28,
             tonalElevation = AlertDialogDefaults.TonalElevation,
             color = AlertDialogDefaults.containerColor,
         ) {
@@ -218,11 +219,11 @@ fun ThemeImportDialog(
                     modifier = Modifier.padding(top = 8.dp, bottom = 20.dp)
                 )
                 Surface(
-                    shape = ContinuousCornerShape(18.dp),
+                    shape = FolkShape.Corner16,
                     color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.35f),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(18.dp)) {
+                    Column(modifier = Modifier.padding(16.dp)) {
                         Text(metadata.name, style = MaterialTheme.typography.titleLarge)
                         Row(
                             modifier = Modifier.padding(top = 8.dp),
@@ -276,12 +277,10 @@ fun NavModeChooseDialog(
 ) {
     FolkAlertDialog(
         onDismissRequest = onDismiss,
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(text = stringResource(R.string.settings_nav_scheme), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 16.dp))
-            Surface(shape = RoundedCornerShape(12.dp), color = AlertDialogDefaults.containerColor, tonalElevation = 2.dp) {
+            Surface(shape = FolkShape.Corner12, color = AlertDialogDefaults.containerColor, tonalElevation = 2.dp) {
                 Column {
                     FolkSelectableRow(
                         title = stringResource(R.string.settings_nav_mode_floating),
@@ -319,12 +318,10 @@ fun StatsTopLayoutChooseDialog(
 ) {
     FolkAlertDialog(
         onDismissRequest = onDismiss,
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(text = stringResource(R.string.settings_stats_top_layout), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 16.dp))
-            Surface(shape = RoundedCornerShape(12.dp), color = AlertDialogDefaults.containerColor, tonalElevation = 2.dp) {
+            Surface(shape = FolkShape.Corner12, color = AlertDialogDefaults.containerColor, tonalElevation = 2.dp) {
                 Column {
                     FolkSelectableRow(
                         title = stringResource(R.string.settings_stats_top_layout_list),
@@ -356,7 +353,7 @@ fun BannerApiConfigDialog(
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
         width = 340.dp,
-        shape = ContinuousCornerShape(28.dp),
+        shape = FolkShape.Corner28,
     ) {
         Column(modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())) {
             Text(text = stringResource(R.string.apm_banner_api_config_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 16.dp))
@@ -368,12 +365,12 @@ fun BannerApiConfigDialog(
                 modifier = Modifier.fillMaxWidth(), singleLine = true,
                 trailingIcon = {
                     if (sourceText.isNotEmpty()) {
-                        IconButton(onClick = { sourceText = "" }) { Icon(Icons.Filled.Clear, contentDescription = "Clear") }
+                        IconButton(onClick = { sourceText = "" }) { Icon(Icons.Filled.Clear, contentDescription = stringResource(CoreR.string.core_action_clear)) }
                     }
                 }
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)) {
+            Surface(shape = FolkShape.Corner12, color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(text = stringResource(R.string.apm_banner_api_examples_title), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(8.dp))

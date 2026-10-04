@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -68,6 +66,7 @@ import me.bmax.apatch.util.BulkInstallManager
 import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
 import me.bmax.apatch.ui.component.folk.FolkStateView
 import androidx.compose.material.icons.outlined.Extension
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,7 +128,7 @@ fun ApmBulkInstallScreen(navigator: DestinationsNavigator, initialUris: ArrayLis
                 showFirstTimeDialog = false
             },
             width = 350.dp,
-            shape = ContinuousCornerShape(20.dp),
+            shape = FolkShape.Corner20,
             blurBehind = false,
             dialogProperties = DialogProperties(dismissOnClickOutside = false, dismissOnBackPress = false),
         ) {
@@ -272,7 +271,7 @@ fun ApmBulkInstallScreen(navigator: DestinationsNavigator, initialUris: ArrayLis
                             items(moduleUris, key = { it }) { uri ->
                                 ListItem(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(16.dp))
+                                        .clip(FolkShape.Corner16)
                                         .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                                     headlineContent = { 
                                         Text(

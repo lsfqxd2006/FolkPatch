@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -27,6 +26,7 @@ import me.bmax.apatch.ui.component.folk.FolkAlertDialog
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.folk.FolkButtonDefaults
 import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,8 +36,6 @@ fun KPMControlDialog(showDialog: MutableState<Boolean>, onConfirm: (String) -> U
 
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
         blurBehind = false,
     ) {
         Column(modifier = Modifier.padding(PaddingValues(all = 24.dp))) {
@@ -75,7 +73,7 @@ fun KPMControlDialog(showDialog: MutableState<Boolean>, onConfirm: (String) -> U
                         controlParam = it
                         enable = controlParam.isNotBlank()
                     },
-                    shape = RoundedCornerShape(50.0f),
+                    shape = FolkShape.CornerFull,
                     label = { Text(stringResource(id = R.string.kpm_control_paramters)) },
                     visualTransformation = VisualTransformation.None,
                 )

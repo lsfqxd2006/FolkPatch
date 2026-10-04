@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">FolkPatch</string>
+    <string name="debug_build_banner" translatable="false">DEBUG</string>
     <string name="app_name_fpatch">FPatch</string>
 
     <string name="desktop_app_name">Desktop App Name</string>
@@ -65,6 +66,7 @@
     <string name="reboot_edl_confirm">Reboot into EDL (Emergency Download) mode? The screen will stay black and the device can only be recovered with a deep flash tool.</string>
     <string name="about">About</string>
     <string name="developer_and_maintainer">Developer | Maintainer</string>
+    <string name="developer_profile_picture">Developer profile picture</string>
     <string name="settings_app_language">Language</string>
     <string name="system_default">System default</string>
     <string name="settings_global_namespace_mode">Global namespace mode</string>
@@ -1446,6 +1448,11 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="color_style_monochrome">Monochrome</string>
     <string name="color_style_neutral">Neutral</string>
     <string name="color_style_fidelity">Fidelity</string>
+    <!-- Color Contrast -->
+    <string name="color_contrast_label">Contrast</string>
+    <string name="color_contrast_standard">Standard</string>
+    <string name="color_contrast_medium">Medium</string>
+    <string name="color_contrast_high">High</string>
     <string name="settings_jailbreak_mode">Jailbreak mode</string>
     <string name="settings_jailbreak_mode_summary">"Load the KernelPatch module on a stock kernel. Patching is not allowed in this mode."</string>
     <string name="settings_jailbreak_soft_reboot">Soft reboot</string>

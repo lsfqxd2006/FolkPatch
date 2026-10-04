@@ -1,7 +1,6 @@
 package me.bmax.apatch.ui.screen.settings.appearance
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -13,6 +12,7 @@ import me.bmax.apatch.ui.component.folk.FolkSelectableRow
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @Composable
 fun homeLayoutStyleToString(style: String): Int {
@@ -33,8 +33,6 @@ fun HomeLayoutChooseDialog(showDialog: MutableState<Boolean>, onLayoutSelected: 
 
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(
@@ -46,7 +44,7 @@ fun HomeLayoutChooseDialog(showDialog: MutableState<Boolean>, onLayoutSelected: 
             val currentStyle = prefs.getString("home_layout_style", APApplication.HOME_LAYOUT_STYLE_DEFAULT)
 
             Surface(
-                shape = RoundedCornerShape(12.dp),
+                shape = FolkShape.Corner12,
                 color = AlertDialogDefaults.containerColor,
                 tonalElevation = 2.dp
             ) {

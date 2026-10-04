@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.DarkMode
@@ -27,6 +26,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.bmax.apatch.R
+import androidx.compose.ui.semantics.Role
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 enum class ThemeMode {
     LIGHT, DARK, SYSTEM
@@ -53,7 +54,6 @@ fun ThemeModeSelector(
                 label = stringResource(R.string.theme_light),
                 isSelected = selectedMode == ThemeMode.LIGHT,
                 onClick = { onModeSelected(ThemeMode.LIGHT) },
-                flat = flat,
                 modifier = Modifier.weight(1f),
             )
 
@@ -62,7 +62,6 @@ fun ThemeModeSelector(
                 label = stringResource(R.string.theme_dark),
                 isSelected = selectedMode == ThemeMode.DARK,
                 onClick = { onModeSelected(ThemeMode.DARK) },
-                flat = flat,
                 modifier = Modifier.weight(1f),
             )
 
@@ -71,7 +70,6 @@ fun ThemeModeSelector(
                 label = stringResource(R.string.theme_system),
                 isSelected = selectedMode == ThemeMode.SYSTEM,
                 onClick = { onModeSelected(ThemeMode.SYSTEM) },
-                flat = flat,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -93,7 +91,6 @@ private fun ThemeModeOption(
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    flat: Boolean = false,
 ) {
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 1.05f else 1f,
@@ -101,12 +98,8 @@ private fun ThemeModeOption(
         label = "themeModeScale",
     )
 
-    val bgColor = when {
-        isSelected && flat -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-        isSelected -> MaterialTheme.colorScheme.primaryContainer
-        flat -> MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.4f)
-        else -> MaterialTheme.colorScheme.surface
-    }
+    val bgColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
+    else MaterialTheme.colorScheme.surfaceContainerLow
 
     val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
     else MaterialTheme.colorScheme.onSurfaceVariant
@@ -114,9 +107,9 @@ private fun ThemeModeOption(
     Column(
         modifier = modifier
             .scale(scale)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(FolkShape.Corner24)
             .background(bgColor)
-            .clickable(onClick = onClick)
+            .clickable(role = Role.RadioButton, onClick = onClick)
             .padding(vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -131,8 +124,7 @@ private fun ThemeModeOption(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
-            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-            else MaterialTheme.colorScheme.onSurface,
+            color = contentColor,
         )
     }
 }

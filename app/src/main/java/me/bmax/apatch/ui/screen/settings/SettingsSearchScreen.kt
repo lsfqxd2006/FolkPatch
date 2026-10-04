@@ -45,6 +45,7 @@ import me.bmax.apatch.ui.component.folk.FolkScaffold
 import me.bmax.apatch.util.ui.NavigationBarsSpacer
 import me.bmax.apatch.ui.component.folk.FolkStateView
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.ui.semantics.Role
 
 @Destination<RootGraph>
 @Composable
@@ -146,8 +147,8 @@ private fun SearchResultItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 14.dp),
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {

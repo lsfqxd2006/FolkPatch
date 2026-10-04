@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.outlined.AddPhotoAlternate
@@ -49,13 +48,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.folk.folkGroupColor
 import kotlin.math.roundToInt
+import androidx.compose.ui.semantics.Role
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 
 /** Square size the avatar is decoded at, in pixels. */
@@ -97,7 +96,7 @@ fun ProfileEditSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        shape = ContinuousCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         dragHandle = { BottomSheetDefaults.DragHandle() },
     ) {
@@ -110,12 +109,11 @@ fun ProfileEditSheet(
         ) {
             Text(
                 text = stringResource(R.string.profile_edit_title),
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 18.sp, lineHeight = 24.sp),
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
 
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -160,7 +158,7 @@ fun ProfileEditSheet(
                 }
             }
 
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -220,7 +218,7 @@ fun ProfileEditSheet(
                 Spacer(Modifier.width(8.dp))
                 Button(
                     onClick = { onSave(name.trim(), sign.trim()) },
-                    shape = RoundedCornerShape(14.dp),
+                    shape = FolkShape.Corner16,
                 ) {
                     Text(stringResource(R.string.save))
                 }
@@ -248,7 +246,7 @@ fun ProfileTextField(
         label = { Text(label) },
         singleLine = singleLine,
         minLines = minLines,
-        shape = ContinuousCornerShape(16.dp),
+        shape = FolkShape.Corner16,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -308,7 +306,7 @@ fun ProfileHeader(
                     // Plain circle, no shadow and no coloured ring.
                     .clip(CircleShape)
                     .background(folkGroupColor().copy(alpha = 1f))
-                    .clickable(onClick = onAvatarClick),
+                    .clickable(role = Role.Button, onClick = onAvatarClick),
                 contentAlignment = Alignment.Center,
             ) {
                 if (avatarBitmap != null) {
@@ -331,13 +329,12 @@ fun ProfileHeader(
                 }
             }
 
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = nickname,
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 19.sp, lineHeight = 26.sp),
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -347,7 +344,7 @@ fun ProfileHeader(
                 // device stands in for the email other apps put here.
                 Text(
                     text = signature.ifBlank { deviceName },
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

@@ -3,7 +3,6 @@
 package me.bmax.apatch.ui.screen.settings.general
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +25,7 @@ import me.bmax.apatch.util.*
 import me.bmax.apatch.util.ui.showToast
 import java.io.File
 import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,8 +40,6 @@ fun ResetSUPathDialog(showDialog: MutableState<Boolean>) {
     }
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(PaddingValues(all = 24.dp))) {
             Box(
@@ -118,8 +116,6 @@ fun CleanStorageDialog(
 
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(PaddingValues(all = 24.dp))) {
             Text(
@@ -171,8 +167,6 @@ fun FolkXAnimationSpeedDialog(showDialog: MutableState<Boolean>, onSpeedChanged:
 
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(
@@ -184,7 +178,7 @@ fun FolkXAnimationSpeedDialog(showDialog: MutableState<Boolean>, onSpeedChanged:
             val currentSpeed = remember { prefs.getFloat("folkx_animation_speed", 1.0f) }
 
             Surface(
-                shape = RoundedCornerShape(12.dp),
+                shape = FolkShape.Corner12,
                 color = AlertDialogDefaults.containerColor,
                 tonalElevation = 2.dp
             ) {

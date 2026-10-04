@@ -44,6 +44,7 @@ import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.folk.FolkScaffold
 import me.bmax.apatch.ui.component.folk.FolkTitleStyle
 import me.bmax.apatch.util.Version
+import androidx.compose.ui.semantics.Role
 
 @Destination<RootGraph>
 @Composable
@@ -196,8 +197,8 @@ private fun SplicedLinkItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 14.dp),
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         icon()

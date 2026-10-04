@@ -1,11 +1,9 @@
 package me.bmax.apatch.ui.component
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
@@ -22,15 +20,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import me.bmax.apatch.ui.component.folk.FolkAlertDialog
 import me.bmax.apatch.R
 import me.bmax.apatch.util.ui.APDialogBlurBehindUtils
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 /**
  * 首次启动欢迎引导对话框 —— 4 页分布式指导。
@@ -71,7 +69,7 @@ fun WelcomeGuideDialog(
     FolkAlertDialog(
         onDismissRequest = { /* intentionally no-op: use buttons to dismiss */ },
         width = 340.dp,
-        shape = ContinuousCornerShape(24.dp),
+        shape = FolkShape.Corner24,
         blurBehind = false,
         dialogProperties = DialogProperties(dismissOnClickOutside = false, dismissOnBackPress = false, usePlatformDefaultWidth = false),
     ) {
@@ -79,15 +77,17 @@ fun WelcomeGuideDialog(
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            val pageSlideSpec = MaterialTheme.motionScheme.defaultSpatialSpec<IntOffset>()
+            val pageFadeSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
             // ── 页面内容（AnimatedContent 带动画过渡） ──
             AnimatedContent(
                 targetState = currentPage,
                 transitionSpec = {
                     val dir = if (targetState > initialState) 1 else -1
                     val enterOffset = { w: Int -> dir * w }
-                    (slideInHorizontally(tween(300)) { enterOffset(it) } + fadeIn(tween(200)))
+                    (slideInHorizontally(pageSlideSpec) { enterOffset(it) } + fadeIn(pageFadeSpec))
                         .togetherWith(
-                            slideOutHorizontally(tween(300)) { -enterOffset(it) } + fadeOut(tween(200))
+                            slideOutHorizontally(pageSlideSpec) { -enterOffset(it) } + fadeOut(pageFadeSpec)
                         )
                 },
                 label = "welcome_page"
@@ -120,8 +120,7 @@ fun WelcomeGuideDialog(
                     // ── 标题 ──
                     Text(
                         text = stringResource(page.titleId),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.headlineSmallEmphasized,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -133,8 +132,7 @@ fun WelcomeGuideDialog(
                         text = stringResource(page.descId),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 22.sp
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

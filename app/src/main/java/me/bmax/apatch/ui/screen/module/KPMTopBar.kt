@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
@@ -44,6 +43,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import me.bmax.apatch.ui.component.folk.folkDefaultAppBarColors
+import me.bmax.apatch.core.ui.R as CoreR
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,14 +94,14 @@ fun KPMTopBar(
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 2.dp, bottom = 2.dp, end = 14.dp)
+                            .padding(top = 2.dp, bottom = 2.dp, end = 16.dp)
                             .focusRequester(focusRequester)
                             .onFocusChanged { focusState ->
                                 if (focusState.isFocused) onSearch = true
                             },
                         value = searchQuery,
                         onValueChange = onSearchQueryChange,
-                        shape = RoundedCornerShape(15.dp),
+                        shape = FolkShape.Corner16,
                         trailingIcon = {
                             IconButton(
                                 onClick = {
@@ -108,7 +109,7 @@ fun KPMTopBar(
                                     keyboardController?.hide()
                                     onSearchQueryChange("")
                                 },
-                                content = { Icon(Icons.Filled.Close, "Close") }
+                                content = { Icon(Icons.Filled.Close, stringResource(CoreR.string.core_action_close)) }
                             )
                         },
                         maxLines = 1,
@@ -133,14 +134,14 @@ fun KPMTopBar(
                     IconButton(onClick = { onSearch = true }) {
                         Icon(
                             imageVector = Icons.Filled.Search,
-                            contentDescription = "Search"
+                            contentDescription = stringResource(CoreR.string.core_action_search)
                         )
                     }
                     // 下载按钮
                     IconButton(onClick = dropUnlessResumed { navigator.navigate(OnlineKPMScreenDestination) }) {
                         Icon(
                             imageVector = Icons.Outlined.Storefront,
-                            contentDescription = "Online KPM"
+                            contentDescription = stringResource(R.string.online_kpm_title)
                         )
                     }
                     // 自定义排序按钮（无模块时隐藏）

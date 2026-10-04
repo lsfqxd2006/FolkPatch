@@ -58,8 +58,8 @@ import android.content.pm.PackageInfo
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import me.bmax.apatch.R
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 import androidx.compose.material.icons.outlined.*
-import me.bmax.apatch.ui.theme.tokens.ContinuousCornerShape
 
 @Composable
 fun SelectedPathHideAppItem(
@@ -74,7 +74,7 @@ fun SelectedPathHideAppItem(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = ContinuousCornerShape(18.dp),
+        shape = FolkShape.Corner16,
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
         tonalElevation = 0.dp,
         onClick = onRemove,
@@ -82,7 +82,7 @@ fun SelectedPathHideAppItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AsyncImage(
@@ -368,8 +368,6 @@ fun PathHideFilterSystemWarningDialog(
 ) {
     FolkAlertDialog(
         onDismissRequest = { showDialog.value = false },
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
     ) {
         Column(modifier = Modifier.padding(PaddingValues(all = 24.dp))) {
             Text(

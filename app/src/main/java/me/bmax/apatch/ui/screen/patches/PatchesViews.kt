@@ -67,6 +67,8 @@ import me.bmax.apatch.ui.viewmodel.PatchesViewModel
 import me.bmax.apatch.util.Version
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.foundation.layout.size
+import me.bmax.apatch.core.ui.R as CoreR
+import me.bmax.apatch.ui.theme.tokens.FolkShape
 
 @Composable
 fun StartButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
@@ -94,8 +96,6 @@ fun ExtraConfigDialog(kpmInfo: KPModel.KPMInfo, onDismiss: () -> Unit) {
 
     FolkAlertDialog(
         onDismissRequest = onDismiss,
-        width = 310.dp,
-        shape = ContinuousCornerShape(30.dp),
         blurBehind = false,
     ) {
         Column(modifier = Modifier.padding(PaddingValues(all = 24.dp))) {
@@ -171,7 +171,7 @@ fun ExtraItem(extra: KPModel.IExtraInfo, existed: Boolean, onDelete: () -> Unit)
                 if (extra.type == KPModel.ExtraType.KPM) {
                     Icon(
                         imageVector = Icons.Default.Settings,
-                        contentDescription = "Config",
+                        contentDescription = stringResource(CoreR.string.core_action_config),
                         modifier = Modifier
                             .padding(end = 8.dp)
                             .clickable { showConfigDialog = true }
@@ -180,7 +180,7 @@ fun ExtraItem(extra: KPModel.IExtraInfo, existed: Boolean, onDelete: () -> Unit)
 
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
+                    contentDescription = stringResource(CoreR.string.core_action_delete),
                     modifier = Modifier
                         .padding(end = 8.dp)
                         .clickable { onDelete() })
@@ -314,7 +314,7 @@ fun SetSuperKeyView(viewModel: PatchesViewModel) {
             label = { Text(stringResource(R.string.patch_set_superkey)) },
             singleLine = true,
             isError = invalid,
-            shape = ContinuousCornerShape(16.dp),
+            shape = FolkShape.Corner16,
             visualTransformation = if (keyVisible) {
                 VisualTransformation.None
             } else {
@@ -352,7 +352,7 @@ fun SetSuperKeyView(viewModel: PatchesViewModel) {
             supportingText = if (mismatch) {
                 { Text(stringResource(R.string.patch_skey_mismatch)) }
             } else null,
-            shape = ContinuousCornerShape(16.dp),
+            shape = FolkShape.Corner16,
             visualTransformation = if (confirmVisible) {
                 VisualTransformation.None
             } else {
