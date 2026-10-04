@@ -198,21 +198,21 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         )
         add(
             SecondaryEntry(
-                icon = Icons.Outlined.Palette,
+                icon = Icons.Outlined.Brush,
                 label = stringResource(R.string.settings_category_appearance),
                 onClick = { navigator.navigate(AppearanceSettingsScreenDestination(null)) },
             )
         )
         add(
             SecondaryEntry(
-                icon = Icons.Outlined.Visibility,
+                icon = Icons.Outlined.TouchApp,
                 label = stringResource(R.string.settings_category_behavior),
                 onClick = { navigator.navigate(BehaviorSettingsScreenDestination(null)) },
             )
         )
         add(
             SecondaryEntry(
-                icon = Icons.Outlined.Tune,
+                icon = Icons.Outlined.Handyman,
                 label = stringResource(R.string.settings_category_function),
                 onClick = { navigator.navigate(FunctionSettingsScreenDestination(null)) },
             )
@@ -220,7 +220,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         if (canAuthenticate) {
             add(
                 SecondaryEntry(
-                    icon = Icons.Outlined.Security,
+                    icon = Icons.Outlined.Lock,
                     label = stringResource(R.string.settings_category_security),
                     onClick = { navigator.navigate(SecuritySettingsScreenDestination(null)) },
                 )
@@ -229,7 +229,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         if (aPatchReady) {
             add(
                 SecondaryEntry(
-                    icon = Icons.Outlined.Cloud,
+                    icon = Icons.Outlined.CloudUpload,
                     label = stringResource(R.string.settings_category_backup),
                     onClick = { navigator.navigate(BackupSettingsScreenDestination(null)) },
                 )
@@ -244,11 +244,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         }
         add(
             SecondaryEntry(
-                icon = Icons.Outlined.MusicNote,
+                icon = Icons.Outlined.LibraryMusic,
                 label = stringResource(R.string.settings_category_multimedia),
-                // The music note's glyph is optically narrower than the others,
-                // so it needs a touch more size to carry the same weight.
-                iconSize = 26.dp,
                 onClick = { navigator.navigate(MultimediaSettingsScreenDestination(null)) },
             )
         )
@@ -311,7 +308,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     FolkSettingsGroup(shape = FolkShape.Corner12) {
                         item(key = "utility_faq") {
                             FolkNavigationPreference(
-                                icon = Icons.Outlined.HelpOutline,
+                                icon = Icons.Outlined.Quiz,
                                 title = stringResource(R.string.settings_faq),
                                 onClick = { navigator.navigate(FaqScreenDestination) },
                             )
