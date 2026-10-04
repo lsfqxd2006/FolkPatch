@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="launcher_icon_style_anime">Anime</string>
+    <string name="launcher_icon_style_geometry">Geometry</string>
+    <string name="launcher_icon_style_apatch">APatch</string>
     <string name="settings_floating_bar_style">Floating Bottom Bar Style</string>
     <string name="settings_bottom_bar_standard">Standard Bottom Bar</string>
     <string name="settings_bottom_bar_drawer">Drawer Bottom Bar</string>
@@ -789,6 +792,9 @@ Here are some possible reasons for authentication failure—please check which o
 
 
     <!-- Font Settings -->
+    <string name="settings_font_mode_app">App default</string>
+    <string name="settings_font_mode_system">System default</string>
+    <string name="settings_font_mode_custom">Custom</string>
     <string name="settings_custom_font">Custom Font</string>
     <string name="settings_select_font_file">Select Font File</string>
     <string name="settings_custom_font_enabled">Custom Font Enabled</string>
@@ -814,8 +820,6 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="settings_clear_background">Clear Background</string>
     <string name="settings_clear_background_confirm">Are you sure you want to clear the background image?</string>
 
-    <string name="settings_alt_icon">Alternate Icon</string>
-    <string name="alt_icon_summary">Use alternate launcher icon</string>
 
     <!-- Video Background Settings -->
     <string name="settings_video_background">Video Background</string>
@@ -1479,4 +1483,22 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="my_themes_subtitle">Themes you have saved</string>
     <string name="apm_api_marketplace_subtitle">Browse community-shared APIs</string>
     <string name="theme_download_paused">Paused</string>
+    <string name="settings_wallpaper_gallery">Wallpaper Gallery</string>
+    <string name="wallpaper_device_phone">Phone</string>
+    <string name="wallpaper_device_tablet">Tablet</string>
+    <string name="wallpaper_layout_waterfall">Waterfall</string>
+    <string name="wallpaper_layout_stack">Stack</string>
+    <string name="wallpaper_device_mixed">Mixed</string>
+    <string name="wallpaper_display_options">Display options</string>
+    <string name="wallpaper_display_layout">Layout</string>
+    <string name="wallpaper_download">Download</string>
+    <string name="wallpaper_cancel">Cancel</string>
+    <string name="wallpaper_saved">Saved</string>
+    <string name="wallpaper_download_failed">Download failed</string>
+    <string name="wallpaper_loading">Loading wallpapers</string>
+    <string name="wallpaper_empty">No wallpapers</string>
+    <string name="wallpaper_retry">Retry</string>
+    <string name="wallpaper_preview">Preview</string>
+    <string name="wallpaper_set_background">Set as background</string>
+    <string name="wallpaper_background_set">Background updated</string>
 </resources>
