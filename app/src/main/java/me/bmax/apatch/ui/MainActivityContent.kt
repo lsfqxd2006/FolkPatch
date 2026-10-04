@@ -431,7 +431,9 @@ APatchThemeWithBackground(
         else if (!floatingSwipeHide) isBottomBarVisible
         else isBottomBarVisible && !isScrollingDown.value
     } else {
-        true
+        // Docked bar mirrors the floating one: it lives on the top-level tab
+        // routes only, so secondary/detail pages get the full height.
+        isOnMainTabPage
     }
 
     // Returning from a secondary page to a main tab: show the bar
@@ -489,7 +491,7 @@ APatchThemeWithBackground(
                 .then(
                     when {
                         isFloatingMode -> Modifier.nestedScroll(scrollConnection)
-                        !useNavigationRail -> Modifier.padding(bottom = 80.dp)
+                        !useNavigationRail -> Modifier.padding(bottom = if (showBottomBar) 80.dp else 0.dp)
                         else -> Modifier
                     }
                 )
@@ -584,12 +586,18 @@ APatchThemeWithBackground(
                         )
                     }
                 } else {
-                    BottomBar(
+                    AnimatedVisibility(
+                        visible = showBottomBar,
                         modifier = Modifier.align(Alignment.BottomCenter),
-                        navController = navController,
-                        isFloating = false,
-                        lastValidSelection = lastValidNavbarSelection
-                    )
+                        enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                        exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+                    ) {
+                        BottomBar(
+                            navController = navController,
+                            isFloating = false,
+                            lastValidSelection = lastValidNavbarSelection
+                        )
+                    }
                 }
             }
 
