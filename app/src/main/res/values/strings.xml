@@ -1250,7 +1250,7 @@ Here are some possible reasons for authentication failure—please check which o
     <string name="settings_list_info_show_icons_summary">Show an icon next to each item in the info card</string>
     <string name="settings_custom_badge_text">Custom Badge Text</string>
     <string name="settings_custom_badge_text_summary">Modify the text display of the badge, just for fun</string>
-    <string name="settings_custom_badge_text_full_half">Full/Half (Default)</string>
+    <string name="settings_custom_badge_text_full_half">KPM(Default)</string>
     <string name="settings_custom_badge_text_lkm">LKM</string>
     <string name="settings_custom_badge_text_gki">GKI</string>
     <string name="settings_custom_badge_text_n_gki">N-GKI</string>
