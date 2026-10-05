@@ -1010,24 +1010,22 @@ internal object ThemeIO {
                         FontConfig.setFontMode(context, FontMode.SYSTEM_DEFAULT)
                     }
 
-                    importedFontMode == FontMode.APP_DEFAULT -> {
-                        FontConfig.setFontMode(context, FontMode.APP_DEFAULT)
-                    }
-
                     importedFontMode == FontMode.CUSTOM -> {
                         if (importedFontFile.exists()) {
                             FontConfig.applyCustomFont(context, importedFontFile)
                         } else {
                             // Broken custom theme: never leave an unusable font.
-                            FontConfig.setFontMode(context, FontMode.APP_DEFAULT)
+                            FontConfig.setFontMode(context, FontMode.SYSTEM_DEFAULT)
                         }
                     }
 
                     else -> {
+                        // Legacy theme without an explicit fontMode: use the bundled custom
+                        // font when present, otherwise fall back to the platform font.
                         if (isFontEnabled && importedFontFile.exists()) {
                             FontConfig.applyCustomFont(context, importedFontFile)
                         } else {
-                            FontConfig.setFontMode(context, FontMode.APP_DEFAULT)
+                            FontConfig.setFontMode(context, FontMode.SYSTEM_DEFAULT)
                         }
                     }
                 }

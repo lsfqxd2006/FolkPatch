@@ -189,7 +189,7 @@ fun LauncherIconStyleDialog(showDialog: MutableState<Boolean>, onStyleChanged: (
                     ?: if (prefs.getBoolean("use_alt_icon", false))
                         LauncherIconUtils.ICON_STYLE_APATCH
                     else
-                        LauncherIconUtils.ICON_STYLE_ANIME
+                        LauncherIconUtils.ICON_STYLE_GEOMETRY
             }
 
             Surface(
@@ -199,7 +199,6 @@ fun LauncherIconStyleDialog(showDialog: MutableState<Boolean>, onStyleChanged: (
             ) {
                 Column {
                     listOf(
-                        LauncherIconUtils.ICON_STYLE_ANIME to R.string.launcher_icon_style_anime,
                         LauncherIconUtils.ICON_STYLE_GEOMETRY to R.string.launcher_icon_style_geometry,
                         LauncherIconUtils.ICON_STYLE_APATCH to R.string.launcher_icon_style_apatch
                     ).forEach { (style, labelId) ->

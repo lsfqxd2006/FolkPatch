@@ -44,6 +44,7 @@ import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.ui.component.LoadingDialogHandle
 import me.bmax.apatch.ui.theme.BackgroundConfig
 import me.bmax.apatch.ui.theme.FontConfig
+import me.bmax.apatch.ui.theme.FontMode
 import me.bmax.apatch.ui.theme.refreshTheme
 import me.bmax.apatch.ui.screen.settings.appearance.AppearanceFontSection
 import me.bmax.apatch.ui.screen.settings.appearance.AppearanceThemeSection
@@ -92,16 +93,30 @@ fun AppearanceSettingsContent(
     val scope = rememberCoroutineScope()
     val loadingDialog = rememberLoadingDialog()
 
-
+    var selectedFontMode by remember { mutableStateOf(FontConfig.fontMode) }
     val pickFontLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
+        ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
+            // ACTION_OPEN_DOCUMENT may grant a persistable URI; keep it so a
+            // future re-read of the same font file still works. Not all
+            // providers grant it.
+            try {
+                context.contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (_: SecurityException) {
+                // Saving the bytes immediately makes this unnecessary.
+            }
             scope.launch {
                 loadingDialog.show()
                 val success = FontConfig.saveFontFile(context, it)
                 loadingDialog.hide()
                 if (success) {
+                    // Update the in-memory selection so the radio row moves
+                    // to CUSTOM immediately, without waiting for refreshTheme.
+                    selectedFontMode = FontMode.CUSTOM
                     snackBarHost.showSnackbar(message = context.getString(R.string.settings_custom_font_saved))
                     refreshTheme.value = true
                 } else {
@@ -119,7 +134,7 @@ fun AppearanceSettingsContent(
     var nightModeEnabled by remember { mutableStateOf(prefs.getBoolean("night_mode_enabled", true)) }
     val isDynamicColorSupport = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     var useSystemDynamicColor by remember { mutableStateOf(prefs.getBoolean("use_system_color_theme", false)) }
-    var selectedFontMode by remember { mutableStateOf(FontConfig.fontMode) }
+
 
     val refreshThemeObserver by refreshTheme.observeAsState(false)
 

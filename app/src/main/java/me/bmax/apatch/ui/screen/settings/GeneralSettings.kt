@@ -95,13 +95,13 @@ fun GeneralSettingsContent(
         mutableStateOf(
             prefs.getString(LauncherIconUtils.PREF_ICON_STYLE, null)
                 ?: if (prefs.getBoolean("use_alt_icon", false)) LauncherIconUtils.ICON_STYLE_APATCH
-                else LauncherIconUtils.ICON_STYLE_ANIME
+                else LauncherIconUtils.ICON_STYLE_GEOMETRY
         )
     }
     val launcherIconSummary = when (launcherIconStyle) {
         LauncherIconUtils.ICON_STYLE_GEOMETRY -> stringResource(R.string.launcher_icon_style_geometry)
         LauncherIconUtils.ICON_STYLE_APATCH -> stringResource(R.string.launcher_icon_style_apatch)
-        else -> stringResource(R.string.launcher_icon_style_anime)
+        else -> stringResource(R.string.launcher_icon_style_geometry)
     }
 
     val appTitleTitle = stringResource(id = R.string.settings_app_title)
