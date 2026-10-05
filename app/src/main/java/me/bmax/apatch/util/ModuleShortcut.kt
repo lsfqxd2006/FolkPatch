@@ -456,4 +456,51 @@ object ModuleShortcut {
             Log.w(TAG, "openAppDetailsSettings: failed to launch settings: ${t.message}", t)
         }
     }
+    
+    fun rebuildPinnedShortcutsAfterIconChange(context: Context) {
+        val shortcuts = try {
+            ShortcutManagerCompat.getShortcuts(context, ShortcutManagerCompat.FLAG_MATCH_PINNED)
+        } catch (t: Throwable) {
+            return
+        }
+        shortcuts.forEach { s ->
+            val id = s.id
+            val name = s.shortLabel?.toString() ?: return@forEach
+            val icon = s.icon ?: return@forEach
+            val newIntent = when {
+                id.startsWith("module_webui_") -> Intent(context, WebUIActivity::class.java).apply {
+                    action = Intent.ACTION_VIEW
+                    data = "apatch://webui/${id.removePrefix("module_webui_")}".toUri()
+                    putExtra("id", id.removePrefix("module_webui_"))
+                    putExtra("name", name)
+                    putExtra("from_webui_shortcut", true)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                }
+                id.startsWith("module_action_") -> Intent().apply {
+                    component = getLauncherComponent(context)
+                    action = Intent.ACTION_VIEW
+                    putExtra("apm_action_module_id", id.removePrefix("module_action_"))
+                    putExtra("from_action_shortcut", true)
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+                id.startsWith("script_") -> Intent().apply {
+                    component = getLauncherComponent(context)
+                    action = Intent.ACTION_VIEW
+                    putExtra("script_id", id.removePrefix("script_"))
+                    putExtra("from_script_shortcut", true)
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+                else -> return@forEach
+            }
+            val rebuilt = ShortcutInfoCompat.Builder(context, id)
+                .setShortLabel(name)
+                .setIntent(newIntent)
+                .setIcon(icon)
+                .build()
+            try {
+                ShortcutManagerCompat.pushDynamicShortcut(context, rebuilt)
+                ShortcutManagerCompat.updateShortcuts(context, listOf(rebuilt))
+            } catch (_: Throwable) {}
+        }
+    }
 }

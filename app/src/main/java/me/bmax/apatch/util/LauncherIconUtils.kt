@@ -31,6 +31,7 @@ object LauncherIconUtils {
     fun setStyle(context: Context, style: String) {
         APApplication.sharedPreferences.edit().putString(PREF_ICON_STYLE, style).apply()
         updateLauncherState(context)
+        runCatching { ModuleShortcut.rebuildPinnedShortcutsAfterIconChange(context) } 
     }
 
     /** ComponentName of the launcher alias that is currently enabled. */
