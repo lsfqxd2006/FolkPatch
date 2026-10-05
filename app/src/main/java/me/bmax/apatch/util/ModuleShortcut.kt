@@ -366,7 +366,6 @@ object ModuleShortcut {
             } catch (t: Throwable) {
                 Log.w(TAG, "rebuild: id=$id failed, rolling back", t)
                 if (disabled) {
-                    runCatching { ShortcutManagerCompat.enableShortcuts(context, listOf(id)) }
                     runCatching { ShortcutManagerCompat.pushDynamicShortcut(context, s) }
                 }
             }
