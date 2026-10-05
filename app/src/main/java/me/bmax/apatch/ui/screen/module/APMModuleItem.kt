@@ -45,7 +45,6 @@ import me.bmax.apatch.ui.component.BackgroundOptionsDialog
 import me.bmax.apatch.ui.component.ModuleInfoData
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.ui.viewmodel.APModuleViewModel
-import me.bmax.apatch.util.LauncherIconUtils
 import me.bmax.apatch.util.ModuleShortcut
 import me.bmax.apatch.util.getRootShell
 import me.bmax.apatch.util.ui.LocalSnackbarHost
@@ -157,19 +156,7 @@ fun ModuleItem(
     var shortcutName by rememberSaveable(module.id) { mutableStateOf(module.name) }
     var shortcutIconUri by remember { mutableStateOf<String?>(null) }
     var shortcutType by rememberSaveable(module.id) { mutableStateOf(if (module.hasWebUi) "webui" else "action") }
-    val currentIconStyle = LauncherIconUtils.currentStyle(context)
-    val appIcon = remember(context, currentIconStyle) {
-        val launcherComponent = LauncherIconUtils.enabledLauncherComponent(context)
-        runCatching {
-            context.packageManager.getActivityIcon(launcherComponent)
-        }.getOrElse {
-            // 兜底：万一 alias 被禁用/未启用，用资源 id 直接拿
-            androidx.core.content.ContextCompat.getDrawable(
-                context,
-                LauncherIconUtils.currentLauncherIconRes(context)
-            ) ?: context.packageManager.getApplicationIcon(context.packageName)
-        }
-    }
+    val appIcon = remember(context) { context.packageManager.getApplicationIcon(context.packageName) }
     val pickShortcutIconLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->

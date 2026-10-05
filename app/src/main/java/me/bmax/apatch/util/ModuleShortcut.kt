@@ -6,18 +6,22 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import me.bmax.apatch.util.ui.showToast
+import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import com.topjohnwu.superuser.io.SuFile
 import com.topjohnwu.superuser.io.SuFileInputStream
+import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.MainActivity
 import me.bmax.apatch.ui.WebUIActivity
@@ -25,19 +29,6 @@ import java.util.Locale
 
 object ModuleShortcut {
     private const val TAG = "ModuleShortcut"
-
-    /**
-     * 标记：该快捷方式使用的是"随图标风格切换的兜底图标"，
-     * 而非用户在添加时选的自定义图标。
-     *
-     * 用途：切换 App 图标风格时，只刷新带此标记的快捷方式；
-     * 用户主动选过自定义图标的不动，尊重用户选择。
-     */
-    private const val EXTRA_FALLBACK_ICON = "shortcut_uses_fallback_icon"
-
-    // =====================================================================
-    // 公开的创建 / 查询 / 删除接口
-    // =====================================================================
 
     fun createModuleWebUiShortcut(
         context: Context,
@@ -66,22 +57,16 @@ object ModuleShortcut {
     }
 
     fun hasModuleWebUiShortcut(context: Context, moduleId: String): Boolean {
-        return hasPinnedShortcut(context, "module_webui_$moduleId")
+        val id = "module_webui_$moduleId"
+        return hasPinnedShortcut(context, id)
     }
 
     fun deleteModuleWebUiShortcut(context: Context, moduleId: String) {
         deleteShortcut(context, "module_webui_$moduleId")
     }
 
-    /**
-     * 快捷方式固定的启动目标。
-     * ⚠️ 必须是真正的 MainActivity，不能是 activity-alias：
-     * alias 会在切换图标风格时被 setComponentEnabledSetting 禁用，
-     * 而 pinned 快捷方式的 intent 一旦固定就冻结、无法修改，
-     * 会直接导致点击失效。MainActivity 本身从不禁用，是唯一稳定的锚点。
-     */
     private fun getLauncherComponent(context: Context): ComponentName {
-        return ComponentName(context.packageName, MainActivity::class.java.name)
+        return LauncherIconUtils.enabledLauncherComponent(context)
     }
 
     fun createModuleActionShortcut(
@@ -110,7 +95,8 @@ object ModuleShortcut {
     }
 
     fun hasModuleActionShortcut(context: Context, moduleId: String): Boolean {
-        return hasPinnedShortcut(context, "module_action_$moduleId")
+        val id = "module_action_$moduleId"
+        return hasPinnedShortcut(context, id)
     }
 
     fun deleteModuleActionShortcut(context: Context, moduleId: String) {
@@ -150,10 +136,6 @@ object ModuleShortcut {
         deleteShortcut(context, "script_$scriptId")
     }
 
-    // =====================================================================
-    // 创建快捷方式的核心
-    // =====================================================================
-
     private fun createModuleShortcut(
         context: Context,
         moduleId: String,
@@ -166,22 +148,12 @@ object ModuleShortcut {
         val hasPinned = hasPinnedShortcut(context, shortcutId)
         Log.d(TAG, "$logPrefix: shortcutId=$shortcutId, hasPinned=$hasPinned")
 
-        // 用户自定义图标 or 兜底图标
-        val customIcon = createShortcutIcon(context, iconUri)
-        val usedFallback = customIcon == null
-        val finalIcon = customIcon ?: IconCompat.createWithResource(
-            context,
-            LauncherIconUtils.currentLauncherIconRes(context)
-        )
-
-        // 把"是否使用兜底图标"写进 intent，供切换风格时筛选
-        val intentWithFlag = Intent(shortcutIntent).apply {
-            putExtra(EXTRA_FALLBACK_ICON, usedFallback)
-        }
+        val iconCompat = createShortcutIcon(context, iconUri)
+        val finalIcon = iconCompat ?: IconCompat.createWithResource(context, R.mipmap.ic_launcher)
 
         val shortcut = ShortcutInfoCompat.Builder(context, shortcutId)
             .setShortLabel(name)
-            .setIntent(intentWithFlag)
+            .setIntent(shortcutIntent)
             .setIcon(finalIcon)
             .build()
 
@@ -242,148 +214,6 @@ object ModuleShortcut {
         }
     }
 
-    // =====================================================================
-    // 图标风格切换后的刷新逻辑
-    // =====================================================================
-
-    /** 权威判断：该快捷方式是否使用兜底图标（老快捷方式无标记 → 视为自定义，跳过）。 */
-    private fun usesFallbackIcon(s: ShortcutInfoCompat): Boolean =
-        s.intent?.getBooleanExtra(EXTRA_FALLBACK_ICON, false) == true
-
-    /**
-     * 统一入口：切换图标风格后调用。
-     *
-     * 按厂商分流：
-     *   - MIUI / HyperOS 家族：桌面缓存 pinned 图标，updateShortcuts 刷不动，
-     *     必须走 disable → repin 强制重建。
-     *   - 其它厂商：桌面不缓存，走温和 updateShortcuts，避免 disable 带来的
-     *     灰图标 / 弹框 / 位置漂移等副作用。
-     */
-    fun onLauncherIconStyleChanged(context: Context) {
-        val mfr = Build.MANUFACTURER.lowercase(Locale.ROOT)
-        val isMiuiFamily = mfr.contains("xiaomi") ||
-            mfr.contains("redmi") ||
-            mfr.contains("poco")
-        if (isMiuiFamily) {
-            rebuildFallbackShortcutIcons(context)
-        } else {
-            updateFallbackShortcutIcons(context)
-        }
-    }
-
-    /**
-     * 温和路线：只调 updateShortcuts 换 icon / label，不 disable、不 repin。
-     * 适用于原生 / Pixel / 三星 / OPPO 等不缓存 pinned 图标的桌面。
-     *
-     * 关键：intent 必须原样传回（component 不变），否则系统会认为你要改
-     * pinned 的 intent，直接跳过本次更新 —— 连图标都不会换。
-     */
-    fun updateFallbackShortcutIcons(context: Context) {
-        try {
-            val newIcon = IconCompat.createWithResource(
-                context,
-                LauncherIconUtils.currentLauncherIconRes(context)
-            )
-            val updates = ShortcutManagerCompat.getShortcuts(
-                context,
-                ShortcutManagerCompat.FLAG_MATCH_PINNED or ShortcutManagerCompat.FLAG_MATCH_DYNAMIC
-            ).distinctBy { it.id }
-                .filter { usesFallbackIcon(it) }
-                .map { s ->
-                    ShortcutInfoCompat.Builder(context, s.id)
-                        .setShortLabel(s.shortLabel?.toString() ?: "")
-                        .setLongLabel(s.longLabel?.toString() ?: "")
-                        .setIntent(s.intent!!)   // 原样保留
-                        .setIcon(newIcon)
-                        .build()
-                }
-
-            if (updates.isEmpty()) {
-                Log.d(TAG, "updateFallbackShortcutIcons: nothing to update")
-                return
-            }
-            ShortcutManagerCompat.updateShortcuts(context, updates)
-            Log.d(TAG, "updateFallbackShortcutIcons: updated ${updates.size}")
-        } catch (t: Throwable) {
-            Log.w(TAG, "updateFallbackShortcutIcons failed: ${t.message}", t)
-        }
-    }
-
-    /**
-     * 强制路线（MIUI / HyperOS）：
-     * 桌面缓存 pinned 图标，updateShortcuts 刷不动，必须：
-     *   disable → removeDynamic → pushDynamic → requestPin。
-     * 只处理带 fallback 标记的快捷方式，用户自定义图标不动。
-     *
-     * 回滚原则：一旦新图标已经 push 成功，任何后续失败都不再回退到旧图标 ——
-     * 否则会把刚写好的新图标覆盖回去，表现为"切换慢一拍"。
-     */
-    fun rebuildFallbackShortcutIcons(context: Context) {
-        val shortcuts = try {
-            ShortcutManagerCompat.getShortcuts(
-                context,
-                ShortcutManagerCompat.FLAG_MATCH_PINNED or ShortcutManagerCompat.FLAG_MATCH_DYNAMIC
-            ).distinctBy { it.id }
-        } catch (t: Throwable) {
-            Log.w(TAG, "rebuild: getShortcuts failed", t)
-            return
-        }
-
-        val newIcon = IconCompat.createWithResource(
-            context,
-            LauncherIconUtils.currentLauncherIconRes(context)
-        )
-
-        shortcuts.filter { usesFallbackIcon(it) }.forEach { s ->
-            val id = s.id
-            val rebuilt = ShortcutInfoCompat.Builder(context, id)
-                .setShortLabel(s.shortLabel?.toString() ?: "")
-                .setLongLabel(s.longLabel?.toString() ?: "")
-                .setIntent(s.intent!!)          // 关键：intent 原样保留
-                .setIcon(newIcon)
-                .build()
-
-            var disabled = false
-            try {
-                // 1) 禁用：让 Launcher 丢弃该图标的缓存
-                ShortcutManagerCompat.disableShortcuts(context, listOf(id), null)
-                disabled = true
-
-                // 2) 清掉动态副本，避免后续 push/update 冲突
-                ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(id))
-
-                // 3) 用新图标重新注册动态快捷方式
-                ShortcutManagerCompat.pushDynamicShortcut(context, rebuilt)
-
-                // 4) ★ 关键：updateShortcuts 是真正刷新 pinned 图标的 API。
-                //    必须无条件调用，不能挪到 else 分支里。
-                //    它同时更新动态副本和 pinned 副本。
-                ShortcutManagerCompat.updateShortcuts(context, listOf(rebuilt))
-                Log.d(TAG, "rebuild: id=$id updateShortcuts done")
-
-                // 5) 尝试额外 repin 一次（部分 Launcher 只有在 repin 后才真正刷新）
-                if (ShortcutManagerCompat.isRequestPinShortcutSupported(context)) {
-                    val ok = ShortcutManagerCompat.requestPinShortcut(context, rebuilt, null)
-                    Log.d(TAG, "rebuild: id=$id repin=$ok")
-                    // 返回 false 不是致命错误：updateShortcuts 已经在第 4 步做过了
-                }
-
-                Log.d(TAG, "rebuild: id=$id ok")
-            } catch (t: Throwable) {
-                Log.w(TAG, "rebuild: id=$id failed, restoring with new icon", t)
-                if (disabled) {
-                    // 用 rebuilt（新图标）恢复，不要用 s（旧图标）
-                    runCatching { ShortcutManagerCompat.pushDynamicShortcut(context, rebuilt) }
-                    runCatching { ShortcutManagerCompat.updateShortcuts(context, listOf(rebuilt)) }
-                }
-            }
-        }
-    }
-
-    // =====================================================================
-    // 以下为内部工具方法，逻辑保持原有不变
-    // =====================================================================
-
     private fun createShortcutIcon(context: Context, iconUri: String?): IconCompat? {
         val bitmap = loadShortcutBitmap(context, iconUri) ?: return null
         return IconCompat.createWithBitmap(bitmap)
@@ -426,6 +256,7 @@ object ModuleShortcut {
         return try {
             val uri = iconUri.toUri()
             Log.d(TAG, "loadShortcutBitmap: loading bitmap from uri=$uri")
+            // Read stream into ByteArray so we can do two-phase decode
             val imageBytes = if (uri.scheme.equals("su", ignoreCase = true)) {
                 val path = uri.path ?: ""
                 if (path.isNotBlank()) {
@@ -441,8 +272,10 @@ object ModuleShortcut {
                 Log.w(TAG, "loadShortcutBitmap: failed to read image bytes from uri=$iconUri")
                 return null
             }
+            // Phase 1: decode bounds only (no memory allocation)
             val boundsOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, boundsOpts)
+            // Phase 2: calculate inSampleSize and decode
             val targetSize = 512
             val scale = maxOf(boundsOpts.outWidth, boundsOpts.outHeight) / targetSize
             val decodeOpts = BitmapFactory.Options().apply {
