@@ -53,23 +53,9 @@ jobs:
       - name: Create artifacts directory
         run: mkdir -p artifacts
 
-      - name: Download release artifacts
-        if: inputs.build_type == 'release' || inputs.build_type == 'both'
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: FolkPatch-Release_*
-          path: artifacts
-          github-token: ${{ github.token }}
-          repository: ${{ github.repository }}
-          run-id: ${{ steps.find_build.outputs.run_id }}
-          merge-multiple: true
-        continue-on-error: true
-
-      - name: Download debug artifacts
-        if: inputs.build_type == 'debug' || inputs.build_type == 'both'
-        uses: actions/download-artifact@v4
-        with:
-          pattern: FolkPatch-Debug_*
           path: artifacts
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
@@ -79,13 +65,24 @@ jobs:
 
       - name: 验证下载的构建产物
         run: |
-          echo "=== 下载的文件列表 ==="
-          if [ -d "artifacts" ] && [ -n "$(ls -A artifacts 2>/dev/null)" ]; then
-            ls -la artifacts/
-            FILE_COUNT=$(ls -1 artifacts/*.apk 2>/dev/null | wc -l)
-            echo "✓ 找到 ${FILE_COUNT} 个 APK 文件"
-          else
-            echo "::error::没有下载到任何构建产物！"
+          echo "=== 下载的文件列表（全部） ==="
+          ls -la artifacts/ || true
+
+          BUILD_TYPE="${{ inputs.build_type }}"
+          echo "当前 build_type: $BUILD_TYPE"
+
+          if [ "$BUILD_TYPE" = "release" ]; then
+            find artifacts -maxdepth 1 -name "FolkPatch-Debug_*.apk" -delete
+          elif [ "$BUILD_TYPE" = "debug" ]; then
+            find artifacts -maxdepth 1 -name "FolkPatch-Release_*.apk" -delete
+          fi
+
+          echo "=== 过滤后的文件列表 ==="
+          ls -la artifacts/ || true
+          FILE_COUNT=$(ls -1 artifacts/*.apk 2>/dev/null | wc -l)
+          echo "✓ 找到 ${FILE_COUNT} 个 APK 文件"
+          if [ "$FILE_COUNT" -eq 0 ]; then
+            echo "::error::过滤后没有可发布的 APK！"
             exit 1
           fi
 
