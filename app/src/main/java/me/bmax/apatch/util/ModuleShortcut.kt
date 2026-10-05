@@ -31,6 +31,24 @@ import java.util.Locale
 object ModuleShortcut {
     private const val TAG = "ModuleShortcut"
 
+    // ── 新增：记录哪些快捷方式用的是"兜底 app 图标"（跟随样式切换） ──
+    private const val SHORTCUT_PREFS = "module_shortcut_prefs"
+    private const val KEY_DEFAULT_ICON_IDS = "default_icon_shortcut_ids"
+
+    private fun markDefaultIconShortcut(context: Context, shortcutId: String, isDefault: Boolean) {
+        val prefs = context.getSharedPreferences(SHORTCUT_PREFS, Context.MODE_PRIVATE)
+        val set = prefs.getStringSet(KEY_DEFAULT_ICON_IDS, emptySet())?.toMutableSet() ?: mutableSetOf()
+        val changed = if (isDefault) set.add(shortcutId) else set.remove(shortcutId)
+        if (changed) {
+            prefs.edit().putStringSet(KEY_DEFAULT_ICON_IDS, set).apply()
+        }
+    }
+
+    private fun isDefaultIconShortcut(context: Context, shortcutId: String): Boolean {
+        val prefs = context.getSharedPreferences(SHORTCUT_PREFS, Context.MODE_PRIVATE)
+        return prefs.getStringSet(KEY_DEFAULT_ICON_IDS, emptySet())?.contains(shortcutId) == true
+    }
+
     fun createModuleWebUiShortcut(
         context: Context,
         moduleId: String,
@@ -148,14 +166,17 @@ object ModuleShortcut {
     ) {
         val hasPinned = hasPinnedShortcut(context, shortcutId)
         Log.d(TAG, "$logPrefix: shortcutId=$shortcutId, hasPinned=$hasPinned")
-
+        
         val iconCompat = createShortcutIcon(context, iconUri)
+        val useDefaultIcon = iconCompat == null
         val finalIcon = iconCompat ?: IconCompat.createWithResource(
             context,
             if (LauncherIconUtils.currentStyle(context) == LauncherIconUtils.ICON_STYLE_APATCH)
                 R.mipmap.ic_launcher_alt else R.mipmap.ic_launcher
         )
-
+        // 打标：只有"用户/模块都没给图标、走兜底 app 图标"的快捷方式才跟随样式切换
+        markDefaultIconShortcut(context, shortcutId, useDefaultIcon)
+        
         val shortcut = ShortcutInfoCompat.Builder(context, shortcutId)
             .setShortLabel(name)
             .setIntent(shortcutIntent)
@@ -239,8 +260,9 @@ object ModuleShortcut {
             false
         }
     }
-
+    
     private fun deleteShortcut(context: Context, id: String) {
+        markDefaultIconShortcut(context, id, false)   // ← 新增：清理标记
         try {
             ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(id))
             Log.d(TAG, "deleteShortcut: removed dynamic shortcut id=$id")
@@ -465,25 +487,23 @@ object ModuleShortcut {
             return
         }
         Log.d(TAG, "rebuild: found ${shortcuts.size} pinned shortcuts")
-
+    
         val isApatch = currentStyle == LauncherIconUtils.ICON_STYLE_APATCH
         val fallbackIconRes = if (isApatch) R.mipmap.ic_launcher_alt else R.mipmap.ic_launcher
-
+    
         shortcuts.forEach { s ->
             val id = s.id
-            // 非默认 Launcher 读 pinned shortcut 时 shortLabel/icon 可能为 null。
-            // 不能因为 null 就跳过，否则 rebuild 会完全失效。
-            val name = s.shortLabel?.toString()?.takeIf { it.isNotBlank() } ?: id
-
-            // icon.type == TYPE_RESOURCE 说明原 icon 是兜底资源（用 createWithResource 建的），
-            // 应该跟随当前样式切换；其他类型（bitmap）是用户自选或模块自带图标，保留。
-            val originalIcon = s.icon
-            val icon = if (originalIcon == null || originalIcon.type == IconCompat.TYPE_RESOURCE) {
-                IconCompat.createWithResource(context, fallbackIconRes)
-            } else {
-                originalIcon
+    
+            // ★ 关键：只处理"兜底 app 图标"的快捷方式。
+            //   自定义图标 / 模块自带图标一律跳过，桌面显示保持原样。
+            if (!isDefaultIconShortcut(context, id)) {
+                Log.d(TAG, "rebuild shortcut: id=$id SKIP (custom or module icon)")
+                return@forEach
             }
-
+    
+            // 非默认 Launcher 读 pinned shortcut 时 shortLabel 可能为 null
+            val name = s.shortLabel?.toString()?.takeIf { it.isNotBlank() } ?: id
+    
             val newIntent = when {
                 id.startsWith("module_webui_") -> Intent(context, WebUIActivity::class.java).apply {
                     action = Intent.ACTION_VIEW
@@ -509,17 +529,20 @@ object ModuleShortcut {
                 }
                 else -> return@forEach
             }
-
+    
             val rebuilt = ShortcutInfoCompat.Builder(context, id)
                 .setShortLabel(name)
                 .setIntent(newIntent)
-                .setIcon(icon)
+                // 强制用当前样式的兜底资源图标
+                .setIcon(IconCompat.createWithResource(context, fallbackIconRes))
                 .build()
-
+    
             try {
+                // 先 removeDynamicShortcuts 再 push，避免部分启动器对同 ID 图标更新去重/延迟
+                ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(id))
                 ShortcutManagerCompat.pushDynamicShortcut(context, rebuilt)
                 ShortcutManagerCompat.updateShortcuts(context, listOf(rebuilt))
-                Log.d(TAG, "rebuild shortcut: id=$id")
+                Log.d(TAG, "rebuild shortcut: id=$id, apatch=$isApatch")
             } catch (t: Throwable) {
                 Log.w(TAG, "rebuild shortcut failed: id=$id", t)
             }
