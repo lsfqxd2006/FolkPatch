@@ -345,41 +345,36 @@ object ModuleShortcut {
 
             var disabled = false
             try {
-                // 1) 禁用：MIUI 的 Launcher 会丢弃该图标缓存
+                // 1) 禁用：让 Launcher 丢弃该图标的缓存
                 ShortcutManagerCompat.disableShortcuts(context, listOf(id), null)
                 disabled = true
 
                 // 2) 清掉动态副本，避免后续 push/update 冲突
                 ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(id))
 
-                // 3) 用新图标重新注册动态快捷方式（同时会重新启用被禁用的 id）
+                // 3) 用新图标重新注册动态快捷方式
                 ShortcutManagerCompat.pushDynamicShortcut(context, rebuilt)
 
-                // 4) 尝试把新图标写回桌面 pinned 副本。
-                //    ★ 关键：requestPinShortcut 返回 false 是 MIUI 上的常见现象，
-                //      不是致命错误 —— 动态快捷方式已经带新图标，
-                //      不应该让它触发回滚。
+                // 4) ★ 关键：updateShortcuts 是真正刷新 pinned 图标的 API。
+                //    必须无条件调用，不能挪到 else 分支里。
+                //    它同时更新动态副本和 pinned 副本。
+                ShortcutManagerCompat.updateShortcuts(context, listOf(rebuilt))
+                Log.d(TAG, "rebuild: id=$id updateShortcuts done")
+
+                // 5) 尝试额外 repin 一次（部分 Launcher 只有在 repin 后才真正刷新）
                 if (ShortcutManagerCompat.isRequestPinShortcutSupported(context)) {
                     val ok = ShortcutManagerCompat.requestPinShortcut(context, rebuilt, null)
-                    if (ok) {
-                        Log.d(TAG, "rebuild: id=$id repin ok")
-                    } else {
-                        Log.w(TAG, "rebuild: id=$id repin returned false (non-fatal, dynamic already updated)")
-                    }
-                } else {
-                    // 桌面不支持 pin：退回温和更新
-                    ShortcutManagerCompat.updateShortcuts(context, listOf(rebuilt))
+                    Log.d(TAG, "rebuild: id=$id repin=$ok")
+                    // 返回 false 不是致命错误：updateShortcuts 已经在第 4 步做过了
                 }
 
                 Log.d(TAG, "rebuild: id=$id ok")
             } catch (t: Throwable) {
                 Log.w(TAG, "rebuild: id=$id failed, restoring with new icon", t)
                 if (disabled) {
-                    // ★ 关键：用 rebuilt（新图标）而不是 s（旧图标）恢复。
-                    //   否则会把第 3 步刚 push 的新图标覆盖回旧的，
-                    //   表现为"切换慢一拍"。
-                    //   同时 pushDynamicShortcut 本身就会重新启用被 disable 的 id。
+                    // 用 rebuilt（新图标）恢复，不要用 s（旧图标）
                     runCatching { ShortcutManagerCompat.pushDynamicShortcut(context, rebuilt) }
+                    runCatching { ShortcutManagerCompat.updateShortcuts(context, listOf(rebuilt)) }
                 }
             }
         }
