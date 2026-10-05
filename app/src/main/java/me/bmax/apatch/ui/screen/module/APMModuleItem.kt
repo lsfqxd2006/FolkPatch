@@ -54,6 +54,7 @@ import me.bmax.apatch.util.readModulePropBanner
 import me.bmax.apatch.util.clearLegacyFolkBanner
 import me.bmax.apatch.util.CustomModuleInfo
 import me.bmax.apatch.util.apmCustomModuleInfoStorage
+import me.bmax.apatch.util.LauncherIconUtils
 import me.bmax.apatch.ui.theme.BackgroundConfig
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -156,7 +157,11 @@ fun ModuleItem(
     var shortcutName by rememberSaveable(module.id) { mutableStateOf(module.name) }
     var shortcutIconUri by remember { mutableStateOf<String?>(null) }
     var shortcutType by rememberSaveable(module.id) { mutableStateOf(if (module.hasWebUi) "webui" else "action") }
-    val appIcon = remember(context) { context.packageManager.getApplicationIcon(context.packageName) }
+    val appIcon = remember(context) {
+        val res = if (LauncherIconUtils.currentStyle(context) == LauncherIconUtils.ICON_STYLE_APATCH)
+            R.mipmap.ic_launcher_alt else R.mipmap.ic_launcher
+        context.getDrawable(res)!!
+    }
     val pickShortcutIconLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->

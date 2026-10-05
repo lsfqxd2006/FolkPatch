@@ -25,6 +25,7 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.MainActivity
 import me.bmax.apatch.ui.WebUIActivity
+import me.bmax.apatch.util.LauncherIconUtils
 import java.util.Locale
 
 object ModuleShortcut {
@@ -149,7 +150,11 @@ object ModuleShortcut {
         Log.d(TAG, "$logPrefix: shortcutId=$shortcutId, hasPinned=$hasPinned")
 
         val iconCompat = createShortcutIcon(context, iconUri)
-        val finalIcon = iconCompat ?: IconCompat.createWithResource(context, R.mipmap.ic_launcher)
+        val finalIcon = iconCompat ?: IconCompat.createWithResource(
+            context,
+            if (LauncherIconUtils.currentStyle(context) == LauncherIconUtils.ICON_STYLE_APATCH)
+                R.mipmap.ic_launcher_alt else R.mipmap.ic_launcher
+        )
 
         val shortcut = ShortcutInfoCompat.Builder(context, shortcutId)
             .setShortLabel(name)
@@ -160,6 +165,7 @@ object ModuleShortcut {
         try {
             Log.d(TAG, "$logPrefix: pushDynamicShortcut() called for moduleId=$moduleId")
             ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
+            ShortcutManagerCompat.updateShortcuts(context, listOf(shortcut))
         } catch (t: Throwable) {
             Log.w(TAG, "$logPrefix: pushDynamicShortcut() threw exception for moduleId=$moduleId: ${t.message}", t)
         }
