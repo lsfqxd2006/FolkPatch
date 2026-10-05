@@ -106,7 +106,15 @@ jobs:
       - uses: ./.github/actions/setup-build-env
 
       - name: Verify version
-        run: ./gradlew printVersion --no-daemon
+        id: version
+        run: |
+          OUTPUT=$(./gradlew printVersion --no-daemon)
+          echo "$OUTPUT"
+          VERSION_CODE=$(echo "$OUTPUT" | grep "Version code:" | awk '{print $3}')
+          VERSION_NAME=$(echo "$OUTPUT" | grep "Version name:" | awk '{print $3}')
+          echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "✓ Version: $VERSION_NAME ($VERSION_CODE)"
 
       - run: ./gradlew assembleDebug --no-daemon
 
@@ -115,14 +123,16 @@ jobs:
 
       - name: Rename APK
         run: |
-          SHORT="${GITHUB_SHA::7}"
+          VERSION_CODE="${{ steps.version.outputs.version_code }}"
+          VERSION_NAME="${{ steps.version.outputs.version_name }}"
           APK=$(find app/build/outputs/apk/debug -name "*.apk" -type f | head -1)
-          [ -n "$APK" ] && mv "$APK" "FolkPatch-Debug-${SHORT}.apk"
+          [ -n "$APK" ] && mv "$APK" "FolkPatch-Debug_${VERSION_CODE}_${VERSION_NAME}.apk"
+          echo "✓ Renamed to FolkPatch-Debug_${VERSION_CODE}_${VERSION_NAME}.apk"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: folkpatch-debug-${{ github.sha }}
-          path: FolkPatch-Debug-*.apk
+          name: FolkPatch-Debug_${{ steps.version.outputs.version_code }}_${{ steps.version.outputs.version_name }}
+          path: FolkPatch-Debug_*.apk
           retention-days: 30
 
   build_release:
@@ -140,7 +150,15 @@ jobs:
       - uses: ./.github/actions/setup-build-env
 
       - name: Verify version
-        run: ./gradlew printVersion --no-daemon
+        id: version
+        run: |
+          OUTPUT=$(./gradlew printVersion --no-daemon)
+          echo "$OUTPUT"
+          VERSION_CODE=$(echo "$OUTPUT" | grep "Version code:" | awk '{print $3}')
+          VERSION_NAME=$(echo "$OUTPUT" | grep "Version name:" | awk '{print $3}')
+          echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "✓ Version: $VERSION_NAME ($VERSION_CODE)"
 
       - name: Decode keystore
         run: |
@@ -162,12 +180,14 @@ jobs:
 
       - name: Rename APK
         run: |
-          SHORT="${GITHUB_SHA::7}"
+          VERSION_CODE="${{ steps.version.outputs.version_code }}"
+          VERSION_NAME="${{ steps.version.outputs.version_name }}"
           APK=$(find app/build/outputs/apk/release -name "*.apk" -type f | head -1)
-          [ -n "$APK" ] && mv "$APK" "FolkPatch-Release-${SHORT}.apk"
+          [ -n "$APK" ] && mv "$APK" "FolkPatch-Release_${VERSION_CODE}_${VERSION_NAME}.apk"
+          echo "✓ Renamed to FolkPatch-Release_${VERSION_CODE}_${VERSION_NAME}.apk"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: folkpatch-release-${{ github.sha }}
-          path: FolkPatch-Release-*.apk
+          name: FolkPatch-Release_${{ steps.version.outputs.version_code }}_${{ steps.version.outputs.version_name }}
+          path: FolkPatch-Release_*.apk
           retention-days: 30

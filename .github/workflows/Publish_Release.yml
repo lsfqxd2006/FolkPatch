@@ -40,7 +40,7 @@ jobs:
             echo "✓ 使用指定的构建运行ID: ${RUN_ID}"
           else
             RUN_ID=$(gh run list --workflow build.yml --status success --json databaseId --jq '.[0].databaseId' --limit 1)
-            if [ -z "$RUN_ID" ]; then
+            if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
               echo "::error::没有找到成功的构建记录！"
               exit 1
             fi
@@ -57,7 +57,7 @@ jobs:
         if: inputs.build_type == 'release' || inputs.build_type == 'both'
         uses: actions/download-artifact@v4
         with:
-          pattern: folkpatch-release-*
+          pattern: FolkPatch-Release_*
           path: artifacts
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
@@ -69,7 +69,7 @@ jobs:
         if: inputs.build_type == 'debug' || inputs.build_type == 'both'
         uses: actions/download-artifact@v4
         with:
-          pattern: folkpatch-debug-*
+          pattern: FolkPatch-Debug_*
           path: artifacts
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
@@ -94,26 +94,28 @@ jobs:
         run: |
           VERSION_NAME=""
           VERSION_CODE=""
-          
+
           for apk in artifacts/*.apk; do
             if [ -f "$apk" ]; then
               filename=$(basename "$apk")
-              if [[ "$filename" =~ FolkPatch-(Debug|Release)-([0-9.]+)-([0-9]+)\.apk$ ]]; then
-                VERSION_NAME="${BASH_REMATCH[2]}"
-                VERSION_CODE="${BASH_REMATCH[3]}"
+              if [[ "$filename" =~ ^FolkPatch-(Debug|Release)_([0-9]+)_([0-9a-fA-F]+)\.apk$ ]]; then
+                BUILD_TYPE="${BASH_REMATCH[1]}"
+                VERSION_CODE="${BASH_REMATCH[2]}"
+                VERSION_NAME="${BASH_REMATCH[3]}"
+                echo "✓ 解析到: type=${BUILD_TYPE} code=${VERSION_CODE} name=${VERSION_NAME}"
+                echo "✓ 使用的 APK: ${filename}"
                 echo "version_name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
                 echo "version_code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
-                echo "✓ 从 APK 文件名读取到版本名: ${VERSION_NAME}"
-                echo "✓ 从 APK 文件名读取到版本号: ${VERSION_CODE}"
-                echo "✓ 使用的 APK: ${filename}"
-                break
+                if [ "$BUILD_TYPE" = "Release" ]; then
+                  break
+                fi
               fi
             fi
           done
-          
+
           if [ -z "$VERSION_NAME" ] || [ -z "$VERSION_CODE" ]; then
             echo "::error::无法从 APK 文件名解析版本信息！"
-            echo "::error::APK 文件名格式应为: FolkPatch-类型-版本名-版本号.apk"
+            echo "::error::APK 文件名格式应为: FolkPatch-Release_<版本号>_<哈希>.apk"
             echo "::error::实际文件列表:"
             ls -la artifacts/ || echo "无文件"
             exit 1
@@ -131,7 +133,7 @@ jobs:
       - name: 检查 Tag 是否存在
         id: check_tag
         run: |
-          TAG="FolkPatch-${{ steps.version.outputs.version_name }}-${{ steps.version.outputs.version_code }}"
+          TAG="FolkPatch-Release_${{ steps.version.outputs.version_code }}_${{ steps.version.outputs.version_name }}"
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "⚠ Tag ${TAG} 已存在，将更新现有发布"
             echo "tag_exists=true" >> "$GITHUB_OUTPUT"
@@ -146,7 +148,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ steps.check_tag.outputs.tag }}" -m "发布版本 ${{ steps.version.outputs.version_name }} (版本号: ${{ steps.version.outputs.version_code }})"
+          git tag -a "${{ steps.check_tag.outputs.tag }}" -m "FolkPatch-Release ${{ steps.version.outputs.version_code }} ${{ steps.version.outputs.version_name }}"
           git push origin "${{ steps.check_tag.outputs.tag }}"
           echo "✓ Git Tag 已创建并推送"
 
@@ -154,31 +156,31 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.check_tag.outputs.tag }}
-          name: FolkPatch ${{ steps.version.outputs.version_name }} (${{ steps.version.outputs.version_code }})
+          name: FolkPatch-Release_${{ steps.version.outputs.version_code }}_${{ steps.version.outputs.version_name }}
           body: |
-            ## 🎉 FolkPatch Release ${{ steps.version.outputs.version_name }}
-            
+            ## 🎉 FolkPatch-Release_${{ steps.version.outputs.version_code }}_${{ steps.version.outputs.version_name }}
+
             ### 📦 构建信息
             | 项目 | 值 |
             |------|-----|
-            | 版本名 | `${{ steps.version.outputs.version_name }}` |
             | 版本号 | `${{ steps.version.outputs.version_code }}` |
+            | 版本名 | `${{ steps.version.outputs.version_name }}` |
             | 构建类型 | `${{ inputs.build_type }}` |
             | 源构建 | [#${{ steps.find_build.outputs.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.find_build.outputs.run_id }}) |
-            
+
             ### 📱 下载
             APK 文件已附在下方。
-            
+
             ### 📝 更新日志
             - [查看代码变更](${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.check_tag.outputs.tag }}...HEAD)
-            
+
             ---
             *由 GitHub Actions 自动发布*
           draft: false
           prerelease: false
           files: |
             artifacts/*.apk
-          
+
       - name: 发布摘要
         run: |
           echo "## ✅ 发布成功" >> $GITHUB_STEP_SUMMARY
