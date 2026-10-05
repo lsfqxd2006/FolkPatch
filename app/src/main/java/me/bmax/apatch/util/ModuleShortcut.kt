@@ -461,12 +461,29 @@ object ModuleShortcut {
         val shortcuts = try {
             ShortcutManagerCompat.getShortcuts(context, ShortcutManagerCompat.FLAG_MATCH_PINNED)
         } catch (t: Throwable) {
+            Log.w(TAG, "rebuild: getShortcuts failed", t)
             return
         }
+        Log.d(TAG, "rebuild: found ${shortcuts.size} pinned shortcuts")
+
+        val isApatch = LauncherIconUtils.currentStyle(context) == LauncherIconUtils.ICON_STYLE_APATCH
+        val fallbackIconRes = if (isApatch) R.mipmap.ic_launcher_alt else R.mipmap.ic_launcher
+
         shortcuts.forEach { s ->
             val id = s.id
-            val name = s.shortLabel?.toString() ?: return@forEach
-            val icon = s.icon ?: return@forEach
+            // 非默认 Launcher 读 pinned shortcut 时 shortLabel/icon 可能为 null。
+            // 不能因为 null 就跳过，否则 rebuild 会完全失效。
+            val name = s.shortLabel?.toString()?.takeIf { it.isNotBlank() } ?: id
+
+            // icon.type == TYPE_RESOURCE 说明原 icon 是兜底资源（用 createWithResource 建的），
+            // 应该跟随当前样式切换；其他类型（bitmap）是用户自选或模块自带图标，保留。
+            val originalIcon = s.icon
+            val icon = if (originalIcon == null || originalIcon.type == IconCompat.TYPE_RESOURCE) {
+                IconCompat.createWithResource(context, fallbackIconRes)
+            } else {
+                originalIcon
+            }
+
             val newIntent = when {
                 id.startsWith("module_webui_") -> Intent(context, WebUIActivity::class.java).apply {
                     action = Intent.ACTION_VIEW
@@ -492,15 +509,20 @@ object ModuleShortcut {
                 }
                 else -> return@forEach
             }
+
             val rebuilt = ShortcutInfoCompat.Builder(context, id)
                 .setShortLabel(name)
                 .setIntent(newIntent)
                 .setIcon(icon)
                 .build()
+
             try {
                 ShortcutManagerCompat.pushDynamicShortcut(context, rebuilt)
                 ShortcutManagerCompat.updateShortcuts(context, listOf(rebuilt))
-            } catch (_: Throwable) {}
+                Log.d(TAG, "rebuild shortcut: id=$id")
+            } catch (t: Throwable) {
+                Log.w(TAG, "rebuild shortcut failed: id=$id", t)
+            }
         }
     }
 }
