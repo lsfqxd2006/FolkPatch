@@ -66,7 +66,7 @@ object ModuleShortcut {
     }
 
     private fun getLauncherComponent(context: Context): ComponentName {
-        return LauncherIconUtils.enabledLauncherComponent(context)
+        return ComponentName(context, MainActivity::class.java)
     }
 
     fun createModuleActionShortcut(
