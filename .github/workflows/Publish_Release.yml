@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       build_run_id:
-        description: '构建运行ID（留空则使用最新的成功构建）'
+        description: '构建运行ID（留空则自动使用最新的 build.yml 成功构建）'
         required: false
         type: string
         default: ''
@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   publish:
@@ -32,40 +33,89 @@ jobs:
         with:
           fetch-depth: 0
 
+      # ------------------------------------------------------------------
+      # 精确查找 build.yml 的最新成功 run
+      # 用 REST API 按 workflow 文件名严格过滤，避免 gh run list 的模糊匹配
+      # 命中 contracts.yml 之类的其它 workflow
+      # ------------------------------------------------------------------
       - name: Find build workflow run
         id: find_build
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          echo "=== 仓库所有 workflow（诊断） ==="
+          gh workflow list --repo "${{ github.repository }}" || true
+          echo "=== 诊断结束 ==="
+
           if [ -n "${{ inputs.build_run_id }}" ]; then
             RUN_ID="${{ inputs.build_run_id }}"
             echo "✓ 使用指定的构建运行ID: ${RUN_ID}"
           else
-            RUN_ID=$(gh run list --workflow build.yml --status success --json databaseId --jq '.[0].databaseId' --limit 1)
+            echo "--- 用 REST API 精确查询 build.yml 的最新成功 run ---"
+            RUN_ID=$(gh api \
+              "repos/${{ github.repository }}/actions/workflows/build.yml/runs?status=success&per_page=1" \
+              --jq '.workflow_runs[0].id')
             if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
-              echo "::error::没有找到成功的构建记录！"
+              echo "::error::没有找到 build.yml 的成功构建记录！请先运行 build.yml"
               exit 1
             fi
-            echo "✓ 使用最新的构建运行ID: ${RUN_ID}"
+            echo "✓ 使用最新的 build.yml 成功运行ID: ${RUN_ID}"
           fi
+
+          echo "--- 目标 run 详细信息（诊断） ---"
+          gh run view "$RUN_ID" \
+            --repo "${{ github.repository }}" \
+            --json workflowName,databaseId,headBranch,event,status,conclusion,displayTitle \
+            || true
+          echo "--- 信息结束 ---"
+
           echo "run_id=${RUN_ID}" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ github.token }}
 
       - name: Create artifacts directory
         run: mkdir -p artifacts
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-          github-token: ${{ github.token }}
-          repository: ${{ github.repository }}
-          run-id: ${{ steps.find_build.outputs.run_id }}
-          merge-multiple: true
-        continue-on-error: true
+      # ------------------------------------------------------------------
+      # 用 gh CLI 下载该 run 的全部 artifact
+      # 不用 actions/download-artifact 的 pattern，避免跨 run 下载的坑
+      # ------------------------------------------------------------------
+      - name: Download artifacts via gh CLI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts
+          echo "=== 目标 Run ID: ${{ steps.find_build.outputs.run_id }} ==="
+          echo "=== 仓库: ${{ github.repository }} ==="
 
+          echo "--- 该 run 的 artifacts 列表（诊断） ---"
+          gh api "repos/${{ github.repository }}/actions/runs/${{ steps.find_build.outputs.run_id }}/artifacts" \
+            --jq '.artifacts[] | "\(.name) (\(.size_in_bytes) bytes, expired=\(.expired))"' \
+            || echo "（API 调用失败）"
+          echo "--- 诊断结束 ---"
+
+          echo "--- 开始下载 ---"
+          gh run download "${{ steps.find_build.outputs.run_id }}" \
+            --repo "${{ github.repository }}" \
+            --dir artifacts
+          echo "--- 下载命令结束，exit code=$? ---"
+
+          echo "--- artifacts 目录内容 ---"
+          find artifacts -type f | head -50
+
+      # ------------------------------------------------------------------
+      # 验证 + 按 build_type 过滤
+      # gh run download 会保留 artifact 目录名，需要先把 apk 提到顶层
+      # ------------------------------------------------------------------
       - name: 验证下载的构建产物
         run: |
-          echo "=== 下载的文件列表（全部） ==="
+          echo "=== 下载的原始结构 ==="
+          find artifacts -type f || true
+
+          # 把散落在子目录里的 apk 提到 artifacts/ 顶层
+          find artifacts -mindepth 2 -type f -name "*.apk" -exec mv {} artifacts/ \;
+          # 清掉空的 artifact 子目录
+          find artifacts -mindepth 1 -type d -empty -delete || true
+
+          echo "=== 收集后的文件列表 ==="
           ls -la artifacts/ || true
 
           BUILD_TYPE="${{ inputs.build_type }}"
@@ -86,6 +136,9 @@ jobs:
             exit 1
           fi
 
+      # ------------------------------------------------------------------
+      # 从 APK 文件名解析：FolkPatch-<Debug|Release>_<versionCode>_<versionName>.apk
+      # ------------------------------------------------------------------
       - name: 从 APK 文件名读取版本信息
         id: version
         run: |
@@ -145,7 +198,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ steps.check_tag.outputs.tag }}" -m "FolkPatch-Release ${{ steps.version.outputs.version_code }} ${{ steps.version.outputs.version_name }}"
+          git tag -a "${{ steps.check_tag.outputs.tag }}" \
+            -m "FolkPatch-Release ${{ steps.version.outputs.version_code }} ${{ steps.version.outputs.version_name }}"
           git push origin "${{ steps.check_tag.outputs.tag }}"
           echo "✓ Git Tag 已创建并推送"
 
@@ -185,9 +239,10 @@ jobs:
           echo "| 项目 | 值 |" >> $GITHUB_STEP_SUMMARY
           echo "|------|-----|" >> $GITHUB_STEP_SUMMARY
           echo "| **Tag** | \`${{ steps.check_tag.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **版本名** | ${{ steps.version.outputs.version_name }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **版本号** | ${{ steps.version.outputs.version_code }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **版本名** | ${{ steps.version.outputs.version_name }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **构建类型** | ${{ inputs.build_type }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **源构建** | [#${{ steps.find_build.outputs.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.find_build.outputs.run_id }}) |" >> $GITHUB_STEP_SUMMARY
           echo "| **实际发布** | $(ls -1 artifacts/*.apk 2>/dev/null | wc -l) 个 APK |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📱 APK 文件" >> $GITHUB_STEP_SUMMARY
