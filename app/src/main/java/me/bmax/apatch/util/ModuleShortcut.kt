@@ -457,7 +457,7 @@ object ModuleShortcut {
         }
     }
     
-    fun rebuildPinnedShortcutsAfterIconChange(context: Context) {
+    fun rebuildPinnedShortcutsAfterIconChange(context: Context, currentStyle: String) {
         val shortcuts = try {
             ShortcutManagerCompat.getShortcuts(context, ShortcutManagerCompat.FLAG_MATCH_PINNED)
         } catch (t: Throwable) {
@@ -466,7 +466,7 @@ object ModuleShortcut {
         }
         Log.d(TAG, "rebuild: found ${shortcuts.size} pinned shortcuts")
 
-        val isApatch = LauncherIconUtils.currentStyle(context) == LauncherIconUtils.ICON_STYLE_APATCH
+        val isApatch = currentStyle == LauncherIconUtils.ICON_STYLE_APATCH
         val fallbackIconRes = if (isApatch) R.mipmap.ic_launcher_alt else R.mipmap.ic_launcher
 
         shortcuts.forEach { s ->
