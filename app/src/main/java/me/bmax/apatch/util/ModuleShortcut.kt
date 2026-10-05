@@ -25,29 +25,10 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.MainActivity
 import me.bmax.apatch.ui.WebUIActivity
-import me.bmax.apatch.util.LauncherIconUtils
 import java.util.Locale
 
 object ModuleShortcut {
     private const val TAG = "ModuleShortcut"
-
-    // ── 新增：记录哪些快捷方式用的是"兜底 app 图标"（跟随样式切换） ──
-    private const val SHORTCUT_PREFS = "module_shortcut_prefs"
-    private const val KEY_DEFAULT_ICON_IDS = "default_icon_shortcut_ids"
-
-    private fun markDefaultIconShortcut(context: Context, shortcutId: String, isDefault: Boolean) {
-        val prefs = context.getSharedPreferences(SHORTCUT_PREFS, Context.MODE_PRIVATE)
-        val set = prefs.getStringSet(KEY_DEFAULT_ICON_IDS, emptySet())?.toMutableSet() ?: mutableSetOf()
-        val changed = if (isDefault) set.add(shortcutId) else set.remove(shortcutId)
-        if (changed) {
-            prefs.edit().putStringSet(KEY_DEFAULT_ICON_IDS, set).apply()
-        }
-    }
-
-    private fun isDefaultIconShortcut(context: Context, shortcutId: String): Boolean {
-        val prefs = context.getSharedPreferences(SHORTCUT_PREFS, Context.MODE_PRIVATE)
-        return prefs.getStringSet(KEY_DEFAULT_ICON_IDS, emptySet())?.contains(shortcutId) == true
-    }
 
     fun createModuleWebUiShortcut(
         context: Context,
@@ -85,7 +66,7 @@ object ModuleShortcut {
     }
 
     private fun getLauncherComponent(context: Context): ComponentName {
-        return ComponentName(context, MainActivity::class.java)
+        return LauncherIconUtils.enabledLauncherComponent(context)
     }
 
     fun createModuleActionShortcut(
@@ -166,17 +147,10 @@ object ModuleShortcut {
     ) {
         val hasPinned = hasPinnedShortcut(context, shortcutId)
         Log.d(TAG, "$logPrefix: shortcutId=$shortcutId, hasPinned=$hasPinned")
-        
+
         val iconCompat = createShortcutIcon(context, iconUri)
-        val useDefaultIcon = iconCompat == null
-        val finalIcon = iconCompat ?: IconCompat.createWithResource(
-            context,
-            if (LauncherIconUtils.currentStyle(context) == LauncherIconUtils.ICON_STYLE_APATCH)
-                R.mipmap.ic_launcher_alt else R.mipmap.ic_launcher
-        )
-        // 打标：只有"用户/模块都没给图标、走兜底 app 图标"的快捷方式才跟随样式切换
-        markDefaultIconShortcut(context, shortcutId, useDefaultIcon)
-        
+        val finalIcon = iconCompat ?: IconCompat.createWithResource(context, R.mipmap.ic_launcher)
+
         val shortcut = ShortcutInfoCompat.Builder(context, shortcutId)
             .setShortLabel(name)
             .setIntent(shortcutIntent)
@@ -186,7 +160,6 @@ object ModuleShortcut {
         try {
             Log.d(TAG, "$logPrefix: pushDynamicShortcut() called for moduleId=$moduleId")
             ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
-            ShortcutManagerCompat.updateShortcuts(context, listOf(shortcut))
         } catch (t: Throwable) {
             Log.w(TAG, "$logPrefix: pushDynamicShortcut() threw exception for moduleId=$moduleId: ${t.message}", t)
         }
@@ -260,9 +233,8 @@ object ModuleShortcut {
             false
         }
     }
-    
+
     private fun deleteShortcut(context: Context, id: String) {
-        markDefaultIconShortcut(context, id, false)   // ← 新增：清理标记
         try {
             ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(id))
             Log.d(TAG, "deleteShortcut: removed dynamic shortcut id=$id")
@@ -476,76 +448,6 @@ object ModuleShortcut {
             context.startActivity(intent)
         } catch (t: Throwable) {
             Log.w(TAG, "openAppDetailsSettings: failed to launch settings: ${t.message}", t)
-        }
-    }
-    
-    fun rebuildPinnedShortcutsAfterIconChange(context: Context, currentStyle: String) {
-        val shortcuts = try {
-            ShortcutManagerCompat.getShortcuts(context, ShortcutManagerCompat.FLAG_MATCH_PINNED)
-        } catch (t: Throwable) {
-            Log.w(TAG, "rebuild: getShortcuts failed", t)
-            return
-        }
-        Log.d(TAG, "rebuild: found ${shortcuts.size} pinned shortcuts")
-    
-        val isApatch = currentStyle == LauncherIconUtils.ICON_STYLE_APATCH
-        val fallbackIconRes = if (isApatch) R.mipmap.ic_launcher_alt else R.mipmap.ic_launcher
-    
-        shortcuts.forEach { s ->
-            val id = s.id
-    
-            // ★ 关键：只处理"兜底 app 图标"的快捷方式。
-            //   自定义图标 / 模块自带图标一律跳过，桌面显示保持原样。
-            if (!isDefaultIconShortcut(context, id)) {
-                Log.d(TAG, "rebuild shortcut: id=$id SKIP (custom or module icon)")
-                return@forEach
-            }
-    
-            // 非默认 Launcher 读 pinned shortcut 时 shortLabel 可能为 null
-            val name = s.shortLabel?.toString()?.takeIf { it.isNotBlank() } ?: id
-    
-            val newIntent = when {
-                id.startsWith("module_webui_") -> Intent(context, WebUIActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    data = "apatch://webui/${id.removePrefix("module_webui_")}".toUri()
-                    putExtra("id", id.removePrefix("module_webui_"))
-                    putExtra("name", name)
-                    putExtra("from_webui_shortcut", true)
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                }
-                id.startsWith("module_action_") -> Intent().apply {
-                    component = getLauncherComponent(context)
-                    action = Intent.ACTION_VIEW
-                    putExtra("apm_action_module_id", id.removePrefix("module_action_"))
-                    putExtra("from_action_shortcut", true)
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                }
-                id.startsWith("script_") -> Intent().apply {
-                    component = getLauncherComponent(context)
-                    action = Intent.ACTION_VIEW
-                    putExtra("script_id", id.removePrefix("script_"))
-                    putExtra("from_script_shortcut", true)
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                }
-                else -> return@forEach
-            }
-    
-            val rebuilt = ShortcutInfoCompat.Builder(context, id)
-                .setShortLabel(name)
-                .setIntent(newIntent)
-                // 强制用当前样式的兜底资源图标
-                .setIcon(IconCompat.createWithResource(context, fallbackIconRes))
-                .build()
-    
-            try {
-                // 先 removeDynamicShortcuts 再 push，避免部分启动器对同 ID 图标更新去重/延迟
-                ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(id))
-                ShortcutManagerCompat.pushDynamicShortcut(context, rebuilt)
-                ShortcutManagerCompat.updateShortcuts(context, listOf(rebuilt))
-                Log.d(TAG, "rebuild shortcut: id=$id, apatch=$isApatch")
-            } catch (t: Throwable) {
-                Log.w(TAG, "rebuild shortcut failed: id=$id", t)
-            }
         }
     }
 }
