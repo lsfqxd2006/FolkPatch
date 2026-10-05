@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       build_run_id:
-        description: '构建运行ID（留空则自动使用最新的 build.yml 成功构建）'
+        description: '构建运行ID（留空则自动使用 Build FolkPatch 最近一次成功构建）'
         required: false
         type: string
         default: ''
@@ -34,38 +34,74 @@ jobs:
           fetch-depth: 0
 
       # ------------------------------------------------------------------
-      # 精确查找 build.yml 的最新成功 run
-      # 用 REST API 按 workflow 文件名严格过滤，避免 gh run list 的模糊匹配
-      # 命中 contracts.yml 之类的其它 workflow
+      # 定位 Build FolkPatch 的 workflow ID，取它最近一次成功的 run
+      # 用 workflow name 精确匹配，避免 gh run list 的模糊匹配命中 contracts.yml
       # ------------------------------------------------------------------
       - name: Find build workflow run
         id: find_build
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "=== 仓库所有 workflow（诊断） ==="
-          gh workflow list --repo "${{ github.repository }}" || true
-          echo "=== 诊断结束 ==="
-
           if [ -n "${{ inputs.build_run_id }}" ]; then
             RUN_ID="${{ inputs.build_run_id }}"
             echo "✓ 使用指定的构建运行ID: ${RUN_ID}"
           else
-            echo "--- 用 REST API 精确查询 build.yml 的最新成功 run ---"
-            RUN_ID=$(gh api \
-              "repos/${{ github.repository }}/actions/workflows/build.yml/runs?status=success&per_page=1" \
-              --jq '.workflow_runs[0].id')
-            if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
-              echo "::error::没有找到 build.yml 的成功构建记录！请先运行 build.yml"
+            echo "=== 仓库所有 workflow（诊断） ==="
+            gh api "repos/${{ github.repository }}/actions/workflows" \
+              --jq '.workflows[] | "\(.id)\t\(.name)\t\(.path)"' || true
+            echo "=== 诊断结束 ==="
+
+            # ---- 定位 Build FolkPatch 的 workflow ID ----
+            WORKFLOW_ID=$(gh api "repos/${{ github.repository }}/actions/workflows" \
+              --jq '.workflows[] | select(.name == "Build FolkPatch") | .id' | head -1)
+            if [ -z "$WORKFLOW_ID" ] || [ "$WORKFLOW_ID" = "null" ]; then
+              WORKFLOW_ID=$(gh api "repos/${{ github.repository }}/actions/workflows" \
+                --jq '.workflows[] | select(.path | endswith("/build.yml")) | .id' | head -1)
+            fi
+            if [ -z "$WORKFLOW_ID" ] || [ "$WORKFLOW_ID" = "null" ]; then
+              echo "::error::无法定位 Build FolkPatch workflow"
               exit 1
             fi
-            echo "✓ 使用最新的 build.yml 成功运行ID: ${RUN_ID}"
+            echo "✓ Build FolkPatch workflow ID: ${WORKFLOW_ID}"
+
+            # ---- 取最近一次成功的 run ----
+            echo "--- 取 Build FolkPatch 最近一次成功的 run ---"
+            RUN_ID=$(gh api \
+              "repos/${{ github.repository }}/actions/workflows/${WORKFLOW_ID}/runs?status=success&per_page=1" \
+              --jq '.workflow_runs[0].id')
+
+            if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+              echo "::error::Build FolkPatch 没有成功的 run"
+              exit 1
+            fi
+            echo "✓ 最近一次成功的 Build FolkPatch run ID: ${RUN_ID}"
+
+            # ---- 检查 artifact 数量，没有则往前回退 ----
+            COUNT=$(gh api "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
+              --jq '.artifacts | length' 2>/dev/null || echo 0)
+            echo "✓ 该 run 的 artifact 数量: ${COUNT}"
+
+            if [ "${COUNT:-0}" -eq 0 ]; then
+              echo "::warning::最近一次成功的 run 没有 artifact，往前查找..."
+              for rid in $(gh api \
+                "repos/${{ github.repository }}/actions/workflows/${WORKFLOW_ID}/runs?status=success&per_page=20" \
+                --jq '.workflow_runs[].id'); do
+                [ "$rid" = "$RUN_ID" ] && continue
+                C=$(gh api "repos/${{ github.repository }}/actions/runs/${rid}/artifacts" \
+                  --jq '.artifacts | length' 2>/dev/null || echo 0)
+                if [ "${C:-0}" -gt 0 ]; then
+                  RUN_ID="$rid"
+                  echo "✓ 改用 run ${rid}（${C} 个 artifact）"
+                  break
+                fi
+              done
+            fi
           fi
 
-          echo "--- 目标 run 详细信息（诊断） ---"
+          echo "--- 目标 run 详细信息 ---"
           gh run view "$RUN_ID" \
             --repo "${{ github.repository }}" \
-            --json workflowName,databaseId,headBranch,event,status,conclusion,displayTitle \
+            --json workflowName,databaseId,headBranch,event,status,conclusion \
             || true
           echo "--- 信息结束 ---"
 
@@ -76,7 +112,6 @@ jobs:
 
       # ------------------------------------------------------------------
       # 用 gh CLI 下载该 run 的全部 artifact
-      # 不用 actions/download-artifact 的 pattern，避免跨 run 下载的坑
       # ------------------------------------------------------------------
       - name: Download artifacts via gh CLI
         env:
@@ -102,8 +137,7 @@ jobs:
           find artifacts -type f | head -50
 
       # ------------------------------------------------------------------
-      # 验证 + 按 build_type 过滤
-      # gh run download 会保留 artifact 目录名，需要先把 apk 提到顶层
+      # 验证下载的构建产物 + 按 build_type 过滤
       # ------------------------------------------------------------------
       - name: 验证下载的构建产物
         run: |
@@ -137,7 +171,7 @@ jobs:
           fi
 
       # ------------------------------------------------------------------
-      # 从 APK 文件名解析：FolkPatch-<Debug|Release>_<versionCode>_<versionName>.apk
+      # 从文件名解析：FolkPatch-<Debug|Release>_<versionCode>_<versionName>.apk
       # ------------------------------------------------------------------
       - name: 从 APK 文件名读取版本信息
         id: version
