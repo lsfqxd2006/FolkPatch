@@ -48,6 +48,10 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.HomeScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.KPModuleScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SuperUserScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.APModuleScreenDestination
 import me.bmax.apatch.ui.theme.tokens.FolkShape
 import me.bmax.apatch.ui.theme.tokens.FolkThemeCatalog
 import androidx.compose.material3.MotionScheme
@@ -316,12 +320,7 @@ fun APatchThemeWithBackground(
 
     // Check current route
     val currentRoute = navController?.currentBackStackEntryAsState()?.value?.destination?.route
-    val wallpaperRoute = wallpaperRouteFor(
-        backStack = navController?.currentBackStack?.value.orEmpty()
-            .map { it.destination.route },
-        fallbackRoute = currentRoute,
-    )
-    val isSettingsScreen = wallpaperRoute == SettingScreenDestination.route
+    val isSettingsScreen = currentRoute == SettingScreenDestination.route
 
     // Load background/font config once (synchronously for first frame), then only reload on theme change
     var isConfigLoaded by remember { mutableStateOf(false) }
@@ -333,7 +332,7 @@ fun APatchThemeWithBackground(
     }
 
     // 壁纸模式下按当前路由解析实际展示的壁纸，供主题适配内容配色
-    val activeBackgroundUri = activeBackgroundUriForRoute(wallpaperRoute)
+    val activeBackgroundUri = activeBackgroundUriForRoute(currentRoute)
 
     // 为旧配置/主题导入等缺少亮度记录的壁纸补算亮度
     LaunchedEffect(
@@ -357,7 +356,7 @@ fun APatchThemeWithBackground(
         Box(modifier = Modifier.fillMaxSize()) {
             // Always show background layer if enabled
             BackgroundLayer(
-                currentRoute = wallpaperRoute,
+                currentRoute = currentRoute,
                 folkXEngineEnabled = folkXEngineEnabled,
                 folkXAnimationType = folkXAnimationType,
                 folkXAnimationSpeed = folkXAnimationSpeed

@@ -82,7 +82,7 @@ fun PluginLogScreen(navigator: DestinationsNavigator) {
 
     FolkScaffold(
         title = stringResource(R.string.plugin_log_page_title),
-        titleStyle = FolkTitleStyle.Flexible,
+        titleStyle = FolkTitleStyle.Inline,
         onBack = { navigator.popBackStack() },
         actions = {
             // Export button

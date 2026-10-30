@@ -181,7 +181,7 @@ fun ShizukuLogScreen(navigator: DestinationsNavigator) {
 
     FolkScaffold(
         title = stringResource(R.string.shizuku_log_title),
-        titleStyle = if (isSearchActive) FolkTitleStyle.Inline else FolkTitleStyle.Flexible,
+        titleStyle = FolkTitleStyle.Inline,
         onBack = {
             if (isSearchActive) {
                 isSearchActive = false
