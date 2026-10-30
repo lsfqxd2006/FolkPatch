@@ -36,7 +36,6 @@ import com.ramcosta.composedestinations.generated.destinations.ShizukuManagement
 import com.ramcosta.composedestinations.generated.destinations.SuAuditLogScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SuperUserScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ThemeStoreScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.WallpaperGalleryScreenDestination
 
 /**
  * The page route whose wallpaper is inherited by the current destination.
@@ -95,7 +94,6 @@ private fun String.wallpaperOwnerRoute(): String? = when (this) {
     ShizukuLogScreenDestination.route,
     ShizukuManagementScreenDestination.route,
     ThemeStoreScreenDestination.route,
-    WallpaperGalleryScreenDestination.route,
     -> SettingScreenDestination.route
 
     else -> null
