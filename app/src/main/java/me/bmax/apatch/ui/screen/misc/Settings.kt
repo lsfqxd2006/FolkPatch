@@ -272,7 +272,29 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     IconButton(onClick = dropUnlessResumed { navigator.navigate(PluginScreenDestination) }) {
                         Icon(Icons.Outlined.Extension, contentDescription = stringResource(R.string.plugin_title))
                     }
-                }
+                },
+                defaultContent = { bottomPadding, closeSearch ->
+                    SettingsSearchShortcuts(
+                        shortcuts = searchShortcuts,
+                        onOpen = { shortcut ->
+                            shortcut.onOpen()
+                            closeSearch()
+                        },
+                        contentPadding = PaddingValues(bottom = bottomPadding),
+                    )
+                },
+                searchContent = { bottomPadding, closeSearch ->
+                    SettingsSearchResults(
+                        query = searchText,
+                        entries = resolvedEntries,
+                        categories = visibleCategories,
+                        onSelect = { entry ->
+                            openSettingEntry(navigator, entry)
+                            closeSearch()
+                        },
+                        contentPadding = PaddingValues(bottom = bottomPadding),
+                    )
+                },
             )
         },
         containerColor = Color.Transparent,
@@ -303,58 +325,54 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     SettingsIconGrid(entries = secondaryEntries)
                 }
 
-                item(key = "utility_rows") {
-                    Spacer(Modifier.height(16.dp))
-                    FolkSettingsGroup(shape = FolkShape.Corner12) {
-                        item(key = "utility_faq") {
-                            FolkNavigationPreference(
-                                icon = Icons.Outlined.Quiz,
-                                title = stringResource(R.string.settings_faq),
-                                onClick = { navigator.navigate(FaqScreenDestination) },
-                            )
-                        }
-                        item(key = "utility_feedback") {
-                            FolkNavigationPreference(
-                                icon = Icons.Outlined.BugReport,
-                                title = stringResource(R.string.settings_bug_feedback),
-                                onClick = { uriHandler.openUri(FEEDBACK_URL) },
-                            )
-                        }
-                        item(key = "utility_clean_storage") {
-                            FolkNavigationPreference(
-                                icon = Icons.Outlined.CleaningServices,
-                                title = stringResource(R.string.settings_clear_cache),
-                                onClick = { cleanStorageDialogState.value = true },
-                            )
-                        }
-                        item(key = "utility_disclaimer") {
-                            FolkNavigationPreference(
-                                icon = Icons.Outlined.Policy,
-                                title = stringResource(R.string.settings_disclaimer),
-                                onClick = { disclaimerDialogState.value = true },
-                            )
-                        }
-                        item(key = "utility_send_log") {
-                            FolkNavigationPreference(
-                                icon = Icons.Outlined.Description,
-                                title = stringResource(R.string.send_log),
-                                onClick = {
-                                    scope.launch {
-                                        val bugreport = loadingDialog.withLoading { getBugreportFile(context) }
-                                        val uri = FileProvider.getUriForFile(
-                                            context,
-                                            "${BuildConfig.APPLICATION_ID}.fileprovider",
-                                            bugreport,
-                                        )
-                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                            putExtra(Intent.EXTRA_STREAM, uri)
-                                            type = "application/gzip"
-                                            clipData = android.content.ClipData.newRawUri(null, uri)
-                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                        }
-                                        context.startActivity(
-                                            Intent.createChooser(shareIntent, context.getString(R.string.send_log))
-                                        )
+            item(key = "utility_rows") {
+                Spacer(Modifier.height(16.dp))
+                FolkSettingsGroup(shape = FolkShape.Corner12) {
+                    item(key = "utility_faq") {
+                        FolkNavigationPreference(
+                            icon = Icons.Outlined.Quiz,
+                            title = stringResource(R.string.settings_faq),
+                            onClick = { navigator.navigate(FaqScreenDestination) },
+                        )
+                    }
+                    item(key = "utility_feedback") {
+                        FolkNavigationPreference(
+                            icon = Icons.Outlined.BugReport,
+                            title = stringResource(R.string.settings_bug_feedback),
+                            onClick = { uriHandler.openUri(FEEDBACK_URL) },
+                        )
+                    }
+                    item(key = "utility_clean_storage") {
+                        FolkNavigationPreference(
+                            icon = Icons.Outlined.CleaningServices,
+                            title = stringResource(R.string.settings_clear_cache),
+                            onClick = { cleanStorageDialogState.value = true },
+                        )
+                    }
+                    item(key = "utility_disclaimer") {
+                        FolkNavigationPreference(
+                            icon = Icons.Outlined.Policy,
+                            title = stringResource(R.string.settings_disclaimer),
+                            onClick = { disclaimerDialogState.value = true },
+                        )
+                    }
+                    item(key = "utility_send_log") {
+                        FolkNavigationPreference(
+                            icon = Icons.Outlined.Description,
+                            title = stringResource(R.string.send_log),
+                            onClick = {
+                                scope.launch {
+                                    val bugreport = loadingDialog.withLoading { getBugreportFile(context) }
+                                    val uri = FileProvider.getUriForFile(
+                                        context,
+                                        "${BuildConfig.APPLICATION_ID}.fileprovider",
+                                        bugreport,
+                                    )
+                                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                        putExtra(Intent.EXTRA_STREAM, uri)
+                                        type = "application/gzip"
+                                        clipData = android.content.ClipData.newRawUri(null, uri)
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                     }
                                 },
                             )
