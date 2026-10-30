@@ -305,9 +305,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     IconButton(onClick = dropUnlessResumed { navigator.navigate(PluginScreenDestination) }) {
                         Icon(Icons.Outlined.Extension, contentDescription = stringResource(R.string.plugin_title))
                     }
-                    IconButton(onClick = { showDevDialog = true }) {
-                        Icon(Icons.Outlined.Info, contentDescription = stringResource(R.string.about))
-                    }
                 },
                 defaultContent = { bottomPadding, closeSearch ->
                     SettingsSearchShortcuts(
@@ -359,13 +356,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             item(key = "utility_rows") {
                 Spacer(Modifier.height(16.dp))
                 FolkSettingsGroup(shape = FolkShape.Corner12) {
-                    item(key = "utility_wallpaper") {
-                        FolkNavigationPreference(
-                            icon = Icons.Outlined.Wallpaper,
-                            title = stringResource(R.string.settings_wallpaper_gallery),
-                            onClick = { navigator.navigate(WallpaperGalleryScreenDestination) },
-                        )
-                    }
                     item(key = "utility_faq") {
                         FolkNavigationPreference(
                             icon = Icons.Outlined.Quiz,
