@@ -144,20 +144,23 @@ fun AppearanceSettingsContent(
     var colorStyle by remember { mutableStateOf(ColorStyle.fromName(prefs.getString("color_style", "TONAL_SPOT"))) }
 
     var currentStyle by remember { mutableStateOf(prefs.getString("home_layout_style", APApplication.HOME_LAYOUT_STYLE_DEFAULT)) }
-
-    if (refreshThemeObserver) {
-        nightModeFollowSys = prefs.getBoolean("night_mode_follow_sys", false)
-        nightModeEnabled = prefs.getBoolean("night_mode_enabled", true)
-        useSystemDynamicColor = prefs.getBoolean("use_system_color_theme", true)
-        selectedFontMode = FontConfig.fontMode
-        customColorScheme = prefs.getString("custom_color", "indigo")
-        amoledTheme = prefs.getBoolean("amoled_theme", false)
-        colorGenerationMode = ColorGenerationMode.fromKey(prefs.getString("color_generation_mode", "custom"))
-        colorStandard = ColorStandard.fromName(prefs.getString("color_standard", "M3E_2025"))
-        colorStyle = ColorStyle.fromName(prefs.getString("color_style", "TONAL_SPOT"))
-        currentStyle = prefs.getString("home_layout_style", APApplication.HOME_LAYOUT_STYLE_DEFAULT)
+    
+    LaunchedEffect(refreshThemeObserver) {
+        if (refreshThemeObserver) {
+            nightModeFollowSys = prefs.getBoolean("night_mode_follow_sys", false)
+            nightModeEnabled = prefs.getBoolean("night_mode_enabled", true)
+            useSystemDynamicColor = prefs.getBoolean("use_system_color_theme", true)
+            selectedFontMode = FontConfig.fontMode
+            customColorScheme = prefs.getString("custom_color", "indigo")
+            amoledTheme = prefs.getBoolean("amoled_theme", false)
+            colorGenerationMode = ColorGenerationMode.fromKey(prefs.getString("color_generation_mode", "custom"))
+            colorStandard = ColorStandard.fromName(prefs.getString("color_standard", "M3E_2025"))
+            colorStyle = ColorStyle.fromName(prefs.getString("color_style", "TONAL_SPOT"))
+            currentStyle = prefs.getString("home_layout_style", APApplication.HOME_LAYOUT_STYLE_DEFAULT)
+            refreshTheme.value = false
+        }
     }
-
+    
     val isDarkTheme = if (nightModeFollowSys) isSystemInDarkTheme() else nightModeEnabled
     val themeMode = if (nightModeFollowSys) ThemeMode.SYSTEM else if (nightModeEnabled) ThemeMode.DARK else ThemeMode.LIGHT
     val isStatsLayout = currentStyle == "stats"
