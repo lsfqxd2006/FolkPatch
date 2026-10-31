@@ -230,7 +230,7 @@ fun HeroStatusCard(
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(FolkDimens.Size16)) {
                     DashboardHeroFact(stringResource(R.string.home_kpatch_version), if (isWorking) Version.installedKPVString() else "—", supportingColor, Modifier.weight(1f))
-                    DashboardHeroFact(stringResource(R.string.home_kernel), android.system.Os.uname().release, supportingColor, Modifier.weight(1f))
+                    DashboardHeroFact(stringResource(R.string.home_manager_version), Version.getManagerVersion().first, supportingColor, Modifier.weight(1f))
                     DashboardHeroFact(stringResource(R.string.home_selinux_status), getSELinuxStatus(), supportingColor, Modifier.weight(1f))
                 }
             }
@@ -270,9 +270,9 @@ fun HeroStatusCard(
 
 @Composable
 private fun DashboardHeroFact(label: String, value: String, supportingColor: Color, modifier: Modifier = Modifier) {
-    Column(modifier) {
-        Text(label, style = me.bmax.apatch.ui.theme.tokens.FolkType.Caption, color = supportingColor, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, style = me.bmax.apatch.ui.theme.tokens.FolkType.Caption, color = supportingColor, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(FolkDimens.Size4))
-        Text(value, style = me.bmax.apatch.ui.theme.tokens.FolkType.Summary, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+        Text(value, style = me.bmax.apatch.ui.theme.tokens.FolkType.Summary, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
     }
 }
