@@ -213,7 +213,6 @@ fun AppearanceBackgroundSection(
                 onCheckedChange = {
                     BackgroundConfig.setCustomBackgroundEnabledState(it)
                     BackgroundConfig.save(context)
-                    refreshTheme.value = true
                 },
             )
         }
@@ -293,7 +292,6 @@ fun AppearanceBackgroundSection(
                     onCheckedChange = {
                         BackgroundConfig.setVideoBackgroundEnabledState(it)
                         BackgroundConfig.save(context)
-                        refreshTheme.value = true
                     },
                 )
             }
