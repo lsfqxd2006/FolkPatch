@@ -76,7 +76,7 @@ fun AppearanceBackgroundSection(
             loadingDialog.hide()
             if (success) {
                 snackBarHost.showSnackbar(message = context.getString(R.string.settings_custom_background_saved))
-                refreshTheme.value = true
+                refreshTheme.value = true // 保留：保存图片后需要刷新
             } else {
                 snackBarHost.showSnackbar(message = context.getString(R.string.settings_custom_background_error))
             }
@@ -124,7 +124,7 @@ fun AppearanceBackgroundSection(
                             }
                             loadingDialog.hide()
                             if (success) {
-                                refreshTheme.value = true
+                                refreshTheme.value = true // 保留：保存图片后需要刷新
                             }
                             pickingType = null
                         }
@@ -155,7 +155,7 @@ fun AppearanceBackgroundSection(
                         loadingDialog.hide()
                         if (success) {
                             snackBarHost.showSnackbar(message = context.getString(R.string.settings_custom_background_saved))
-                            refreshTheme.value = true
+                            refreshTheme.value = true // 保留：保存图片后需要刷新
                         } else {
                             snackBarHost.showSnackbar(message = context.getString(R.string.settings_custom_background_error))
                         }
@@ -178,7 +178,7 @@ fun AppearanceBackgroundSection(
                 loadingDialog.hide()
                 if (success) {
                     snackBarHost.showSnackbar(message = context.getString(R.string.settings_video_selected))
-                    refreshTheme.value = true
+                    refreshTheme.value = true // 保留：保存视频后需要刷新
                 } else {
                     snackBarHost.showSnackbar(message = context.getString(R.string.settings_custom_background_error))
                 }
@@ -213,7 +213,7 @@ fun AppearanceBackgroundSection(
                 onCheckedChange = {
                     BackgroundConfig.setCustomBackgroundEnabledState(it)
                     BackgroundConfig.save(context)
-                    refreshTheme.value = true
+                    // 🚨 删除了 refreshTheme.value = true，防止全局黑屏重建和跳顶
                 },
             )
         }
@@ -229,7 +229,7 @@ fun AppearanceBackgroundSection(
                         onCheckedChange = {
                             BackgroundConfig.setDualBackgroundDimEnabledState(it)
                             BackgroundConfig.save(context)
-                            refreshTheme.value = true
+                            // 🚨 删除了 refreshTheme.value = true
                         },
                     )
                 }
@@ -293,7 +293,7 @@ fun AppearanceBackgroundSection(
                     onCheckedChange = {
                         BackgroundConfig.setVideoBackgroundEnabledState(it)
                         BackgroundConfig.save(context)
-                        refreshTheme.value = true
+                        // 🚨 删除了 refreshTheme.value = true，防止跳顶
                     },
                 )
             }
@@ -322,7 +322,7 @@ fun AppearanceBackgroundSection(
                                     BackgroundManager.clearVideoBackground(context)
                                     loadingDialog.hide()
                                     snackBarHost.showSnackbar(message = context.getString(R.string.settings_background_image_cleared))
-                                    refreshTheme.value = true
+                                    refreshTheme.value = true // 保留：清除视频后需要刷新
                                 }
                             }
                         )
@@ -359,7 +359,7 @@ fun AppearanceBackgroundSection(
                         onCheckedChange = {
                             BackgroundConfig.setMultiBackgroundEnabledState(it)
                             BackgroundConfig.save(context)
-                            refreshTheme.value = true
+                            // 🚨 删除了 refreshTheme.value = true
                         },
                     )
                 }
@@ -425,7 +425,7 @@ fun AppearanceBackgroundSection(
                                         BackgroundManager.clearCustomBackground(context)
                                         loadingDialog.hide()
                                         snackBarHost.showSnackbar(message = context.getString(R.string.settings_background_image_cleared))
-                                        refreshTheme.value = true
+                                        refreshTheme.value = true // 保留：清除背景后需要刷新
                                     }
                                 }
                             )
