@@ -105,8 +105,6 @@ object FontConfig {
             val file = customFontFilename?.let { File(context.filesDir, it) }
             if (file == null || !file.exists()) {
                 customFontFilename = null
-                fontMode = FontMode.SYSTEM_DEFAULT
-                isCustomFontEnabled = false
                 needsPersist = true
             }
         }
