@@ -2,22 +2,9 @@ package me.bmax.apatch.ui.screen.home
 
 import me.bmax.apatch.ui.theme.tokens.FolkDimens
 import androidx.annotation.StringRes
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoFixHigh
 import androidx.compose.material.icons.outlined.MoreVert
@@ -32,8 +19,7 @@ import androidx.compose.material.icons.outlined.DeveloperMode
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.RestartAlt
-import androidx.compose.material.icons.outlined.SystemUpdate
-import androidx.compose.material3.BasicAlertDialog
+import me.bmax.apatch.ui.theme.BackgroundConfig
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,13 +27,12 @@ import me.bmax.apatch.ui.component.folk.navOrigin
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
@@ -55,10 +40,10 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
@@ -68,13 +53,51 @@ import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenu
 import me.bmax.apatch.ui.component.WallpaperAwareDropdownMenuItem
 import me.bmax.apatch.ui.component.rememberConfirmDialog
-import me.bmax.apatch.ui.theme.BackgroundConfig
-import me.bmax.apatch.ui.theme.MusicConfig
-import me.bmax.apatch.util.MusicManager
 import me.bmax.apatch.util.reboot
 import me.bmax.apatch.ui.component.folk.folkDefaultAppBarColors
 
-private data class RebootOption(
+// ===== 以下为高级重启弹窗(RebootDialog)新增 import，上游无 =====
+
+// 动画
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+
+// 布局
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+
+// 形状 & 背景
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+
+// 弹窗 & Surface
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.surfaceColorAtElevation
+
+// 对齐
+import androidx.compose.ui.Alignment
+
+// 壁纸感知材质（非壁纸模式下这些 Local 为 null，自动回退到 M3 语义色）
+import me.bmax.apatch.ui.theme.LocalWallpaperContentColor
+import me.bmax.apatch.ui.theme.tokens.LocalFolkWallpaperTokens
+
+// ===== 新增 import 结束 =====
+
+data class RebootOption(
     @param:StringRes val titleRes: Int,
     val reason: String,
     val icon: ImageVector
@@ -97,57 +120,82 @@ private fun RebootDialog(
     onDismiss: () -> Unit,
     onReboot: (String) -> Unit
 ) {
-    if (!show) return
+    // 不用 if (!show) return，让 BasicAlertDialog 的退出动画能完整播完
+    AnimatedVisibility(
+        visible = show,
+        enter = fadeIn(animationSpec = tween(180)) +
+                scaleIn(initialScale = 0.92f, animationSpec = tween(180)),
+        exit = fadeOut(animationSpec = tween(120)) +
+               scaleOut(targetScale = 0.92f, animationSpec = tween(120))
+    ) {
+        val options = getRebootOptions()
 
-    val options = getRebootOptions()
+        // 壁纸模式：用半透明 chrome/overlay 材质做弹窗底，让壁纸透出，
+        // 文字用随壁纸明暗取反的中性色（LocalWallpaperContentColor）。
+        // 非壁纸模式：tokens 与 contentColor 都为 null，回退到原 M3 语义色。
+        val wallpaperTokens = LocalFolkWallpaperTokens.current
+        val dialogSurface = wallpaperTokens?.let { it.chrome.fill }
+            ?: MaterialTheme.colorScheme.surfaceContainerHigh
+        val itemSurface = wallpaperTokens?.let { it.overlay.fill }
+            ?: MaterialTheme.colorScheme.surfaceColorAtElevation(FolkDimens.Size1)
+        val contentColor = LocalWallpaperContentColor.current
+            ?: MaterialTheme.colorScheme.onSurface
 
-    BasicAlertDialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh
-        ) {
-            Column(modifier = Modifier.padding(24.dp)) {
-                Column(
-                    modifier = Modifier.padding(top = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    options.forEach { option ->
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                            onClick = {
-                                onDismiss()
-                                onReboot(option.reason)
-                            }
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+        BasicAlertDialog(onDismissRequest = onDismiss) {
+            Surface(
+                shape = RoundedCornerShape(FolkDimens.Size28),
+                color = dialogSurface
+            ) {
+                Column(modifier = Modifier.padding(FolkDimens.Size24)) {
+                    Column(
+                        modifier = Modifier.padding(top = FolkDimens.Size4),
+                        verticalArrangement = Arrangement.spacedBy(FolkDimens.Size2)
+                    ) {
+                        options.forEach { option ->
+                            Surface(
+                                shape = RoundedCornerShape(FolkDimens.Size16),
+                                color = itemSurface,
+                                border = BorderStroke(
+                                    FolkDimens.Size1,
+                                    MaterialTheme.colorScheme.outlineVariant
+                                ),
+                                onClick = {
+                                    onReboot(option.reason)
+                                    onDismiss()
+                                }
                             ) {
-                                Box(
+                                Row(
                                     modifier = Modifier
-                                        .size(40.dp)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.secondaryContainer,
-                                            shape = CircleShape
+                                        .fillMaxWidth()
+                                        .padding(
+                                            horizontal = FolkDimens.Size16,
+                                            vertical = FolkDimens.Size12
                                         ),
-                                    contentAlignment = Alignment.Center
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        imageVector = option.icon,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                    Box(
+                                        modifier = Modifier
+                                            .size(FolkDimens.Size40)
+                                            .background(
+                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                shape = CircleShape
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = option.icon,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(FolkDimens.Size20),
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(FolkDimens.Size16))
+                                    Text(
+                                        text = stringResource(option.titleRes),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = contentColor
                                     )
                                 }
-                                Spacer(modifier = Modifier.width(16.dp))
-                                Text(
-                                    text = stringResource(option.titleRes),
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
                             }
                         }
                     }
@@ -163,9 +211,8 @@ fun HomeTopBar(
     onInstallClick: () -> Unit, navigator: DestinationsNavigator, kpState: APApplication.State
 ) {
     val uriHandler = LocalUriHandler.current
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     var showDropdownMoreOptions by remember { mutableStateOf(false) }
-    var showRebootDialog by remember { mutableStateOf(false) }
     val prefs = APApplication.sharedPreferences
     val darkThemeFollowSys = prefs.getBoolean("night_mode_follow_sys", false)
     val nightModeEnabled = prefs.getBoolean("night_mode_enabled", true)
@@ -205,23 +252,6 @@ fun HomeTopBar(
     val titleOffsetX = if (useAdvancedTitleStyle) {
         BackgroundConfig.titleImageOffsetX * 100f
     } else 0f
-
-    // Download/EDL drop the device into flashing modes that look dead to
-    // a normal user, so they get a confirmation step first.
-    val downloadTitle = stringResource(id = R.string.reboot_download)
-    val downloadConfirmText = stringResource(id = R.string.reboot_download_confirm)
-    val edlTitle = stringResource(id = R.string.reboot_edl)
-    val edlConfirmText = stringResource(id = R.string.reboot_edl_confirm)
-    var pendingRebootReason by remember { mutableStateOf<String?>(null) }
-    val rebootConfirmDialog = rememberConfirmDialog(
-        onConfirm = {
-            pendingRebootReason?.let { reboot(it) }
-            pendingRebootReason = null
-        },
-        onDismiss = {
-            pendingRebootReason = null
-        }
-    )
 
     TopAppBar(
         colors = folkDefaultAppBarColors(),
@@ -268,52 +298,49 @@ fun HomeTopBar(
         }
 
         if (kpState != APApplication.State.UNKNOWN_STATE) {
+            // Download/EDL drop the device into flashing modes that look dead to
+            // a normal user, so they get a confirmation step first.
+            val downloadTitle = stringResource(id = R.string.reboot_download)
+            val downloadConfirmText = stringResource(id = R.string.reboot_download_confirm)
+            val edlTitle = stringResource(id = R.string.reboot_edl)
+            val edlConfirmText = stringResource(id = R.string.reboot_edl_confirm)
+            var pendingRebootReason by remember { mutableStateOf<String?>(null) }
+            var showRebootDialog by remember { mutableStateOf(false) }
+            val rebootConfirmDialog = rememberConfirmDialog(
+                onConfirm = {
+                    pendingRebootReason?.let { reboot(it) }
+                    pendingRebootReason = null
+                },
+                onDismiss = {
+                    pendingRebootReason = null
+                }
+            )
+
             IconButton(onClick = { showRebootDialog = true }) {
                 Icon(
-                    imageVector = Icons.Filled.PowerSettingsNew,
+                    imageVector = Icons.Outlined.PowerSettingsNew,
                     contentDescription = stringResource(id = R.string.reboot)
                 )
             }
 
-            Box {
-                IconButton(onClick = { showDropdownReboot = true }) {
-                    Icon(
-                        imageVector = Icons.Outlined.PowerSettingsNew,
-                        contentDescription = stringResource(id = R.string.reboot)
-                    )
-                }
-                WallpaperAwareDropdownMenu(
-                    expanded = showDropdownReboot,
-                    onDismissRequest = { showDropdownReboot = false }
-                ) {
-                    getRebootOptions().forEach { option ->
-                        WallpaperAwareDropdownMenuItem(
-                            text = { Text(stringResource(option.titleRes)) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = option.icon,
-                                    contentDescription = null,
-                                )
-                            },
-                            onClick = {
-                                showDropdownReboot = false
-                                when (option.reason) {
-                                    "download" -> {
-                                        pendingRebootReason = "download"
-                                        rebootConfirmDialog.showConfirm(
-                                            title = downloadTitle, content = downloadConfirmText
-                                        )
-                                    }
-                                    "edl" -> {
-                                        pendingRebootReason = "edl"
-                                        rebootConfirmDialog.showConfirm(
-                                            title = edlTitle, content = edlConfirmText
-                                        )
-                                    }
-                                    else -> reboot(option.reason)
-                                }
-                            }
-                        )
+            RebootDialog(
+                show = showRebootDialog,
+                onDismiss = { showRebootDialog = false },
+                onReboot = { reason ->
+                    when (reason) {
+                        "download" -> {
+                            pendingRebootReason = "download"
+                            rebootConfirmDialog.showConfirm(
+                                title = downloadTitle, content = downloadConfirmText
+                            )
+                        }
+                        "edl" -> {
+                            pendingRebootReason = "edl"
+                            rebootConfirmDialog.showConfirm(
+                                title = edlTitle, content = edlConfirmText
+                            )
+                        }
+                        else -> reboot(reason)
                     }
                 }
             )
