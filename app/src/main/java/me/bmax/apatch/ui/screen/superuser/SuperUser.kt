@@ -24,7 +24,6 @@ import androidx.compose.material.icons.automirrored.outlined.PlaylistAddCheck
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Terminal
-import androidx.compose.material3.CheckableDropdownMenuItem
 import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -321,7 +320,7 @@ private fun SuperUserScreenModern(navigator: DestinationsNavigator, useLegacySuP
                                 onDismissRequest = { showSuperUserMenu = false },
                             ) {
                                 DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
-                                    CheckableDropdownMenuItem(
+                                    SelectableDropdownMenuItem(
                                         text = {
                                             Text(
                                                 if (viewModel.showSystemApps) {
@@ -331,19 +330,21 @@ private fun SuperUserScreenModern(navigator: DestinationsNavigator, useLegacySuP
                                                 }
                                             )
                                         },
-                                        checked = viewModel.showSystemApps,
-                                        checkedLeadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Outlined.Check,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(MenuDefaults.LeadingIconSize),
-                                            )
-                                        },
-                                        onCheckedChange = {
+                                        selected = viewModel.showSystemApps,
+                                        onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                             showSuperUserMenu = false
                                             viewModel.showSystemApps = !viewModel.showSystemApps
                                         },
+                                        leadingIcon = if (viewModel.showSystemApps) {
+                                            {
+                                                Icon(
+                                                    imageVector = Icons.Outlined.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                                )
+                                            }
+                                        } else null,
                                         shapes = MenuDefaults.itemShape(index = 0, count = 3),
                                     )
                                     SelectableDropdownMenuItem(
