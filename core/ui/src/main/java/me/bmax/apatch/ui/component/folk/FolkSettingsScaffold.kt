@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -29,33 +30,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Box
 
-/**
- * Colours for the settings bar.
- *
- * With a custom background the bar is fully transparent so the image reads
- * straight through it on every page.
- *
- * Otherwise the bar fades from fully transparent to the elevated panel tone.
- * Both ends use the *same* RGB with only the alpha changing - using
- * [Color.Transparent] instead would make Material interpolate the colour from
- * black, which showed up as a grey scrim washing over the title and the
- * content while scrolling.
- */
+/** Colours for settings and secondary-page bars, matching FinaSU's page chrome. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun folkTopAppBarColors(): TopAppBarColors {
-    if (FolkTheme.palette.onCustomBackground) {
-        return TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent,
-            scrolledContainerColor = Color.Transparent,
-        )
-    }
-    val elevated = folkGroupColor()
-    return TopAppBarDefaults.topAppBarColors(
-        containerColor = elevated.copy(alpha = 0f),
-        scrolledContainerColor = elevated,
-    )
-}
+fun folkTopAppBarColors(): TopAppBarColors = folkDefaultAppBarColors()
 
 /**
  * Colours for the screens that build their own bar (home, modules, search):
@@ -71,7 +49,11 @@ fun folkDefaultAppBarColors(): TopAppBarColors =
             scrolledContainerColor = Color.Transparent,
         )
     } else {
-        TopAppBarDefaults.topAppBarColors()
+        val container = MaterialTheme.colorScheme.surfaceContainer
+        TopAppBarDefaults.topAppBarColors(
+            containerColor = container,
+            scrolledContainerColor = container,
+        )
     }
 
 /**
@@ -94,25 +76,29 @@ fun FolkSettingsScaffold(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeFlexibleTopAppBar(
-                title = {
-                    Text(
-                        text = title,
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                colors = folkTopAppBarColors(),
-                navigationIcon = {
-                    if (onBack != null) {
-                        TopBarBackButton(
-                            onClick = onBack,
-                            contentDescription = stringResource(R.string.core_action_back),
+            FolkWallpaperChromeZone(
+                edge = FolkChromeEdge.Top,
+            ) {
+                LargeFlexibleTopAppBar(
+                    title = {
+                        Text(
+                            text = title,
+                            fontWeight = FontWeight.Bold,
                         )
-                    }
-                },
-                actions = actions,
-                scrollBehavior = scrollBehavior,
-            )
+                    },
+                    colors = folkTopAppBarColors(),
+                    navigationIcon = {
+                        if (onBack != null) {
+                            TopBarBackButton(
+                                onClick = onBack,
+                                contentDescription = stringResource(R.string.core_action_back),
+                            )
+                        }
+                    },
+                    actions = actions,
+                    scrollBehavior = scrollBehavior,
+                )
+            }
         },
         containerColor = Color.Transparent,
         snackbarHost = {

@@ -1,5 +1,6 @@
 package me.bmax.apatch.ui.screen.settings
 
+import me.bmax.apatch.ui.theme.tokens.FolkDimens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -16,8 +17,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.outlined.Brush
 import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.Extension
@@ -46,9 +47,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.bmax.apatch.R
-import me.bmax.apatch.ui.component.folk.FolkNavigationPreference
+import me.bmax.apatch.ui.component.SegmentedNavigationItem
 import me.bmax.apatch.ui.component.folk.FolkSettingsDimens
-import me.bmax.apatch.ui.component.folk.FolkSettingsGroup
+import me.bmax.apatch.ui.component.SegmentedColumn
 import me.bmax.apatch.ui.component.folk.FolkStateView
 import me.bmax.apatch.ui.component.folk.folkPressScale
 
@@ -113,10 +114,10 @@ internal fun SettingsSearchShortcuts(
     ) {
         item(key = "shortcut_spacer") { Spacer(Modifier.height(FolkSettingsDimens.SectionSpacing)) }
         item(key = "shortcut_group") {
-            FolkSettingsGroup {
+            SegmentedColumn {
                 shortcuts.forEach { shortcut ->
                     item(key = shortcut.label) {
-                        FolkNavigationPreference(
+                        SegmentedNavigationItem(
                             icon = shortcut.icon,
                             title = shortcut.label,
                             onClick = { onOpen(shortcut) },
@@ -146,7 +147,7 @@ internal fun SettingsSearchResults(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding),
-            icon = Icons.Filled.SearchOff,
+            icon = Icons.Outlined.SearchOff,
         )
         return
     }
@@ -167,15 +168,15 @@ internal fun SettingsSearchResults(
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(
-                            start = 24.dp,
-                            end = 24.dp,
-                            top = 12.dp,
-                            bottom = 8.dp,
+                            start = FolkDimens.Size24,
+                            end = FolkDimens.Size24,
+                            top = FolkDimens.Size12,
+                            bottom = FolkDimens.Size8,
                         ),
                     )
                 }
                 item(key = "group_${category.key}") {
-                    FolkSettingsGroup {
+                    SegmentedColumn {
                         categoryResults.forEach { result ->
                             item(key = result.entry.key) {
                                 SettingsSearchResultRow(
@@ -213,7 +214,7 @@ private fun SettingsSearchResultRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .defaultMinSize(minHeight = 56.dp)
+            .defaultMinSize(minHeight = FolkDimens.Size56)
             .folkPressScale(interactionSource)
             .clickable(
                 role = Role.Button,
@@ -241,7 +242,7 @@ private fun SettingsSearchResultRow(
         Spacer(Modifier.width(FolkSettingsDimens.IconSpacing))
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(FolkDimens.Size2),
         ) {
             Text(
                 text = highlightedText(result.title, settingsMatchRanges(result.title, tokens)),
@@ -265,7 +266,7 @@ private fun SettingsSearchResultRow(
         }
         Spacer(Modifier.width(FolkSettingsDimens.TrailingSpacing))
         Icon(
-            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            Icons.AutoMirrored.Outlined.KeyboardArrowRight,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(FolkSettingsDimens.ChevronSize),

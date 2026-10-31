@@ -1,5 +1,6 @@
 package me.bmax.apatch.ui.screen.misc
 
+import me.bmax.apatch.ui.theme.tokens.FolkDimens
 import android.content.Intent
 import android.content.ActivityNotFoundException
 import android.net.Uri
@@ -70,14 +71,15 @@ import kotlinx.coroutines.withContext
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.BuildConfig
 import me.bmax.apatch.R
-import me.bmax.apatch.ui.component.folk.FolkNavigationPreference
+import me.bmax.apatch.ui.component.SegmentedNavigationItem
 import me.bmax.apatch.ui.component.folk.FolkScaffold
-import me.bmax.apatch.ui.component.folk.FolkSettingsGroup
+import me.bmax.apatch.ui.component.SegmentedColumn
 import me.bmax.apatch.ui.component.folk.folkGroupColor
 import me.bmax.apatch.ui.component.folk.folkPressScale
+import me.bmax.apatch.ui.component.folk.navOrigin
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.ui.component.rememberSystemCropLauncher
-import me.bmax.apatch.ui.component.M3eSearchAppBar
+import me.bmax.apatch.ui.component.SearchAppBar
 import me.bmax.apatch.ui.screen.home.getDeviceInfo
 import me.bmax.apatch.ui.screen.settings.ResolvedEntry
 import me.bmax.apatch.ui.screen.settings.SettingCategory
@@ -85,7 +87,6 @@ import me.bmax.apatch.ui.screen.settings.SettingsRegistry
 import me.bmax.apatch.ui.screen.settings.SettingsSearchResults
 import me.bmax.apatch.ui.screen.settings.SettingsSearchShortcut
 import me.bmax.apatch.ui.screen.settings.SettingsSearchShortcuts
-import me.bmax.apatch.ui.screen.settings.general.CleanStorageDialog
 import me.bmax.apatch.util.ui.showToast
 import me.bmax.apatch.util.BiometricUtils
 import me.bmax.apatch.util.SafeUriResolver
@@ -126,7 +127,7 @@ private data class SecondaryEntry(
     val category: SettingCategory,
     val icon: ImageVector,
     val label: String,
-    val iconSize: Dp = 24.dp,
+    val iconSize: Dp = FolkDimens.Size24,
     val onClick: () -> Unit,
 )
 
@@ -144,7 +145,7 @@ private fun openSettingEntry(navigator: DestinationsNavigator, entry: ResolvedEn
     }
 }
 
-@Destination<RootGraph>
+@Destination<RootGraph>(wrappers = [me.bmax.apatch.ui.navigation.NavContainerTransformWrapper::class])
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun SettingScreen(navigator: DestinationsNavigator) {
@@ -290,7 +291,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
     FolkScaffold(
         topBar = {
-            M3eSearchAppBar(
+            SearchAppBar(
                 title = {
                     Text(
                         text = stringResource(R.string.settings),
@@ -302,7 +303,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 onSearchTextChange = { searchText = it },
                 searchPlaceholder = stringResource(R.string.settings_search_title),
                 actions = {
-                    IconButton(onClick = dropUnlessResumed { navigator.navigate(PluginScreenDestination) }) {
+                    IconButton(
+                        onClick = dropUnlessResumed { navigator.navigate(PluginScreenDestination) },
+                        modifier = Modifier.navOrigin(captureBitmap = true),
+                    ) {
                         Icon(Icons.Outlined.Extension, contentDescription = stringResource(R.string.plugin_title))
                     }
                 },
@@ -349,43 +353,36 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
 
             item(key = "secondary_entries") {
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(FolkDimens.Size20))
                 SettingsIconGrid(entries = secondaryEntries)
             }
 
             item(key = "utility_rows") {
-                Spacer(Modifier.height(16.dp))
-                FolkSettingsGroup(shape = FolkShape.Corner12) {
+                Spacer(Modifier.height(FolkDimens.Size16))
+                SegmentedColumn(shape = FolkShape.Corner12) {
                     item(key = "utility_faq") {
-                        FolkNavigationPreference(
+                        SegmentedNavigationItem(
                             icon = Icons.Outlined.Quiz,
                             title = stringResource(R.string.settings_faq),
                             onClick = { navigator.navigate(FaqScreenDestination) },
                         )
                     }
                     item(key = "utility_feedback") {
-                        FolkNavigationPreference(
+                        SegmentedNavigationItem(
                             icon = Icons.Outlined.BugReport,
                             title = stringResource(R.string.settings_bug_feedback),
                             onClick = { uriHandler.openUri(FEEDBACK_URL) },
                         )
                     }
-                    item(key = "utility_clean_storage") {
-                        FolkNavigationPreference(
-                            icon = Icons.Outlined.CleaningServices,
-                            title = stringResource(R.string.settings_clear_cache),
-                            onClick = { cleanStorageDialogState.value = true },
-                        )
-                    }
                     item(key = "utility_disclaimer") {
-                        FolkNavigationPreference(
+                        SegmentedNavigationItem(
                             icon = Icons.Outlined.Policy,
                             title = stringResource(R.string.settings_disclaimer),
                             onClick = { disclaimerDialogState.value = true },
                         )
                     }
                     item(key = "utility_send_log") {
-                        FolkNavigationPreference(
+                        SegmentedNavigationItem(
                             icon = Icons.Outlined.Description,
                             title = stringResource(R.string.send_log),
                             onClick = {
@@ -410,7 +407,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         )
                     }
                     item(key = "utility_about") {
-                        FolkNavigationPreference(
+                        SegmentedNavigationItem(
                             icon = Icons.Outlined.Info,
                             title = stringResource(R.string.about),
                             onClick = { navigator.navigate(AboutScreenDestination) },
@@ -420,14 +417,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
 
             item(key = "settings_bottom_spacer") {
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(FolkDimens.Size16))
                 NavigationBarsSpacer()
             }
         }
-    }
-
-    if (cleanStorageDialogState.value) {
-        CleanStorageDialog(cleanStorageDialogState, R.string.settings_clear_cache)
     }
 
     if (disclaimerDialogState.value) {
@@ -556,12 +549,12 @@ private fun SettingsIconGrid(entries: List<SecondaryEntry>) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = FolkDimens.Size16),
         shape = FolkShape.Corner12,
         color = folkGroupColor(),
-        tonalElevation = 0.dp,
+        tonalElevation = FolkDimens.Size0,
     ) {
-        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Column(modifier = Modifier.padding(vertical = FolkDimens.Size8)) {
             entries.chunked(4).forEach { row ->
                 Row(modifier = Modifier.fillMaxWidth()) {
                     row.forEach { entry ->
@@ -589,6 +582,11 @@ private fun GridEntry(
     Column(
         modifier = modifier
             .clip(FolkShape.Corner12)
+            .navOrigin(
+                cornerRadius = FolkDimens.Size12,
+                color = folkGroupColor(),
+                interactionSource = interactionSource,
+            )
             .folkPressScale(interactionSource)
             .clickable(role = Role.Button, 
                 interactionSource = interactionSource,
@@ -598,7 +596,7 @@ private fun GridEntry(
                     entry.onClick()
                 },
             )
-            .padding(vertical = 8.dp, horizontal = 4.dp),
+            .padding(vertical = FolkDimens.Size8, horizontal = FolkDimens.Size4),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
@@ -607,7 +605,7 @@ private fun GridEntry(
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(entry.iconSize),
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(FolkDimens.Size10))
         Text(
             text = entry.label,
             style = MaterialTheme.typography.bodyMedium,

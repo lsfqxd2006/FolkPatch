@@ -1,5 +1,6 @@
 package me.bmax.apatch.ui.screen.misc
 
+import me.bmax.apatch.ui.theme.tokens.FolkDimens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -21,7 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -68,7 +69,7 @@ private val FAQ_LANGUAGE_ALIASES = mapOf("id" to "in", "he" to "iw", "yi" to "ji
 
 internal data class FaqItem(val title: String, val body: String)
 
-@Destination<RootGraph>
+@Destination<RootGraph>(wrappers = [me.bmax.apatch.ui.navigation.NavContainerTransformWrapper::class])
 @Composable
 fun FaqScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
@@ -89,10 +90,10 @@ fun FaqScreen(navigator: DestinationsNavigator) {
             contentPadding = PaddingValues(
                 start = FolkSettingsDimens.ScreenPadding,
                 end = FolkSettingsDimens.ScreenPadding,
-                top = 12.dp,
+                top = FolkDimens.Size12,
                 bottom = FolkSettingsDimens.ScreenPadding,
             ),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(FolkDimens.Size12),
         ) {
             itemsIndexed(items) { index, item ->
                 FaqCard(
@@ -120,9 +121,9 @@ private fun FaqCard(item: FaqItem, expanded: Boolean, onToggle: () -> Unit) {
     val pressed by interactionSource.collectIsPressedAsState()
     val corner by animateDpAsState(
         targetValue = when {
-            expanded -> 28.dp
-            pressed -> 24.dp
-            else -> 20.dp
+            expanded -> FolkDimens.Size28
+            pressed -> FolkDimens.Size24
+            else -> FolkDimens.Size20
         },
         animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
         label = "FaqCardCorner",
@@ -156,7 +157,7 @@ private fun FaqCard(item: FaqItem, expanded: Boolean, onToggle: () -> Unit) {
                 )
                 Spacer(Modifier.width(FolkSettingsDimens.TrailingSpacing))
                 Icon(
-                    imageVector = Icons.Filled.KeyboardArrowDown,
+                    imageVector = Icons.Outlined.KeyboardArrowDown,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier

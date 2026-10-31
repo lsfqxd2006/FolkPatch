@@ -1,5 +1,6 @@
 package me.bmax.apatch.ui.screen.home
 
+import me.bmax.apatch.ui.theme.tokens.FolkDimens
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -18,12 +19,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoFixHigh
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PowerSettingsNew
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.AutoFixHigh
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PowerSettingsNew
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Refresh
+import me.bmax.apatch.ui.theme.MusicConfig
+import me.bmax.apatch.util.MusicManager
+import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.DeveloperMode
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Memory
@@ -33,8 +37,8 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import me.bmax.apatch.ui.component.folk.navOrigin
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.surfaceColorAtElevation
@@ -77,8 +81,8 @@ private data class RebootOption(
 )
 
 @Composable
-private fun getRebootOptions(): List<RebootOption> = listOf(
-    RebootOption(R.string.reboot, "", Icons.Filled.Refresh),
+fun getRebootOptions(): List<RebootOption> = listOf(
+    RebootOption(R.string.reboot, "", Icons.Outlined.Refresh),
     RebootOption(R.string.reboot_recovery, "recovery", Icons.Outlined.SystemUpdate),
     RebootOption(R.string.reboot_bootloader, "bootloader", Icons.Outlined.Memory),
     RebootOption(R.string.reboot_download, "download", Icons.Outlined.Download),
@@ -230,7 +234,7 @@ fun HomeTopBar(
                     .build(),
                 contentDescription = titleResId?.let { stringResource(it) } ?: customAppTitle,
                 modifier = Modifier
-                    .height(40.dp)
+                    .height(FolkDimens.Size40)
                     .offset(x = titleOffsetX.dp)
                     .alpha(titleOpacity)
                     .graphicsLayer {
@@ -253,9 +257,12 @@ fun HomeTopBar(
             Text(if (isCustomTitle) customAppTitle else stringResource(titleResId!!))
         }
     }, actions = {
-        IconButton(onClick = onInstallClick) {
+        IconButton(
+            onClick = onInstallClick,
+            modifier = Modifier.navOrigin(captureBitmap = true),
+        ) {
             Icon(
-                imageVector = Icons.Filled.AutoFixHigh,
+                imageVector = Icons.Outlined.AutoFixHigh,
                 contentDescription = stringResource(id = R.string.mode_select_page_title)
             )
         }
@@ -268,26 +275,45 @@ fun HomeTopBar(
                 )
             }
 
-            RebootDialog(
-                show = showRebootDialog,
-                onDismiss = { showRebootDialog = false },
-                onReboot = { reason ->
-                    when (reason) {
-                        "download" -> {
-                            pendingRebootReason = "download"
-                            rebootConfirmDialog.showConfirm(
-                                title = downloadTitle,
-                                content = downloadConfirmText
-                            )
-                        }
-                        "edl" -> {
-                            pendingRebootReason = "edl"
-                            rebootConfirmDialog.showConfirm(
-                                title = edlTitle,
-                                content = edlConfirmText
-                            )
-                        }
-                        else -> reboot(reason)
+            Box {
+                IconButton(onClick = { showDropdownReboot = true }) {
+                    Icon(
+                        imageVector = Icons.Outlined.PowerSettingsNew,
+                        contentDescription = stringResource(id = R.string.reboot)
+                    )
+                }
+                WallpaperAwareDropdownMenu(
+                    expanded = showDropdownReboot,
+                    onDismissRequest = { showDropdownReboot = false }
+                ) {
+                    getRebootOptions().forEach { option ->
+                        WallpaperAwareDropdownMenuItem(
+                            text = { Text(stringResource(option.titleRes)) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = option.icon,
+                                    contentDescription = null,
+                                )
+                            },
+                            onClick = {
+                                showDropdownReboot = false
+                                when (option.reason) {
+                                    "download" -> {
+                                        pendingRebootReason = "download"
+                                        rebootConfirmDialog.showConfirm(
+                                            title = downloadTitle, content = downloadConfirmText
+                                        )
+                                    }
+                                    "edl" -> {
+                                        pendingRebootReason = "edl"
+                                        rebootConfirmDialog.showConfirm(
+                                            title = edlTitle, content = edlConfirmText
+                                        )
+                                    }
+                                    else -> reboot(option.reason)
+                                }
+                            }
+                        )
                     }
                 }
             )
@@ -296,7 +322,7 @@ fun HomeTopBar(
         Box {
             IconButton(onClick = { showDropdownMoreOptions = true }) {
                 Icon(
-                    imageVector = Icons.Filled.MoreVert,
+                    imageVector = Icons.Outlined.MoreVert,
                     contentDescription = stringResource(id = R.string.settings)
                 )
                 WallpaperAwareDropdownMenu(
@@ -316,7 +342,7 @@ fun HomeTopBar(
                             },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                    imageVector = if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                                     contentDescription = null,
                                 )
                             },
