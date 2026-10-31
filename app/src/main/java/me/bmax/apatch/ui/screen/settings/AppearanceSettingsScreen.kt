@@ -25,7 +25,7 @@ fun AppearanceSettingsScreen(navigator: DestinationsNavigator, highlightKey: Str
     val kPatchReady = state != APApplication.State.UNKNOWN_STATE
 
     val snackBarHost = LocalSnackbarHost.current
-    val flat = BackgroundConfig.isCustomBackgroundEnabled || BackgroundConfig.settingsBackgroundUri != null
+    val flat = null
     val prefs = APApplication.sharedPreferences
 
     val themeModeKey = "theme_mode"
