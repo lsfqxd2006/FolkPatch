@@ -17,8 +17,6 @@ import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.folk.FolkSettingsScaffold
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.ui.screen.settings.appearance.AppearanceBackgroundSection
-import me.bmax.apatch.ui.screen.settings.appearance.AppearanceSettingsContentTop
-import me.bmax.apatch.ui.screen.settings.appearance.AppearanceSettingsContentBottom
 import me.bmax.apatch.ui.theme.BackgroundConfig
 import me.bmax.apatch.util.ui.LocalSnackbarHost
 
