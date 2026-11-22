@@ -99,9 +99,6 @@ fun GeneralSettingsContent(
 
     val updateTitle = stringResource(id = R.string.settings_check_update)
 
-    val autoUpdateTitle = stringResource(id = R.string.settings_auto_update_check)
-    val autoUpdateSummary = stringResource(id = R.string.settings_auto_update_check_summary)
-
     val globalNamespaceTitle = stringResource(id = R.string.settings_global_namespace_mode)
     val globalNamespaceSummary = stringResource(id = R.string.settings_global_namespace_mode_summary)
 
@@ -185,7 +182,6 @@ fun GeneralSettingsContent(
     val showSELinuxModeDialog = remember { mutableStateOf(false) }
 
     val useAltIcon = remember { mutableStateOf(prefs.getBoolean("use_alt_icon", false)) }
-    var autoUpdateCheck by remember { mutableStateOf(prefs.getBoolean("auto_update_check", true)) }
     var blockUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_KERNELPATCH_UPDATE, false)) }
     var blockApUpdateChecked by remember { mutableStateOf(prefs.getBoolean(APApplication.PREF_BLOCK_ANDROIDPATCH_UPDATE, false)) }
     var folkXEngineEnabled by remember { mutableStateOf(prefs.getBoolean("folkx_engine_enabled", true)) }
@@ -263,20 +259,6 @@ fun GeneralSettingsContent(
                     )
                 }
             }
-        }
-
-        item(key = "general_auto_update") {
-            ToggleSettingCard(
-            flat = flat,
-            icon = Icons.Filled.Autorenew,
-            title = autoUpdateTitle,
-            description = autoUpdateSummary,
-            checked = autoUpdateCheck,
-            onCheckedChange = {
-                autoUpdateCheck = it
-                prefs.edit { putBoolean("auto_update_check", it) }
-            }
-        )
         }
 
         item(key = "general_block_kp_update") {
