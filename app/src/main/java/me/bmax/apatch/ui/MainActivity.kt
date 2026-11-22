@@ -152,8 +152,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.coroutineScope
 import kotlin.system.exitProcess
-import me.bmax.apatch.util.UpdateChecker
-import me.bmax.apatch.ui.component.UpdateDialog
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
@@ -535,7 +533,6 @@ class MainActivity : AppCompatActivity() {
                 folkXAnimationSpeed = folkXAnimationSpeed
             ) {
                 
-                val showUpdateDialog = remember { mutableStateOf(false) }
                 val context = LocalContext.current
 
                 val loadingDialog = rememberLoadingDialog()
@@ -627,29 +624,6 @@ class MainActivity : AppCompatActivity() {
                                     showToast(context, context.getString(R.string.settings_theme_import_failed))
                                 }
                             }
-                        }
-                    )
-                }
-                
-                LaunchedEffect(Unit) {
-                    if (prefs.getBoolean("auto_update_check", true)) {
-                        withContext(Dispatchers.IO) {
-                             // Delay a bit to wait for network connection
-                             kotlinx.coroutines.delay(2000)
-                             val hasUpdate = me.bmax.apatch.util.UpdateChecker.checkUpdate()
-                             if (hasUpdate) {
-                                 showUpdateDialog.value = true
-                             }
-                        }
-                    }
-                }
-
-                if (showUpdateDialog.value) {
-                    UpdateDialog(
-                        onDismiss = { showUpdateDialog.value = false },
-                        onUpdate = {
-                            showUpdateDialog.value = false
-                            UpdateChecker.openUpdateUrl(context)
                         }
                     )
                 }
