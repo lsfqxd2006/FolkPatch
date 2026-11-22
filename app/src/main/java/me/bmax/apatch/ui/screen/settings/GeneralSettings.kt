@@ -48,7 +48,6 @@ import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ExpressiveCard
 import me.bmax.apatch.ui.component.SplicedColumnGroup
 import me.bmax.apatch.ui.component.ToggleSettingCard
-import me.bmax.apatch.ui.component.UpdateDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.util.*
 import me.bmax.apatch.util.ui.APDialogBlurBehindUtils
@@ -97,7 +96,6 @@ fun GeneralSettingsContent(
         }
     }
 
-    val updateTitle = stringResource(id = R.string.settings_check_update)
 
     val globalNamespaceTitle = stringResource(id = R.string.settings_global_namespace_mode)
     val globalNamespaceSummary = stringResource(id = R.string.settings_global_namespace_mode_summary)
@@ -168,7 +166,6 @@ fun GeneralSettingsContent(
     val blockApUpdateTitle = stringResource(id = R.string.settings_block_androidpatch_update)
     val blockApUpdateSummary = stringResource(id = R.string.settings_block_androidpatch_update_summary)
 
-    val showUpdateDialog = remember { mutableStateOf(false) }
     val showResetSuPathDialog = remember { mutableStateOf(false) }
     val showCleanStorageDialog = remember { mutableStateOf(false) }
     val showAppTitleDialog = remember { mutableStateOf(false) }
@@ -229,34 +226,6 @@ fun GeneralSettingsContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                }
-            }
-        }
-
-        item(key = "general_check_update") {
-            ExpressiveCard(flat = flat, onClick = {
-                scope.launch {
-                    loadingDialog.show()
-                    val hasUpdate = UpdateChecker.checkUpdate()
-                    loadingDialog.hide()
-                    if (hasUpdate) {
-                        showUpdateDialog.value = true
-                    } else {
-                        showToast(context, R.string.update_latest)
-                    }
-                }
-            }) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(imageVector = Icons.Filled.Update, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
-                    Spacer(Modifier.width(16.dp))
-                    Text(
-                        text = updateTitle,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
                 }
             }
         }
@@ -798,16 +767,6 @@ fun GeneralSettingsContent(
                 }
             }
         }
-    }
-
-    if (showUpdateDialog.value) {
-        UpdateDialog(
-            onDismiss = { showUpdateDialog.value = false },
-            onUpdate = {
-                showUpdateDialog.value = false
-                UpdateChecker.openUpdateUrl(context)
-            }
-        )
     }
 
     if (showResetSuPathDialog.value) {

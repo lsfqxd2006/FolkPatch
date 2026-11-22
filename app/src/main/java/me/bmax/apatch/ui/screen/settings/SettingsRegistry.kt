@@ -38,7 +38,6 @@ object SettingsRegistry {
         buildList {
             // === General ===
             add(SettingEntry("general_language", R.string.settings_app_language, category = SettingCategory.GENERAL))
-            add(SettingEntry("general_check_update", R.string.settings_check_update, category = SettingCategory.GENERAL))
             add(SettingEntry("general_block_kp_update", R.string.settings_block_kernelpatch_update, R.string.settings_block_kernelpatch_update_summary, SettingCategory.GENERAL))
             add(SettingEntry("general_block_ap_update", R.string.settings_block_androidpatch_update, R.string.settings_block_androidpatch_update_summary, SettingCategory.GENERAL))
             add(SettingEntry("general_folkx_engine", R.string.settings_folkx_engine_title, R.string.settings_folkx_engine_summary, SettingCategory.GENERAL))
